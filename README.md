@@ -1,6 +1,7 @@
 # Struktura Projektu
 
 ## Drzewo Katalogów
+```text
 Assets/
 └── _Project/
     ├── _Art/
@@ -38,7 +39,7 @@ Assets/
     └── _UI/
         ├── Fonts/
         └── Icons/
-
+```
 ---
 
 ## Opis Zawartości
