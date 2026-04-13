@@ -9,9 +9,16 @@ public class VehicleController : MonoBehaviour
     [SerializeField] private WheelCollider wheelFront;
     [SerializeField] private WheelCollider wheelBack;
 
+    [Header("Visual Lean")]
+    [SerializeField] private Transform visualModel;
+    [SerializeField, Min(0f)] private float maxLeanAngle = 18f;
+    [SerializeField, Min(0f)] private float leanSmooth = 8f;
+
     private Rigidbody _rb;
     private float _inputForward;
     private float _inputTurn;
+    private float _currentLeanAngle;
+    private Quaternion _visualBaseLocalRotation;
 
     // Initializes Rigidbody setup and validates movement configuration.
     private void Awake()
@@ -30,6 +37,9 @@ public class VehicleController : MonoBehaviour
         _rb.constraints = RigidbodyConstraints.FreezeRotationZ;
         // Lowering the center of mass improves stability during braking and sharp turns
         _rb.centerOfMass = movementData.centerOfMassOffset;
+
+        if (visualModel != null)
+            _visualBaseLocalRotation = visualModel.localRotation;
     }
 
     // Reads raw player input every frame.
@@ -37,6 +47,8 @@ public class VehicleController : MonoBehaviour
     {
         _inputForward = Input.GetAxisRaw("Vertical");
         _inputTurn    = Input.GetAxisRaw("Horizontal");
+
+        ApplyVisualLean();
     }
 
     // Applies movement physics on a fixed timestep.
@@ -91,5 +103,23 @@ public class VehicleController : MonoBehaviour
         float rear  = movementData.brakeForce * (1f - movementData.brakeFrontBias);
         wheelFront.brakeTorque = front;
         wheelBack.brakeTorque  = rear;
+    }
+
+    // Tilts only the visual model to emulate scooter-like leaning during turns.
+    private void ApplyVisualLean()
+    {
+        if (visualModel == null)
+            return;
+
+        float speedFactor = Mathf.Clamp01(_rb.linearVelocity.magnitude / movementData.maxSpeed);
+        float targetLean = -_inputTurn * maxLeanAngle * speedFactor;
+
+        _currentLeanAngle = Mathf.Lerp(_currentLeanAngle, targetLean, leanSmooth * Time.deltaTime);
+
+        // Apply lean with pivot offset: moves pivot axis lower/higher based on leanPivotOffsetY
+        Vector3 pivotOffset = new Vector3(0f, movementData.leanPivotOffsetY, 0f);
+        visualModel.localPosition = -pivotOffset;
+        visualModel.localRotation = _visualBaseLocalRotation * Quaternion.Euler(0f, 0f, _currentLeanAngle);
+        visualModel.localPosition += pivotOffset;
     }
 }

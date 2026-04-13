@@ -15,5 +15,8 @@ MonoBehaviour:
   maxSpeed: 15
   acceleration: 1500
   turnSpeed: 30
-  angularDrag: 5
   brakeForce: 3000
+  brakeFrontBias: 0.7
+  angularDrag: 5
+  centerOfMassOffset: {x: 0, y: -0.5, z: 0}
+  leanPivotOffsetY: -2
