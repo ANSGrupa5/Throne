@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
     public GameObject menu;
+    public TMP_Dropdown resolutionDropdown;
+    //public TMP_Dropdown qualityDropdown;
     GameObject[] screens = new GameObject[4];
+    Resolution[] resolutions;
 
     enum ScreenType
     {
@@ -30,6 +35,32 @@ public class Menu : MonoBehaviour
 
         screens[(int)ScreenType.Graphics] = menu.transform.Find("GraphicsScreen").gameObject;
         screens[(int)ScreenType.Graphics].SetActive(false);
+
+
+        resolutions = Screen.resolutions;
+        resolutionDropdown.ClearOptions();
+
+        var options = new System.Collections.Generic.List<string>();
+        int currentResolutionIndex = 0;
+        for(int i=0; i<resolutions.Length; i++)
+        {
+            int hz = (int)resolutions[i].refreshRateRatio.value;
+            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + hz + "Hz";
+            options.Add(option);
+
+            if(resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
+                currentResolutionIndex = i;
+        }
+
+        resolutionDropdown.AddOptions(options);
+        resolutionDropdown.value = currentResolutionIndex;
+        resolutionDropdown.RefreshShownValue();
+
+
+        //qualityDropdown.ClearOptions();
+        //qualityDropdown.AddOptions(new List<string>(QualitySettings.names));
+        //qualityDropdown.value = QualitySettings.GetQualityLevel();
+        //qualityDropdown.RefreshShownValue();
     }
 
     // Update is called once per frame
@@ -81,7 +112,19 @@ public class Menu : MonoBehaviour
 
     public void FullScreen(bool value)
     {
-        Screen.fullScreen = value;
+        Screen.fullScreenMode = value ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
+    }
+
+    public void SetResolution(int index)
+    {
+        Resolution res = resolutions[index];
+        Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
+    }
+
+    //narazie nieu¿ywane
+    public void SetQuality(int index)
+    {
+        QualitySettings.SetQualityLevel(index);
     }
 
     public void Exit()
