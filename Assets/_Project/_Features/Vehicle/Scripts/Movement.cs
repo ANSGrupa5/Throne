@@ -17,6 +17,7 @@ public class Movement : ScriptableObject
     public float brakeFrontBias = 0.7f;
 
     [Header("Physics")]
+    [Tooltip("Controls how quickly the vehicle stops rotating")]
     [Min(0f)] public float angularDrag = 5f;
     // Applied as a local offset from the Rigidbody's default center; negative Y lowers the center of mass
     [Tooltip("Obniż środek masy aby zapobiec wywracaniu (np. 0,-0.5,0)")]
