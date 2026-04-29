@@ -18,6 +18,7 @@ public class VehicleController : MonoBehaviour
     private float _inputForward;
     private float _inputTurn;
     private float _currentLeanAngle;
+    private Vector3 _visualBaseLocalPosition;
     private Quaternion _visualBaseLocalRotation;
 
     // Initializes Rigidbody setup and validates movement configuration.
@@ -39,7 +40,10 @@ public class VehicleController : MonoBehaviour
         _rb.centerOfMass = movementData.centerOfMassOffset;
 
         if (visualModel != null)
+        {
+            _visualBaseLocalPosition = visualModel.localPosition;
             _visualBaseLocalRotation = visualModel.localRotation;
+        }
     }
 
     // Reads raw player input every frame.
@@ -76,8 +80,9 @@ public class VehicleController : MonoBehaviour
         float torqueCurve  = speedFactor * speedFactor;
         float torque = movementData.acceleration * torqueCurve;
 
+        // Drive the rear wheel only; the front wheel is used for steering.
         wheelBack.motorTorque  = torque;
-        wheelFront.motorTorque = torque;
+        wheelFront.motorTorque = 0f;
     }
 
     // Turns the front wheel based on horizontal input.
@@ -116,10 +121,8 @@ public class VehicleController : MonoBehaviour
 
         _currentLeanAngle = Mathf.Lerp(_currentLeanAngle, targetLean, leanSmooth * Time.deltaTime);
 
-        // Apply lean with pivot offset: moves pivot axis lower/higher based on leanPivotOffsetY
-        Vector3 pivotOffset = new Vector3(0f, movementData.leanPivotOffsetY, 0f);
-        visualModel.localPosition = -pivotOffset;
+        // Keep the model anchored at its original local position so the root does not drift.
+        visualModel.localPosition = _visualBaseLocalPosition;
         visualModel.localRotation = _visualBaseLocalRotation * Quaternion.Euler(0f, 0f, _currentLeanAngle);
-        visualModel.localPosition += pivotOffset;
     }
 }
