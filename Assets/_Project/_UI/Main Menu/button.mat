@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: box
+  m_Name: button
   m_Shader: {fileID: 4800000, guid: cf81c85f95fe47e1a27f6ae460cf182c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -49,7 +49,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: aa0a8557c82bf9141b72afa38f5f2197, type: 3}
+        m_Texture: {fileID: 2800000, guid: f19522e11fc84c7458f76d8b0eec6cf1, type: 3}
         m_Scale: {x: 0.88, y: 1}
         m_Offset: {x: 0.06, y: 0}
     - _MetallicGlossMap:
@@ -94,7 +94,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _ClipRect: {r: -32766.74, g: -32767, b: 32767, a: 32767}
-    - _Color: {r: 0, g: 1, b: 0.95507, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
