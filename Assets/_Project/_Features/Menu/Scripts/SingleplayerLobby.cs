@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SingleplayerLobby : MonoBehaviour
 {
@@ -12,5 +13,14 @@ public class SingleplayerLobby : MonoBehaviour
     void Update()
     {
         
+    }
+    public void LoadScene(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
+    }
+    public void InitializeGame()
+    {
+        // Initialize game settings, spawn points, bots, etc. here
+        // This is where you would set up the singleplayer game based on your GameSettings and BotsSettings
     }
 }

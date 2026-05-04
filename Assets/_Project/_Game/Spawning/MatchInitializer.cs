@@ -92,6 +92,12 @@ public class MatchInitializer : MonoBehaviour
         Quaternion rot = spot.Rotation;
         GameObject go = Instantiate(prefab, pos, rot);
         _spawned.Add(go);
+        // If this is the player prefab, ensure it has a PlayerVehicleInput component
+        if (playerLook != null && prefab == playerLook.playerPrefab)
+        {
+            if (go.GetComponent<IVehicleInput>() == null)
+                go.AddComponent<PlayerVehicleInput>();
+        }
     }
 
     private List<SpawnSpot> SelectSpawnSpots(List<SpawnSpot> available, int count)
