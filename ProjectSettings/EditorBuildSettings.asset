@@ -9,8 +9,11 @@ EditorBuildSettings:
     path: Assets/_Project/_Scenes/MainMenu.unity
     guid: ecd83661f63c6034e8ab98e80a164d28
   - enabled: 1
-    path: Assets/_Project/_Scenes/SampleScene.unity
+    path: Assets/_Project/_Scenes/DefaultArena.unity
     guid: 2ca78e4d77276434a926b843a55e17ae
+  - enabled: 1
+    path: Assets/_Project/_Scenes/SingleplayerLobby.unity
+    guid: 607e59664f6fa8e439111f0a20185db9
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f274d41cc3746ca4c94da1dca0fc90f1, type: 3}
   m_Name: Movement 1
   m_EditorClassIdentifier: Assembly-CSharp::Movement
-  maxSpeed: 30
-  acceleration: 3500
-  turnSpeed: 30
-  brakeForce: 7500
-  brakeFrontBias: 0.5
+  maxSpeed: 50
+  acceleration: 6000
+  turnSpeed: 50
+  brakeForce: 4000
+  brakeFrontBias: 0.7
   angularDrag: 0.05
   centerOfMassOffset: {x: 0, y: 0, z: 0}
   leanPivotOffsetY: 0
