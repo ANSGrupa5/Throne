@@ -9,7 +9,7 @@ public class Menu : MonoBehaviour
     public GameObject menu;
     public TMP_Dropdown resolutionDropdown;
     //public TMP_Dropdown qualityDropdown;
-    GameObject[] screens = new GameObject[4];
+    GameObject[] screens = new GameObject[5];
     Resolution[] resolutions;
 
     enum ScreenType
@@ -19,7 +19,7 @@ public class Menu : MonoBehaviour
         Sound,    //2
         Graphics, //3
         //Camera,   //4
-        //Keybinds  //5
+        Keybinds  //5
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -35,6 +35,9 @@ public class Menu : MonoBehaviour
 
         screens[(int)ScreenType.Graphics] = menu.transform.Find("GraphicsScreen").gameObject;
         screens[(int)ScreenType.Graphics].SetActive(false);
+        
+        screens[(int)ScreenType.Keybinds] = menu.transform.Find("KeybindsScreen").gameObject;
+        screens[(int)ScreenType.Keybinds].SetActive(false);
 
 
         resolutions = Screen.resolutions;
@@ -109,6 +112,7 @@ public class Menu : MonoBehaviour
     {
         ShowScreen((int)ScreenType.Graphics);
     }
+    
 
     public void FullScreen(bool value)
     {
@@ -121,12 +125,15 @@ public class Menu : MonoBehaviour
         Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
     }
 
-    //narazie nieu¿ywane
+    //narazie nieuï¿½ywane
     public void SetQuality(int index)
     {
         QualitySettings.SetQualityLevel(index);
     }
-
+    public void ShowKeybindsSettings()
+    {
+        ShowScreen((int)ScreenType.Keybinds);
+    }
     public void Exit()
     {
         Application.Quit();
