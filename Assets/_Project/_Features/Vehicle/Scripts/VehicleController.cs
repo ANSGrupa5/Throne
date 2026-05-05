@@ -17,6 +17,7 @@ public class VehicleController : MonoBehaviour
     private Rigidbody _rb;
     private float _inputForward;
     private float _inputTurn;
+    private IVehicleInput _inputProvider;
     private float _currentLeanAngle;
     private Vector3 _visualBaseLocalPosition;
     private Quaternion _visualBaseLocalRotation;
@@ -49,8 +50,19 @@ public class VehicleController : MonoBehaviour
     // Reads raw player input every frame.
     private void Update()
     {
-        _inputForward = Input.GetAxisRaw("Vertical");
-        _inputTurn    = Input.GetAxisRaw("Horizontal");
+        if (_inputProvider == null)
+            _inputProvider = GetComponent<IVehicleInput>();
+
+        if (_inputProvider != null)
+        {
+            _inputProvider.GetInputs(out _inputForward, out _inputTurn);
+        }
+        else
+        {
+            // No input provider attached => remain idle by default
+            _inputForward = 0f;
+            _inputTurn = 0f;
+        }
 
         ApplyVisualLean();
     }
