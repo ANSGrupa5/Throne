@@ -125,11 +125,7 @@ public class Menu : MonoBehaviour
         Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
     }
 
-<<<<<<< icon_test
-    //narazie nieu�ywane
-=======
     //narazie nieuzywane
->>>>>>> main
     public void SetQuality(int index)
     {
         QualitySettings.SetQualityLevel(index);
