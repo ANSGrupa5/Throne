@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6738cdae4e014d140a6c57d8ddfa6fa9, type: 3}
   m_Name: PlayerLook
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLook
-  playerPrefab: {fileID: 7368977035267300232, guid: 6a8ca6465452d3440a84e99c4d385b89, type: 3}
+  playerPrefab: {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
   displayName: Player

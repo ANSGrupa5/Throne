@@ -10,13 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f274d41cc3746ca4c94da1dca0fc90f1, type: 3}
-  m_Name: Movement 1
+  m_Name: Movement
   m_EditorClassIdentifier: Assembly-CSharp::Movement
-  maxSpeed: 50
-  acceleration: 6000
-  turnSpeed: 50
-  brakeForce: 4000
-  brakeFrontBias: 0.7
-  angularDrag: 0.05
+  maxSpeed: 30
+  acceleration: 15000
+  timeToMaxSpeed: 1
+  maxForwardAcceleration: 0
+  turnSpeed: 30
+  turnAssistTorque: 60
+  turnAssistMaxYawRate: 1.4
+  turnAssistDamping: 1.5
+  highSpeedSteerFactor: 0.4
+  steerReductionStart: 0.35
+  minSteerSpeed: 2
+  turnAssistMinSpeed: 2
+  angularDrag: 1.2
+  lateralDamping: 15
+  maxLateralSpeedRatio: 0.06
+  maxYawRate: 2
+  yawDamping: 1
+  yawDeadzone: 0.08
   centerOfMassOffset: {x: 0, y: 0, z: 0}
   leanPivotOffsetY: 0
