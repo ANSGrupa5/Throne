@@ -7,18 +7,24 @@ using UnityEngine;
 public class MatchInitializer : MonoBehaviour
 {
     [Header("Data")]
+    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
     [SerializeField] private BotsSettings botsSettings;
+    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
     [SerializeField] private GameSettings gameSettings;
+    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
     [SerializeField] private PlayerLook playerLook;
 
     [Header("Spawn")]
     [SerializeField] private LayerMask obstacleMask;
     [SerializeField, Min(0f)] private float spawnInterval = 0.25f;
-    [SerializeField] private bool spawnPlayerLast = true;
+    [SerializeField, Min(1)] private int preMatchCountdownSeconds = 5;
+    [SerializeField, Min(0f)] private float goDisplayDuration = 0.75f;
+    [SerializeField] private GameStartTimer gameStartTimer;
 
     public static event Action OnMatchStart;
 
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private bool _isFreezeOwned;
 
     private void Start()
     {
@@ -27,6 +33,14 @@ public class MatchInitializer : MonoBehaviour
 
     private IEnumerator InitializeRoutine()
     {
+        GameSessionRuntime session = ResolveSession();
+
+        if (!TryValidateSession(session, out string validationError))
+        {
+            Debug.LogError($"Match initialization aborted: {validationError}");
+            yield break;
+        }
+
         var spots = SpawnSpot.Active.ToList();
         if (spots.Count == 0)
         {
@@ -35,45 +49,48 @@ public class MatchInitializer : MonoBehaviour
         }
 
         int totalBots = 0;
-        if (botsSettings != null)
+        for (int i = 0; i < session.bots.Count; i++)
         {
-            foreach (var e in botsSettings.bots)
-                totalBots += Mathf.Max(0, e.count);
+            totalBots += Mathf.Max(0, session.bots[i].count);
         }
 
-        int totalToSpawn = totalBots + (playerLook != null && playerLook.playerPrefab != null ? 1 : 0);
+        int totalToSpawn = totalBots + (session.playerPrefab != null ? 1 : 0);
+
+        if (totalToSpawn > spots.Count)
+        {
+            Debug.LogError($"Match initialization aborted: requested {totalToSpawn} entities but only {spots.Count} SpawnSpots are available.");
+            yield break;
+        }
 
         List<SpawnSpot> chosen = SelectSpawnSpots(spots, totalToSpawn);
+        if (chosen.Count < totalToSpawn)
+        {
+            Debug.LogError($"Match initialization aborted: could not reserve enough SpawnSpots ({chosen.Count}/{totalToSpawn}).");
+            yield break;
+        }
 
         int index = 0;
 
+        SetFreeze(true);
+
+        // Spawn player first
+        if (session.playerPrefab != null)
+        {
+            SpawnAt(session.playerPrefab, chosen[index], session.playerPrefab);
+            index++;
+            yield return new WaitForSecondsRealtime(spawnInterval);
+        }
+
         // Spawn bots
-        if (botsSettings != null)
+        for (int e = 0; e < session.bots.Count; e++)
         {
-            foreach (var entry in botsSettings.bots)
+            GameSessionRuntime.BotSpawnEntry entry = session.bots[e];
+            for (int i = 0; i < entry.count; i++)
             {
-                for (int i = 0; i < entry.count; i++)
-                {
-                    if (index >= chosen.Count) break;
-                    SpawnAt(entry.prefab, chosen[index]);
-                    index++;
-                    yield return new WaitForSeconds(spawnInterval);
-                }
-            }
-        }
-
-        // Spawn player
-        if (!spawnPlayerLast)
-        {
-            // If player should be spawned earlier, implementation would go here.
-        }
-
-        if (playerLook != null && playerLook.playerPrefab != null)
-        {
-            if (index < chosen.Count)
-            {
-                SpawnAt(playerLook.playerPrefab, chosen[index]);
+                if (index >= chosen.Count) break;
+                SpawnAt(entry.prefab, chosen[index], session.playerPrefab);
                 index++;
+                yield return new WaitForSecondsRealtime(spawnInterval);
             }
         }
 
@@ -81,10 +98,13 @@ public class MatchInitializer : MonoBehaviour
         yield return null;
 
         // Start countdown after all spawns
-        yield return StartCoroutine(CountdownAndStart(5));
+        yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
+
+        SetFreeze(false);
+        OnMatchStart?.Invoke();
     }
 
-    private void SpawnAt(GameObject prefab, SpawnSpot spot)
+    private void SpawnAt(GameObject prefab, SpawnSpot spot, GameObject playerPrefab)
     {
         if (prefab == null || spot == null) return;
 
@@ -93,11 +113,20 @@ public class MatchInitializer : MonoBehaviour
         GameObject go = Instantiate(prefab, pos, rot);
         _spawned.Add(go);
         // If this is the player prefab, ensure it has a PlayerVehicleInput component
-        if (playerLook != null && prefab == playerLook.playerPrefab)
+        if (playerPrefab != null && prefab == playerPrefab)
         {
             if (go.GetComponent<IVehicleInput>() == null)
                 go.AddComponent<PlayerVehicleInput>();
         }
+    }
+
+    private GameSessionRuntime ResolveSession()
+    {
+        if (GameSessionBootstrap.TryGetSession(out var activeSession))
+            return activeSession;
+
+        Debug.LogWarning("No runtime session found. Falling back to default ScriptableObject assets.");
+        return GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
     }
 
     private List<SpawnSpot> SelectSpawnSpots(List<SpawnSpot> available, int count)
@@ -159,11 +188,94 @@ public class MatchInitializer : MonoBehaviour
         for (int i = seconds; i > 0; i--)
         {
             Debug.Log(i);
-            yield return new WaitForSeconds(1f);
+            if (gameStartTimer != null)
+                gameStartTimer.ShowCount(i);
+            yield return new WaitForSecondsRealtime(1f);
         }
 
         Debug.Log("GO");
-        OnMatchStart?.Invoke();
+        if (gameStartTimer != null)
+            gameStartTimer.ShowGo();
+        yield return new WaitForSecondsRealtime(goDisplayDuration);
+        if (gameStartTimer != null)
+            gameStartTimer.Hide();
         yield break;
+    }
+
+    private bool TryValidateSession(GameSessionRuntime session, out string error)
+    {
+        if (session == null)
+        {
+            error = "Runtime session is null.";
+            return false;
+        }
+
+        if (session.playerPrefab == null)
+        {
+            error = "Player prefab is not configured.";
+            return false;
+        }
+
+        if (session.maxPlayers < 2)
+        {
+            error = $"maxPlayers is invalid ({session.maxPlayers}).";
+            return false;
+        }
+
+        int totalBots = 0;
+        for (int i = 0; i < session.bots.Count; i++)
+        {
+            GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
+            if (entry == null)
+                continue;
+
+            if (entry.prefab == null)
+            {
+                error = $"Bot entry at index {i} has no prefab.";
+                return false;
+            }
+
+            if (entry.count < 0)
+            {
+                error = $"Bot entry at index {i} has negative count ({entry.count}).";
+                return false;
+            }
+
+            totalBots += entry.count;
+        }
+
+        int totalPlayers = totalBots + 1;
+        if (totalPlayers > session.maxPlayers)
+        {
+            error = $"Total participants ({totalPlayers}) exceed maxPlayers ({session.maxPlayers}).";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    private void SetFreeze(bool freeze)
+    {
+        if (freeze)
+        {
+            if (_isFreezeOwned)
+                return;
+
+            Time.timeScale = 0f;
+            _isFreezeOwned = true;
+            return;
+        }
+
+        if (!_isFreezeOwned)
+            return;
+
+        Time.timeScale = 1f;
+        _isFreezeOwned = false;
+    }
+
+    private void OnDisable()
+    {
+        SetFreeze(false);
     }
 }

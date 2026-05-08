@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BotsSettings
   m_EditorClassIdentifier: Assembly-CSharp::BotsSettings
   bots:
-  - prefab: {fileID: 5540600233474506987, guid: f96e877cdb679d441acdb609fd00aa7e, type: 3}
+  - prefab: {fileID: 3746183853180310409, guid: c674e6d67cd04a14b9a7e430237c8df3, type: 3}
     count: 3

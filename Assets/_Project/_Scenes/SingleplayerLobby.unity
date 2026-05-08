@@ -1836,16 +1836,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
-        m_MethodName: Exit
-        m_Mode: 1
+      - m_Target: {fileID: 2052947075}
+        m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: MainMenu
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &733539999
@@ -4569,6 +4569,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 580aad868d223224e9621c997c707ee2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SingleplayerLobby
+  gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
+  botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
+  playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
 --- !u!1 &2109379687
 GameObject:
   m_ObjectHideFlags: 0
