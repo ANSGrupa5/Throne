@@ -4569,6 +4569,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 580aad868d223224e9621c997c707ee2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SingleplayerLobby
+  gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
+  botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
+  playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
 --- !u!1 &2109379687
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,24 +3,21 @@ using UnityEngine.SceneManagement;
 
 public class SingleplayerLobby : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [Header("Default Config Assets")]
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private BotsSettings botsSettings;
+    [SerializeField] private PlayerLook playerLook;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     public void LoadScene(string sceneName)
     {
+        InitializeGame();
         SceneManager.LoadScene(sceneName);
     }
+
     public void InitializeGame()
     {
-        // Initialize game settings, spawn points, bots, etc. here
-        // This is where you would set up the singleplayer game based on your GameSettings and BotsSettings
+        var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
+        session.isSingleplayer = true;
+        GameSessionBootstrap.SetSession(session);
     }
 }
