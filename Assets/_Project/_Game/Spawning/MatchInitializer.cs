@@ -70,13 +70,14 @@ public class MatchInitializer : MonoBehaviour
         }
 
         int index = 0;
+        List<Color> botColors = BuildBotColorPool(session);
 
         SetFreeze(true);
 
         // Spawn player first
         if (session.playerPrefab != null)
         {
-            SpawnAt(session.playerPrefab, chosen[index], session.playerPrefab);
+            SpawnAt(session, session.playerPrefab, chosen[index], session.playerPrefab, session.playerTrailColor);
             index++;
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
@@ -88,7 +89,8 @@ public class MatchInitializer : MonoBehaviour
             for (int i = 0; i < entry.count; i++)
             {
                 if (index >= chosen.Count) break;
-                SpawnAt(entry.prefab, chosen[index], session.playerPrefab);
+                Color botColor = PickBotColor(botColors, session);
+                SpawnAt(session, entry.prefab, chosen[index], session.playerPrefab, botColor);
                 index++;
                 yield return new WaitForSecondsRealtime(spawnInterval);
             }
@@ -104,7 +106,7 @@ public class MatchInitializer : MonoBehaviour
         OnMatchStart?.Invoke();
     }
 
-    private void SpawnAt(GameObject prefab, SpawnSpot spot, GameObject playerPrefab)
+    private void SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, GameObject playerPrefab, Color trailColor)
     {
         if (prefab == null || spot == null) return;
 
@@ -112,12 +114,86 @@ public class MatchInitializer : MonoBehaviour
         Quaternion rot = spot.Rotation;
         GameObject go = Instantiate(prefab, pos, rot);
         _spawned.Add(go);
-        // If this is the player prefab, ensure it has a PlayerVehicleInput component
+
+        VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
+        if (colorApplier == null)
+            colorApplier = go.AddComponent<VehicleColorApplier>();
+
+        colorApplier.SetColor(trailColor);
+
+        VehicleLife life = go.GetComponent<VehicleLife>();
+        if (life == null)
+            life = go.AddComponent<VehicleLife>();
+        life.ConfigureSpawn(pos, rot);
+
+        TrailEmitter trailEmitter = go.GetComponent<TrailEmitter>();
+        if (trailEmitter == null)
+            trailEmitter = go.AddComponent<TrailEmitter>();
+        trailEmitter.Configure(life, trailColor, session != null ? session.trailLength : 1);
+
+        if (go.GetComponent<VehicleDeathSequence>() == null)
+            go.AddComponent<VehicleDeathSequence>();
+
+        // If this is the player prefab, ensure it has a player command source.
         if (playerPrefab != null && prefab == playerPrefab)
         {
-            if (go.GetComponent<IVehicleInput>() == null)
+            if (go.GetComponent<IVehicleCommandSource>() == null)
                 go.AddComponent<PlayerVehicleInput>();
+            return;
         }
+
+        // Bots use AI command sources by default.
+        if (go.GetComponent<IVehicleCommandSource>() == null)
+            go.AddComponent<BotVehicleInput>();
+    }
+
+    private List<Color> BuildBotColorPool(GameSessionRuntime session)
+    {
+        List<Color> pool = new List<Color>();
+        if (session == null || session.trailColorPalette == null)
+            return pool;
+
+        for (int i = 0; i < session.trailColorPalette.Count; i++)
+        {
+            Color color = session.trailColorPalette[i];
+            if (color == session.playerTrailColor)
+                continue;
+
+            pool.Add(color);
+        }
+
+        return pool;
+    }
+
+    private Color PickBotColor(List<Color> availableColors, GameSessionRuntime session)
+    {
+        List<Color> fallbackPalette = session != null ? session.trailColorPalette : null;
+        Color fallbackColor = session != null ? session.playerTrailColor : Color.white;
+
+        if (availableColors == null || availableColors.Count == 0)
+        {
+            if (fallbackPalette == null || fallbackPalette.Count == 0)
+                return fallbackColor;
+
+            List<Color> candidates = new List<Color>();
+            for (int i = 0; i < fallbackPalette.Count; i++)
+            {
+                Color color = fallbackPalette[i];
+                if (color != session.playerTrailColor)
+                    candidates.Add(color);
+            }
+
+            if (candidates.Count == 0)
+                return fallbackColor;
+
+            return candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        }
+
+        int index = UnityEngine.Random.Range(0, availableColors.Count);
+        Color selected = availableColors[index];
+        availableColors.RemoveAt(index);
+
+        return selected;
     }
 
     private GameSessionRuntime ResolveSession()

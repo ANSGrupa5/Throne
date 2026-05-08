@@ -22,10 +22,12 @@ public class GameSessionRuntime
 
     public GameObject playerPrefab;
     public string playerDisplayName;
+    public Color playerTrailColor;
 
     public readonly List<BotSpawnEntry> bots = new List<BotSpawnEntry>();
+    public readonly List<Color> trailColorPalette = new List<Color>();
 
-    public static GameSessionRuntime FromDefaults(GameSettings gameSettings, BotsSettings botsSettings, PlayerLook playerLook)
+    public static GameSessionRuntime FromDefaults(GameSettings gameSettings, BotsSettings botsSettings, PlayerLook playerLook, int? desiredBotCount = null)
     {
         var session = new GameSessionRuntime();
 
@@ -58,17 +60,27 @@ public class GameSessionRuntime
         {
             session.playerPrefab = playerLook.playerPrefab;
             session.playerDisplayName = playerLook.displayName;
+            session.playerTrailColor = playerLook.trailColor;
         }
         else
         {
             session.playerDisplayName = "Player";
+            session.playerTrailColor = Color.white;
         }
 
-        int maxBots = Mathf.Max(0, session.maxPlayers - (session.playerPrefab != null ? 1 : 0));
-        int assignedBots = 0;
+        if (gameSettings != null && gameSettings.trailColorPalette != null)
+            session.trailColorPalette.AddRange(gameSettings.trailColorPalette);
 
-        if (botsSettings != null && botsSettings.bots != null)
+        int maxBots = Mathf.Max(0, session.maxPlayers - (session.playerPrefab != null ? 1 : 0));
+
+        if (desiredBotCount.HasValue)
         {
+            PopulateBotsForCount(session, botsSettings, maxBots, desiredBotCount.Value);
+        }
+        else if (botsSettings != null && botsSettings.bots != null)
+        {
+            int assignedBots = 0;
+
             for (int i = 0; i < botsSettings.bots.Count; i++)
             {
                 var source = botsSettings.bots[i];
@@ -92,5 +104,60 @@ public class GameSessionRuntime
         }
 
         return session;
+    }
+
+    private static void PopulateBotsForCount(GameSessionRuntime session, BotsSettings botsSettings, int maxBots, int desiredBotCount)
+    {
+        if (session == null || botsSettings == null || botsSettings.bots == null)
+            return;
+
+        int botCount = Mathf.Clamp(desiredBotCount, 0, maxBots);
+        if (botCount <= 0)
+            return;
+
+        List<GameObject> pattern = new List<GameObject>();
+
+        for (int i = 0; i < botsSettings.bots.Count; i++)
+        {
+            var source = botsSettings.bots[i];
+            if (source == null || source.prefab == null || source.count <= 0)
+                continue;
+
+            int repeats = Mathf.Max(1, source.count);
+            for (int repeat = 0; repeat < repeats; repeat++)
+            {
+                pattern.Add(source.prefab);
+            }
+        }
+
+        if (pattern.Count == 0)
+            return;
+
+        for (int i = 0; i < botCount; i++)
+        {
+            AddBotEntry(session.bots, pattern[i % pattern.Count]);
+        }
+    }
+
+    private static void AddBotEntry(List<BotSpawnEntry> target, GameObject prefab)
+    {
+        if (target == null || prefab == null)
+            return;
+
+        if (target.Count > 0)
+        {
+            BotSpawnEntry last = target[target.Count - 1];
+            if (last != null && last.prefab == prefab)
+            {
+                last.count++;
+                return;
+            }
+        }
+
+        target.Add(new BotSpawnEntry
+        {
+            prefab = prefab,
+            count = 1
+        });
     }
 }

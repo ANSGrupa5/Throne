@@ -267,11 +267,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3780930728728040342}
   - component: {fileID: 8459290600318073669}
-  - component: {fileID: 2542742008586709182}
-  - component: {fileID: 6846199149765510444}
-  - component: {fileID: 8173538643334265692}
   - component: {fileID: 772959941781675302}
-  - component: {fileID: 4872575697609542131}
+  - component: {fileID: 2542742008586709182}
+  - component: {fileID: 6456904678307494355}
   - component: {fileID: 3963277036762231132}
   m_Layer: 0
   m_Name: motor_BOT_FINAL2_WORKING
@@ -326,62 +324,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 64
   m_CollisionDetection: 0
---- !u!114 &2542742008586709182
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcc411bf599d04540a8f7c91600af53f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleController
-  movementData: {fileID: 11400000, guid: 370159fd9983027469cbf38c370fb4e8, type: 2}
-  wheelFront: {fileID: 4262779213005125466}
-  wheelBack: {fileID: 1853967654864436823}
-  visualModel: {fileID: 5391968229695578253}
-  maxLeanAngle: 20
-  leanSmooth: 8
---- !u!114 &6846199149765510444
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ae7baae4c70f7a408f8a15de91bb37f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleCameraController
-  cameraTransform: {fileID: 2372703487568820752}
-  transitionSpeed: 6
-  presets:
-  - label: Follow
-    localPosition: {x: 0, y: 5.5, z: 0.5}
-    localEulerAngles: {x: 20, y: 0, z: 0}
-  - label: TopDown
-    localPosition: {x: 0, y: 20, z: -3}
-    localEulerAngles: {x: 65, y: 0, z: 0}
---- !u!114 &8173538643334265692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 357e9c4444b680c45bb8cd7feda827a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleGroundHitDebug
-  wheelFront: {fileID: 4262779213005125466}
-  wheelBack: {fileID: 1853967654864436823}
-  logGroundHit: 1
-  logInterval: 0.5
-  logOnlyOnStateChange: 1
 --- !u!65 &772959941781675302
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -403,18 +345,70 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 4.5, z: 2.5}
   m_Center: {x: 0, y: 3, z: 0}
---- !u!114 &4872575697609542131
+--- !u!114 &2542742008586709182
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec4d732a21a786d4ab51c17089836a72, type: 3}
+  m_Script: {fileID: 11500000, guid: dcc411bf599d04540a8f7c91600af53f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerVehicleInput
+  m_EditorClassIdentifier: Assembly-CSharp::VehicleController
+  movementData: {fileID: 11400000, guid: 370159fd9983027469cbf38c370fb4e8, type: 2}
+  wheelFront: {fileID: 4262779213005125466}
+  wheelBack: {fileID: 1853967654864436823}
+  visualModel: {fileID: 5391968229695578253}
+  maxLeanAngle: 20
+  leanSmooth: 8
+  boostSpeedMultiplier: 1.35
+  boostAccelerationMultiplier: 1.2
+--- !u!114 &6456904678307494355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3746183853180310409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edde51f79db8cd946ba822f18332dd59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BotVehicleInput
+  mapBoundaryMask:
+    serializedVersion: 2
+    m_Bits: 64
+  suddenDeathMask:
+    serializedVersion: 2
+    m_Bits: 128
+  safetyRayLength: 10
+  safetyRayAngle: 30
+  safetyAvoidanceStrength: 2.5
+  trailMask:
+    serializedVersion: 2
+    m_Bits: 8
+  trailRayLength: 10
+  trailRayAngle: 25
+  trailAvoidanceStrength: 1.7
+  playerSearchRadius: 150
+  blockAheadDistance: 8
+  lateralBlockOffset: 2.5
+  interceptLeadTime: 0.55
+  interceptSteeringStrength: 2.1
+  powerupMask:
+    serializedVersion: 2
+    m_Bits: 256
+  powerupSearchRadius: 500
+  powerupSteeringStrength: 1.5
+  mapCenter: {fileID: 0}
+  centerRoamRadius: 12
+  centerSteeringStrength: 1.35
+  roamDirectionDuration: 3
+  roamSteeringStrength: 1.15
+  wanderStrength: 0.12
+  wanderChangeInterval: 1.5
 --- !u!114 &3963277036762231132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,7 +609,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2372703487568820752
 Transform:
   m_ObjectHideFlags: 0
@@ -689,7 +683,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5145760784651017060}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!1 &6873547466417872431
 GameObject:
   m_ObjectHideFlags: 0
