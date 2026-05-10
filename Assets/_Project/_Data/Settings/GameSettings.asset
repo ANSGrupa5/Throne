@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: GameSettings
   m_EditorClassIdentifier: Assembly-CSharp::GameSettings
   maxPlayers: 4
-  gameMode: 0
-  matchDuration: 180
+  gameMode: 1
+  matchDuration: 60
   respawnTime: 5
   isSuddenDeath: 1
   suddenDeathTime: 30

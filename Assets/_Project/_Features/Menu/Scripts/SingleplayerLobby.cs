@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using System.Linq;
 using UnityEngine.SceneManagement;
 
 public class SingleplayerLobby : MonoBehaviour
@@ -21,8 +22,11 @@ public class SingleplayerLobby : MonoBehaviour
             playerTrailColor = playerLook.trailColor;
 
         ApplyPlayerTrailColor();
-        _botCount = GetDefaultBotCount();
-        RefreshBotCountUI();
+
+        // Initialize bot count to 0, allowing the player to add them from scratch.
+        // The previous implementation loaded a default value from an asset, which was confusing.
+        _botCount = 0;
+        RefreshBotCountUI(); // This can be modified later to update your visual "plus" icons.
     }
 
     public void LoadScene(string sceneName)
@@ -56,11 +60,12 @@ public class SingleplayerLobby : MonoBehaviour
         SetPlayerTrailColor(gameSettings.trailColorPalette[index]);
     }
 
-    public void InitializeGame()
+    private void InitializeGame()
     {
         _botCount = Mathf.Clamp(_botCount, 0, GetMaxBotCount());
-        ApplyPlayerTrailColor();
-
+        
+        // Używamy natywnego wsparcia dla określonej liczby botów,
+        // która automatycznie pobierze prefab z pliku BotsSettings.
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
         GameSessionBootstrap.SetSession(session);
@@ -74,20 +79,16 @@ public class SingleplayerLobby : MonoBehaviour
 
     private int GetDefaultBotCount()
     {
-        var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
-        int totalBots = 0;
-
-        for (int i = 0; i < session.bots.Count; i++)
-        {
-            totalBots += Mathf.Max(0, session.bots[i].count);
-        }
-
-        return Mathf.Clamp(totalBots, 0, GetMaxBotCount());
+        if (botsSettings == null || botsSettings.bots == null)
+            return 0;
+        
+        // Sum the counts directly from the settings asset.
+        return botsSettings.bots.Sum(bot => bot?.count ?? 0);
     }
 
     private int GetMaxBotCount()
     {
-        int maxPlayers = gameSettings != null ? gameSettings.maxPlayers : 2;
+        int maxPlayers = 6; // Absolute max limit from GameSettings
         bool hasPlayerPrefab = playerLook != null && playerLook.playerPrefab != null;
         return Mathf.Max(0, maxPlayers - (hasPlayerPrefab ? 1 : 0));
     }

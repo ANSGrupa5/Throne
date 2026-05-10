@@ -24,6 +24,11 @@ public class GameSessionBootstrap : MonoBehaviour
         CurrentSession = session;
     }
 
+    public static void ClearSession()
+    {
+        CurrentSession = null;
+    }
+
     public static bool TryGetSession(out GameSessionRuntime session)
     {
         session = CurrentSession;

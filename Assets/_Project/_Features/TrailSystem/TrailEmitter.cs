@@ -25,6 +25,7 @@ public class TrailEmitter : MonoBehaviour
     [SerializeField] private VehicleColorApplier ownerColorApplier;
     [SerializeField, Range(0, 3)] private int trailPreset = 1;
     [SerializeField, Min(0.01f)] private float spawnOffset = 0.15f;
+    [SerializeField] private string trailLayerName = "Trail";
 
     private Rigidbody _rb;
     private Vector3 _lastSpawnPosition;
@@ -43,9 +44,12 @@ public class TrailEmitter : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _trailLayer = LayerMask.NameToLayer("Trail");
+        _trailLayer = LayerMask.NameToLayer(trailLayerName);
         if (_trailLayer < 0)
+        {
+            Debug.LogWarning($"[TrailEmitter] Layer '{trailLayerName}' was not found. Falling back to '{gameObject.layer}'.", this);
             _trailLayer = gameObject.layer;
+        }
 
         if (ownerLife == null)
             ownerLife = GetComponent<VehicleLife>();
@@ -116,6 +120,7 @@ public class TrailEmitter : MonoBehaviour
         Collider collider = segment.GetComponent<Collider>();
         if (collider != null)
         {
+            collider.gameObject.layer = _trailLayer;
             collider.isTrigger = true;
         }
 
@@ -123,7 +128,9 @@ public class TrailEmitter : MonoBehaviour
         colorApplier.SetColor(_trailColor);
 
         TrailSegment trailSegment = segment.AddComponent<TrailSegment>();
-        trailSegment.Configure(ownerLife, _trailColor);
+        string ownerDisplayName = ownerLife != null ? ownerLife.DisplayName : gameObject.name;
+        string ownerId = ownerLife != null ? ownerLife.OwnerId : ownerDisplayName;
+        trailSegment.Configure(ownerLife, ownerDisplayName, ownerId, _trailColor);
 
         if (ownerLife != null)
         {

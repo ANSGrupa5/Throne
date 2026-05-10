@@ -19,10 +19,14 @@ public class VehicleLife : MonoBehaviour
     private Quaternion _spawnRotation;
     private bool _isDead;
     private bool _isInvulnerable;
+    private string _displayName;
+    private string _ownerId;
 
     public bool IsDead => _isDead;
     public bool CanBeKilled => !_isDead && !_isInvulnerable;
     public GameObject LastKiller { get; private set; }
+    public string DisplayName => string.IsNullOrWhiteSpace(_displayName) ? gameObject.name : _displayName;
+    public string OwnerId => string.IsNullOrWhiteSpace(_ownerId) ? DisplayName : _ownerId;
 
     private void Awake()
     {
@@ -38,6 +42,12 @@ public class VehicleLife : MonoBehaviour
     {
         _spawnPosition = position;
         _spawnRotation = rotation;
+    }
+
+    public void ConfigureIdentity(string displayName, string ownerId)
+    {
+        _displayName = string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName.Trim();
+        _ownerId = string.IsNullOrWhiteSpace(ownerId) ? _displayName : ownerId.Trim();
     }
 
     public bool Kill(GameObject killer)
