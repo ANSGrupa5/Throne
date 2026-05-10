@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "GameSettings", menuName = "Game/Settings/GameSettings")]
 public class GameSettings : ScriptableObject
@@ -32,6 +33,15 @@ public class GameSettings : ScriptableObject
     [Min(30f)] public float suddenDeathTime = 30f; // 30-120 seconds
     [Min(20)] public float vehicleSpeed = 20f; // 20-50 units per second
     [Range(0,3)] public int trailLength = 1; // 0-3 (0 - short, 1 - medium, 2 - long, 3 - permanent)
+    public List<Color> trailColorPalette = new List<Color>
+    {
+        new Color(0.95f, 0.24f, 0.24f), // Red
+        new Color(0.25f, 0.55f, 0.98f), // Blue
+        new Color(0.28f, 0.82f, 0.42f), // Green
+        new Color(0.98f, 0.82f, 0.25f), // Yellow
+        new Color(0.90f, 0.35f, 0.85f), // Magenta
+        new Color(0.22f, 0.88f, 0.88f)  // Cyan
+    };
 
     private void OnValidate()
     {
@@ -42,5 +52,8 @@ public class GameSettings : ScriptableObject
         suddenDeathTime = Mathf.Clamp(suddenDeathTime, MinSuddenDeathTime, MaxSuddenDeathTime);
         vehicleSpeed = Mathf.Clamp(vehicleSpeed, MinVehicleSpeed, MaxVehicleSpeed);
         trailLength = Mathf.Clamp(trailLength, MinTrailLength, MaxTrailLength);
+
+        if (trailColorPalette == null)
+            trailColorPalette = new List<Color>();
     }
 }
