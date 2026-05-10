@@ -29,6 +29,10 @@ public class VehicleCameraController : MonoBehaviour
     };
 
     private int _currentPreset;
+    private Transform _spectatorTarget;
+    private bool _useSpectatorTarget;
+
+    public Transform CameraTransform => cameraTransform;
 
     // Handles preset switching input and updates camera interpolation.
     private void Update()
@@ -43,6 +47,22 @@ public class VehicleCameraController : MonoBehaviour
     // Smoothly moves and rotates the camera toward the active preset.
     private void SmoothTransition()
     {
+        if (_useSpectatorTarget && _spectatorTarget != null)
+        {
+            cameraTransform.position = Vector3.Lerp(
+                cameraTransform.position,
+                _spectatorTarget.position,
+                transitionSpeed * Time.deltaTime
+            );
+
+            cameraTransform.rotation = Quaternion.Slerp(
+                cameraTransform.rotation,
+                _spectatorTarget.rotation,
+                transitionSpeed * Time.deltaTime
+            );
+            return;
+        }
+
         CameraPreset target = presets[_currentPreset];
 
         // Lerp/Slerp each frame creates an ease-out effect: fast at first, slowing as it approaches the target.
@@ -59,5 +79,34 @@ public class VehicleCameraController : MonoBehaviour
             Quaternion.Euler(target.localEulerAngles),
             transitionSpeed * Time.deltaTime
         );
+    }
+
+    public void SetPresetByLabel(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label) || presets == null)
+            return;
+
+        for (int i = 0; i < presets.Length; i++)
+        {
+            if (string.Equals(presets[i].label, label, System.StringComparison.OrdinalIgnoreCase))
+            {
+                _currentPreset = i;
+                _useSpectatorTarget = false;
+                _spectatorTarget = null;
+                return;
+            }
+        }
+    }
+
+    public void SetSpectatorTarget(Transform target)
+    {
+        _spectatorTarget = target;
+        _useSpectatorTarget = target != null;
+    }
+
+    public void ClearSpectatorTarget()
+    {
+        _spectatorTarget = null;
+        _useSpectatorTarget = false;
     }
 }

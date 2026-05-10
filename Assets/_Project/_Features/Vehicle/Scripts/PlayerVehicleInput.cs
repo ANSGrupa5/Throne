@@ -1,11 +1,10 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Behaviour))]
-public class PlayerVehicleInput : MonoBehaviour, IVehicleInput
+public class PlayerVehicleInput : MonoBehaviour, IVehicleCommandSource
 {
-    public void GetInputs(out float forward, out float turn)
+    public VehicleCommand GetCommand()
     {
-        forward = Input.GetAxisRaw("Vertical");
-        turn = Input.GetAxisRaw("Horizontal");
+        float turn = Input.GetAxisRaw("Horizontal");
+        return new VehicleCommand(turn, false);
     }
 }
