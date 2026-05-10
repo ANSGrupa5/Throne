@@ -36,6 +36,10 @@ public class WheelVisualSync : MonoBehaviour
         Vector3 desiredWorldPos = leanRoot != null ? leanRoot.TransformPoint(localPos) : pos;
         Quaternion desiredWorldRot = leanRoot != null ? leanRoot.rotation * localRot : rot;
 
+        // Guard against NaN quaternions
+        if (!IsValidQuaternion(desiredWorldRot) || !IsValidVector3(desiredWorldPos))
+            return;
+
         if (parent != null)
         {
             visual.localPosition = parent.InverseTransformPoint(desiredWorldPos);
@@ -47,7 +51,11 @@ public class WheelVisualSync : MonoBehaviour
                 _offsetInitialized = true;
             }
 
-            visual.localRotation = localWheelRot * _localRotationOffset;
+            Quaternion targetRot = localWheelRot * _localRotationOffset;
+            if (IsValidQuaternion(targetRot))
+            {
+                visual.localRotation = targetRot;
+            }
         }
         else
         {
@@ -59,7 +67,21 @@ public class WheelVisualSync : MonoBehaviour
                 _offsetInitialized = true;
             }
 
-            visual.rotation = desiredWorldRot * _localRotationOffset;
+            Quaternion targetRot = desiredWorldRot * _localRotationOffset;
+            if (IsValidQuaternion(targetRot))
+            {
+                visual.rotation = targetRot;
+            }
         }
+    }
+
+    private bool IsValidQuaternion(Quaternion q)
+    {
+        return !float.IsNaN(q.x) && !float.IsNaN(q.y) && !float.IsNaN(q.z) && !float.IsNaN(q.w);
+    }
+
+    private bool IsValidVector3(Vector3 v)
+    {
+        return !float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsNaN(v.z);
     }
 }

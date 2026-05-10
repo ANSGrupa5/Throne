@@ -13,13 +13,16 @@ public class VehicleController : MonoBehaviour
     [SerializeField] private Transform visualModel;
     [SerializeField, Min(0f)] private float maxLeanAngle = 18f;
     [SerializeField, Min(0f)] private float leanSmooth = 8f;
+    [Header("Boost")]
+    [SerializeField, Min(1f)] private float boostSpeedMultiplier = 1.35f;
+    [SerializeField, Min(1f)] private float boostAccelerationMultiplier = 1.2f;
 
     private Rigidbody _rb;
     private float _inputTurn;
-    private IVehicleInput _inputProvider;
+    private bool _boostActive;
+    private IVehicleCommandSource _commandSource;
     private float _currentLeanAngle;
     private Vector3 _visualBaseLocalPosition;
-    private Quaternion _visualBaseLocalRotation;
 
     // Initializes Rigidbody setup and validates movement configuration.
     private void Awake()
@@ -42,27 +45,18 @@ public class VehicleController : MonoBehaviour
         if (visualModel != null)
         {
             _visualBaseLocalPosition = visualModel.localPosition;
-            _visualBaseLocalRotation = visualModel.localRotation;
         }
     }
 
-    // Reads raw player input every frame.
+    // Reads the current command source every frame.
     private void Update()
     {
-        if (_inputProvider == null)
-            _inputProvider = GetComponent<IVehicleInput>();
+        if (_commandSource == null)
+            _commandSource = GetComponent<IVehicleCommandSource>();
 
-        if (_inputProvider != null)
-        {
-            // Read turn input but ignore forward input — vehicle always moves forward
-            float dummyForward;
-            _inputProvider.GetInputs(out dummyForward, out _inputTurn);
-        }
-        else
-        {
-            // No input provider attached => allow turning disabled but keep forward movement
-            _inputTurn = 0f;
-        }
+        VehicleCommand command = _commandSource != null ? _commandSource.GetCommand() : VehicleCommand.Neutral;
+        _inputTurn = command.turn;
+        _boostActive = command.boost;
 
         ApplyVisualLean();
     }
@@ -70,6 +64,13 @@ public class VehicleController : MonoBehaviour
     // Applies movement physics on a fixed timestep.
     private void FixedUpdate()
     {
+        // Guard against NaN from physics breakdown
+        if (!IsValidRigidbodyState())
+        {
+            Debug.LogWarning("[VehicleController] Detected NaN in rigidbody state, skipping physics update.");
+            return;
+        }
+
         ApplyMotor();
         ApplySteering();
         ApplyTurnAssist();
@@ -78,14 +79,31 @@ public class VehicleController : MonoBehaviour
         ApplyBrake();
     }
 
+    // Detects NaN values in rigidbody state
+    private bool IsValidRigidbodyState()
+    {
+        if (_rb == null) return false;
+        if (!IsValidVector3(_rb.linearVelocity)) return false;
+        if (!IsValidVector3(_rb.angularVelocity)) return false;
+        return true;
+    }
+
+    // Helper to check if a vector contains NaN
+    private bool IsValidVector3(Vector3 v)
+    {
+        return !float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsNaN(v.z);
+    }
+
     // Applies drive torque with a smooth falloff near max speed.
     private void ApplyMotor()
     {
         float forwardSpeed = Vector3.Dot(_rb.linearVelocity, transform.forward);
-        float targetSpeed = movementData.maxSpeed;
+        float targetSpeed = movementData.maxSpeed * (_boostActive ? boostSpeedMultiplier : 1f);
         float accel = movementData.maxForwardAcceleration > 0f
             ? movementData.maxForwardAcceleration
             : targetSpeed / Mathf.Max(0.01f, movementData.timeToMaxSpeed);
+        if (_boostActive)
+            accel *= boostAccelerationMultiplier;
 
         float newForwardSpeed = Mathf.MoveTowards(
             forwardSpeed,
@@ -95,7 +113,12 @@ public class VehicleController : MonoBehaviour
         Vector3 vel = _rb.linearVelocity;
         Vector3 lateral = Vector3.Project(vel, transform.right);
         Vector3 vertical = Vector3.Project(vel, transform.up);
-        _rb.linearVelocity = transform.forward * newForwardSpeed + lateral + vertical;
+        
+        Vector3 newVel = transform.forward * newForwardSpeed + lateral + vertical;
+        if (IsValidVector3(newVel))
+        {
+            _rb.linearVelocity = newVel;
+        }
 
         // Keep wheel colliders free-rolling; visual rotation comes from ground contact.
         wheelBack.motorTorque = 0f;
@@ -146,7 +169,11 @@ public class VehicleController : MonoBehaviour
             -movementData.turnAssistTorque,
             movementData.turnAssistTorque);
         torque -= yawVel * movementData.turnAssistDamping;
-        _rb.AddTorque(transform.up * torque, ForceMode.Acceleration);
+        
+        if (!float.IsNaN(torque))
+        {
+            _rb.AddTorque(transform.up * torque, ForceMode.Acceleration);
+        }
     }
 
     // Prevents sudden spin and reduces long-turn yaw jitter.
@@ -169,10 +196,14 @@ public class VehicleController : MonoBehaviour
             targetYaw = Mathf.Lerp(targetYaw, 0f, t);
         }
 
-        _rb.angularVelocity = ang + transform.up * (targetYaw - yaw);
+        Vector3 newAngularVel = ang + transform.up * (targetYaw - yaw);
+        if (IsValidVector3(newAngularVel))
+        {
+            _rb.angularVelocity = newAngularVel;
+        }
     }
 
-    // Applies front-biased braking when the reverse key is held.
+    // Braking is disabled for the base vehicle loop.
     private void ApplyBrake()
     {
         // Braking is disabled — player cannot stop the vehicle
@@ -209,7 +240,11 @@ public class VehicleController : MonoBehaviour
             }
         }
 
-        _rb.linearVelocity = forward + lateral + vertical;
+        Vector3 newVel = forward + lateral + vertical;
+        if (IsValidVector3(newVel))
+        {
+            _rb.linearVelocity = newVel;
+        }
     }
 
     // Tilts only the visual model to emulate scooter-like leaning during turns.

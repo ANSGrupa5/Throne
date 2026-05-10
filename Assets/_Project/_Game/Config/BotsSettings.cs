@@ -11,5 +11,6 @@ public class BotsSettings : ScriptableObject
         [Min(1)] public int count = 1;
     }
 
+    public GameObject defaultBotPrefab;
     public List<BotEntry> bots = new List<BotEntry>();
 }
