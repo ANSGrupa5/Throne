@@ -344,6 +344,8 @@ MonoBehaviour:
   visualModel: {fileID: 5391968229695578253}
   maxLeanAngle: 20
   leanSmooth: 8
+  boostSpeedMultiplier: 1.35
+  boostAccelerationMultiplier: 1.2
 --- !u!114 &6846199149765510444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -372,7 +374,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 357e9c4444b680c45bb8cd7feda827a9, type: 3}
   m_Name: 
