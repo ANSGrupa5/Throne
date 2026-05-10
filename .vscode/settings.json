@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "ThroneProject.slnx"
+    "dotnet.defaultSolution": "Throne.slnx"
 }
