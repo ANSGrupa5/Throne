@@ -15,6 +15,7 @@ public class SingleplayerLobby : MonoBehaviour
     [SerializeField] private Color playerTrailColor = Color.white;
 
     private int _botCount;
+    private bool SuddenDeath = true;
 
     private void Awake()
     {
@@ -103,5 +104,16 @@ public class SingleplayerLobby : MonoBehaviour
     {
         if (playerLook != null)
             playerLook.trailColor = playerTrailColor;
+    }
+
+    public void isSuddenDeath()
+    {
+        SuddenDeath = !SuddenDeath;
+    }
+
+    public void tempLog()
+    {
+        Debug.Log("Powinno dodać się " + _botCount + " botów");
+        Debug.Log("Tryb Sudden death: " + SuddenDeath);
     }
 }
