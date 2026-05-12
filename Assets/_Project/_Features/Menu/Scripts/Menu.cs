@@ -27,6 +27,7 @@ public class Menu : MonoBehaviour
     void Start()
     {
         screens[(int)ScreenType.Main] = menu.transform.Find("MainScreen").gameObject;
+        screens[(int)ScreenType.Main].SetActive(true);
 
         screens[(int)ScreenType.Options] = menu.transform.Find("OptionsScreen").gameObject;
         screens[(int)ScreenType.Options].SetActive(false);
@@ -110,16 +111,6 @@ public class Menu : MonoBehaviour
     public void SetVolume(float value)
     {
         AudioListener.volume = value;
-    }
-
-    public void MuteVolume()
-    {
-        AudioListener.volume = 0;
-    }
-
-    public void UnmuteVolume()
-    {
-        AudioListener.volume = 1;
     }
 
     public void ShowGraphicsSettings()
