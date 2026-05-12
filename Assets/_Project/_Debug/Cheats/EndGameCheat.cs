@@ -4,6 +4,7 @@ public class EndGameCheat : MonoBehaviour
 {
     private EndGameController _endGameController;
 
+    [System.Obsolete]
     private void Start()
     {
         _endGameController = FindObjectOfType<EndGameController>();
@@ -11,6 +12,7 @@ public class EndGameCheat : MonoBehaviour
             Debug.LogWarning("[EndGameCheat] EndGameController not found in scene.");
     }
 
+    [System.Obsolete]
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F4))
@@ -19,6 +21,7 @@ public class EndGameCheat : MonoBehaviour
         }
     }
 
+    [System.Obsolete]
     private void TriggerEndGame()
     {
         if (_endGameController == null)

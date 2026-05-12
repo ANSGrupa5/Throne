@@ -82,6 +82,9 @@ public class SingleplayerLobby : MonoBehaviour
         
         // Używamy natywnego wsparcia dla określonej liczby botów,
         // która automatycznie pobierze prefab z pliku BotsSettings.
+        gameSettings.maxPlayers = 1 + _botCount;
+        gameSettings.matchDuration = timeInSecs;
+        gameSettings.isSuddenDeath = SuddenDeath;
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
         GameSessionBootstrap.SetSession(session);
