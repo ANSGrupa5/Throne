@@ -2479,6 +2479,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
       objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
       value: PlayerSlot
@@ -2570,6 +2574,10 @@ PrefabInstance:
     - target: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8839404583108024502, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

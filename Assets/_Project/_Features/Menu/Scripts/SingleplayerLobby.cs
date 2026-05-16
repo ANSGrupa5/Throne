@@ -1,6 +1,7 @@
-using TMPro;
-using UnityEngine;
 using System.Linq;
+using TMPro;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SingleplayerLobby : MonoBehaviour
@@ -14,7 +15,14 @@ public class SingleplayerLobby : MonoBehaviour
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
 
+    [Header("Match Duration")]
+    [SerializeField] private TMP_Text minutes;
+    [SerializeField] private TMP_Text seconds;
+
     private int _botCount;
+    private bool SuddenDeath = true;
+    private int min, sec, maxmin, minmin;
+    private float timeInSecs;
 
     private void Awake()
     {
@@ -27,6 +35,14 @@ public class SingleplayerLobby : MonoBehaviour
         // The previous implementation loaded a default value from an asset, which was confusing.
         _botCount = 0;
         RefreshBotCountUI(); // This can be modified later to update your visual "plus" icons.
+
+        min = 1; //curently selected minutes
+        sec = 0; //currently selected seconds
+        maxmin = 10; //max selectable minutes
+        minmin = 1; //min selectable minutes
+        timeInSecs = 60f;
+        minutes.text = min.ToString("00");
+        seconds.text = sec.ToString("00");
     }
 
     public void LoadScene(string sceneName)
@@ -66,6 +82,9 @@ public class SingleplayerLobby : MonoBehaviour
         
         // Używamy natywnego wsparcia dla określonej liczby botów,
         // która automatycznie pobierze prefab z pliku BotsSettings.
+        gameSettings.maxPlayers = 1 + _botCount;
+        gameSettings.matchDuration = timeInSecs;
+        gameSettings.isSuddenDeath = SuddenDeath;
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
         GameSessionBootstrap.SetSession(session);
@@ -103,5 +122,71 @@ public class SingleplayerLobby : MonoBehaviour
     {
         if (playerLook != null)
             playerLook.trailColor = playerTrailColor;
+    }
+
+    public void isSuddenDeath()
+    {
+        SuddenDeath = !SuddenDeath;
+    }
+
+    public void tempLog()
+    {
+        Debug.Log("Powinno dodać się " + _botCount + " botów");
+        Debug.Log("Tryb Sudden death: " + SuddenDeath);
+        Debug.Log("Czas trwania meczu w sekundach: " + timeInSecs);
+    }
+
+    public void ShowGameTime()
+    {
+        minutes.text = min.ToString("00");
+        seconds.text = sec.ToString("00");
+    }
+
+    private void UpdateTimeInSeconds()
+    {
+        timeInSecs = (float)(min * 60) + (float)sec;
+    }
+
+    public void IncreaseMin()
+    {
+        min++;
+        if(min > maxmin)
+            min = minmin;
+        UpdateTimeInSeconds();
+        ShowGameTime();
+    }
+
+    public void DecreaseMin()
+    {
+        min--;
+        if (min < minmin)
+        {
+            min = maxmin;
+            sec = 0;
+        }
+        UpdateTimeInSeconds();
+        ShowGameTime();
+    }
+
+    public void IncreaseSec()
+    {
+        sec = sec + 5;
+        if (sec >= 60)
+            sec = 0;
+        if (min == 10)
+            sec = 0;
+        UpdateTimeInSeconds();
+        ShowGameTime();
+    }
+
+    public void DecreaseSec()
+    {
+        sec = sec - 5;
+        if (sec < 0)
+            sec = 55;
+        if (min == 10)
+            sec = 0;
+        UpdateTimeInSeconds();
+        ShowGameTime();
     }
 }

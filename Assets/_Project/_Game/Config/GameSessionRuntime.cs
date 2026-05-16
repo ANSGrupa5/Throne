@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Runtime match state assembled from game settings, player selection, and bot configuration.
 public class GameSessionRuntime
 {
     [System.Serializable]
+    // Describes a prefab and the number of times it should be spawned.
     public class BotSpawnEntry
     {
         public GameObject prefab;
@@ -11,6 +13,7 @@ public class GameSessionRuntime
     }
 
     [System.Serializable]
+    // Stores the match stats for one participant.
     public class PlayerMatchStats
     {
         public string ownerId;
@@ -41,6 +44,7 @@ public class GameSessionRuntime
     public readonly List<Color> trailColorPalette = new List<Color>();
     public readonly List<PlayerMatchStats> playerStats = new List<PlayerMatchStats>();
 
+    // Builds a runtime session from the provided assets and falls back to safe defaults when needed.
     public static GameSessionRuntime FromDefaults(GameSettings gameSettings, BotsSettings botsSettings, PlayerLook playerLook, int? desiredBotCount = null)
     {
         var session = new GameSessionRuntime();
@@ -59,6 +63,7 @@ public class GameSessionRuntime
         }
         else
         {
+            // Use a minimal fallback configuration when no game settings asset is available.
             session.isSingleplayer = true;
             session.maxPlayers = 2;
             session.gameMode = 0;
@@ -70,6 +75,7 @@ public class GameSessionRuntime
             session.trailLength = 1;
         }
 
+        // Seed the local player from the selected look, or use a generic default identity.
         if (playerLook != null)
         {
             session.playerPrefab = playerLook.playerPrefab;
@@ -84,6 +90,7 @@ public class GameSessionRuntime
             session.playerTrailColor = Color.white;
         }
 
+        // Preserve the configured palette so bot colors can be picked from the same set.
         if (gameSettings != null && gameSettings.trailColorPalette != null)
             session.trailColorPalette.AddRange(gameSettings.trailColorPalette);
 
@@ -91,12 +98,16 @@ public class GameSessionRuntime
 
         if (desiredBotCount.HasValue)
         {
+            // Force an exact bot count when the caller requests one.
             int requestedBots = desiredBotCount.Value;
-            session.maxPlayers = requestedBots + (session.playerPrefab != null ? 1 : 0);
+            if (requestedBots <= 0)
+                requestedBots = 1;
+            session.maxPlayers = (requestedBots>5 ? 5 : requestedBots) + 1;
             PopulateBotsForCount(session, botsSettings, requestedBots, requestedBots);
         }
         else if (botsSettings != null && botsSettings.bots != null)
         {
+            // Otherwise, clamp the configured bot list to the current player limit.
             int maxBots = session.maxPlayers - (session.playerPrefab != null ? 1 : 0);
             int assignedBots = 0;
 
@@ -127,6 +138,7 @@ public class GameSessionRuntime
         return session;
     }
 
+    // Expands the configured bot prefabs into a concrete spawn pattern for a fixed bot count.
     private static void PopulateBotsForCount(GameSessionRuntime session, BotsSettings botsSettings, int maxBots, int desiredBotCount)
     {
         if (session == null || botsSettings == null || botsSettings.bots == null)
@@ -160,6 +172,7 @@ public class GameSessionRuntime
         }
     }
 
+    // Merges consecutive identical prefabs so the runtime bot list stays compact.
     private static void AddBotEntry(List<BotSpawnEntry> target, GameObject prefab)
     {
         if (target == null || prefab == null)
@@ -182,6 +195,7 @@ public class GameSessionRuntime
         });
     }
 
+    // Builds transient PlayerLook instances so the match can consume bot appearance data directly.
     private static void PopulateBotLooks(GameSessionRuntime session, BotsSettings botsSettings)
     {
         if (session == null)
@@ -224,6 +238,7 @@ public class GameSessionRuntime
         }
     }
 
+    // Chooses a default bot prefab from settings first, then from the configured bot list, then from the player prefab.
     private static GameObject ResolveDefaultBotPrefab(GameSessionRuntime session, BotsSettings botsSettings)
     {
         if (botsSettings != null && botsSettings.defaultBotPrefab != null)
@@ -245,6 +260,7 @@ public class GameSessionRuntime
         return null;
     }
 
+    // Picks a bot color while trying to avoid reusing the player's trail color.
     private static Color PickBotColorForLook(List<Color> availableColors, GameSessionRuntime session)
     {
         if (availableColors != null && availableColors.Count > 0)
@@ -264,6 +280,7 @@ public class GameSessionRuntime
         return Color.white;
     }
 
+    // Returns an existing stats entry for this owner, or creates one if the match has not seen it yet.
     public PlayerMatchStats GetOrCreateStats(string ownerId, string displayName, Color? trailColor = null)
     {
         string normalizedOwnerId = string.IsNullOrWhiteSpace(ownerId) ? string.Empty : ownerId.Trim();
@@ -273,6 +290,7 @@ public class GameSessionRuntime
         {
             PlayerMatchStats stats = playerStats[i];
             if (stats == null)
+        // Returns an existing stats entry for this owner, or creates one if the match has not seen it yet.
                 continue;
 
             if (!string.IsNullOrWhiteSpace(normalizedOwnerId) &&
