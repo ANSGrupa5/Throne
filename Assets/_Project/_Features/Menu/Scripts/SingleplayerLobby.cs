@@ -23,6 +23,7 @@ public class SingleplayerLobby : MonoBehaviour
     private bool SuddenDeath = true;
     private int min, sec, maxmin, minmin;
     private float timeInSecs;
+    private string arenaSceneName;
 
     private void Awake()
     {
@@ -49,6 +50,11 @@ public class SingleplayerLobby : MonoBehaviour
     {
         InitializeGame();
         SceneManager.LoadScene(sceneName);
+    }
+    public void LoadScene()
+    {
+        InitializeGame();
+        SceneManager.LoadScene(arenaSceneName);
     }
 
     public void AddBot()
@@ -85,8 +91,10 @@ public class SingleplayerLobby : MonoBehaviour
         gameSettings.maxPlayers = 1 + _botCount;
         gameSettings.matchDuration = timeInSecs;
         gameSettings.isSuddenDeath = SuddenDeath;
+        gameSettings.arenaSceneName = arenaSceneName;
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
+
         GameSessionBootstrap.SetSession(session);
     }
 

@@ -2142,13 +2142,13 @@ MonoBehaviour:
       - m_Target: {fileID: 2052947075}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: LoadScene
-        m_Mode: 5
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Neon City
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1138206833
@@ -4380,6 +4380,8 @@ MonoBehaviour:
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
   botCountText: {fileID: 0}
   playerTrailColor: {r: 1, g: 1, b: 1, a: 1}
+  minutes: {fileID: 0}
+  seconds: {fileID: 0}
 --- !u!1 &2128197807
 GameObject:
   m_ObjectHideFlags: 0

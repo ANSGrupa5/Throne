@@ -65,8 +65,6 @@ Assets/
  _Project/_Features/Menu/Scripts/
   GameOverResultRow.cs
   GameOverScene.cs
-  GameSettingsMinutePicker.cs
-  GameSettingsSecondPicker.cs
   Menu.cs
   SingleplayerLobby.cs
  _Project/_Features/TrailSystem/
