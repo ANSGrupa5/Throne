@@ -27,6 +27,9 @@ public class SingleplayerLobby : MonoBehaviour
 
     private void Awake()
     {
+        if (gameSettings != null)
+            arenaSceneName = gameSettings.arenaSceneName;
+
         if (playerLook != null)
             playerTrailColor = playerLook.trailColor;
 
@@ -48,6 +51,7 @@ public class SingleplayerLobby : MonoBehaviour
 
     public void LoadScene(string sceneName)
     {
+        arenaSceneName = sceneName;
         InitializeGame();
         SceneManager.LoadScene(sceneName);
     }

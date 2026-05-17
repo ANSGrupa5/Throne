@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -126,8 +126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerUp
   powerUpType: 1
-  speedMultiplier: 1.4
-  speedDuration: 5
-  slowMultiplier: 0.6
-  slowDuration: 2.5
+  speedMultiplier: 1.5
+  speedDuration: 6
+  slowMultiplier: 0.5
+  slowDuration: 5
   invincibilityDuration: 5
