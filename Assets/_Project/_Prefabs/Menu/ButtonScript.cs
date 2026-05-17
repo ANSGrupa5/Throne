@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System;
 
 public class ButtonScript : MonoBehaviour
 {
     [Header("Audio")]
-    public AudioClip hooverSound;
+    public AudioClip hoverSound;
     public AudioClip clickSound;
     public float hoverCooldownSeconds = 0.7f;
     public float audioFadeDuration = 0.2f;
@@ -27,9 +28,15 @@ public class ButtonScript : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         button = GetComponent<Button>();
-        buttonImage = button.GetComponent<Image>();
-
-        buttonImage.color = normalColor;
+        try
+        {
+            buttonImage = button.GetComponent<Image>();
+            buttonImage.color = normalColor;
+        }
+        catch (NullReferenceException)
+        {
+            buttonImage = null;
+        }
     }
 
     public void OnHoverEnter()
@@ -41,7 +48,7 @@ public class ButtonScript : MonoBehaviour
         if (Time.time - lastPlayedHoverSoundTime >= hoverCooldownSeconds)
         {
             lastPlayedHoverSoundTime = Time.time;
-            StartAudioFadeIn(hooverSound);
+            StartAudioFadeIn(hoverSound);
         }
     }
 
@@ -61,7 +68,8 @@ public class ButtonScript : MonoBehaviour
         if (colorCoroutine != null)
             StopCoroutine(colorCoroutine);
 
-        colorCoroutine = StartCoroutine(FadeColor(targetColor));
+        if (buttonImage != null)
+            colorCoroutine = StartCoroutine(FadeColor(targetColor));
     }
 
     IEnumerator FadeColor(Color target)

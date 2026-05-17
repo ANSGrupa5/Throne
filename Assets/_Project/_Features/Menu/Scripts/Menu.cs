@@ -9,23 +9,25 @@ public class Menu : MonoBehaviour
     public GameObject menu;
     public TMP_Dropdown resolutionDropdown;
     //public TMP_Dropdown qualityDropdown;
-    GameObject[] screens = new GameObject[5];
+    GameObject[] screens = new GameObject[6];
     Resolution[] resolutions;
 
     enum ScreenType
     {
-        Main,     //0
-        Options,  //1
-        Sound,    //2
-        Graphics, //3
-        //Camera,   //4
-        Keybinds  //5
+        Main,      //0
+        Options,   //1
+        Sound,     //2
+        Graphics,  //3
+        Keybinds,  //4
+        Statistics //5
+        //Camera     //6
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         screens[(int)ScreenType.Main] = menu.transform.Find("MainScreen").gameObject;
+        screens[(int)ScreenType.Main].SetActive(true);
 
         screens[(int)ScreenType.Options] = menu.transform.Find("OptionsScreen").gameObject;
         screens[(int)ScreenType.Options].SetActive(false);
@@ -35,9 +37,12 @@ public class Menu : MonoBehaviour
 
         screens[(int)ScreenType.Graphics] = menu.transform.Find("GraphicsScreen").gameObject;
         screens[(int)ScreenType.Graphics].SetActive(false);
-        
+
         screens[(int)ScreenType.Keybinds] = menu.transform.Find("KeybindsScreen").gameObject;
         screens[(int)ScreenType.Keybinds].SetActive(false);
+
+        screens[(int)ScreenType.Statistics] = menu.transform.Find("StatisticsScreen").gameObject;
+        screens[(int)ScreenType.Statistics].SetActive(false);
 
 
         resolutions = Screen.resolutions;
@@ -45,13 +50,13 @@ public class Menu : MonoBehaviour
 
         var options = new System.Collections.Generic.List<string>();
         int currentResolutionIndex = 0;
-        for(int i=0; i<resolutions.Length; i++)
+        for (int i = 0; i<resolutions.Length; i++)
         {
             int hz = (int)resolutions[i].refreshRateRatio.value;
             string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + hz + "Hz";
             options.Add(option);
 
-            if(resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
+            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
                 currentResolutionIndex = i;
         }
 
@@ -69,7 +74,7 @@ public class Menu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void LoadScene(string sceneName)
@@ -112,7 +117,7 @@ public class Menu : MonoBehaviour
     {
         ShowScreen((int)ScreenType.Graphics);
     }
-    
+
 
     public void FullScreen(bool value)
     {
@@ -125,15 +130,22 @@ public class Menu : MonoBehaviour
         Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
     }
 
+    public void ShowKeybindsSettings()
+    {
+        ShowScreen((int)ScreenType.Keybinds);
+    }
+
+    public void ShowStatisticsScreen()
+    {
+        ShowScreen((int)ScreenType.Statistics);
+    }
+
     //narazie nieuzywane
     public void SetQuality(int index)
     {
         QualitySettings.SetQualityLevel(index);
     }
-    public void ShowKeybindsSettings()
-    {
-        ShowScreen((int)ScreenType.Keybinds);
-    }
+
     public void Exit()
     {
         Application.Quit();
