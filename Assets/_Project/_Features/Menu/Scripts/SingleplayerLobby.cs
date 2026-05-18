@@ -3,6 +3,7 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class SingleplayerLobby : MonoBehaviour
 {
@@ -10,20 +11,26 @@ public class SingleplayerLobby : MonoBehaviour
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private BotsSettings botsSettings;
     [SerializeField] private PlayerLook playerLook;
+
     [Header("Bots")]
     [SerializeField] private TMP_Text botCountText;
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
 
-    [Header("Match Duration")]
+    [Header("Settings UI")]
     [SerializeField] private TMP_Text minutes;
     [SerializeField] private TMP_Text seconds;
+    [SerializeField] private TMP_Dropdown dropdown;
+    [SerializeField] private Toggle suddenDeathToggle;
+
 
     private int _botCount;
-    private bool SuddenDeath = true;
     private int min, sec, maxmin, minmin;
     private float timeInSecs;
-    private string arenaSceneName;
+    private string arenaSceneName = "Neon City XL"; // Default arena, can be overridden by GameSettings
+    private string gameMode;
+    private bool suddenDeath;
+    //private int trailLength; // ToDo: make UI for that
 
     private void Awake()
     {
@@ -58,7 +65,15 @@ public class SingleplayerLobby : MonoBehaviour
     public void LoadScene()
     {
         InitializeGame();
-        SceneManager.LoadScene(arenaSceneName);
+        SceneManager.LoadScene(gameSettings.arenaSceneName);
+    }
+
+    public void GetSettingsFromUI(TMP_Dropdown dropdown, Toggle suddenDeathToggle)
+    {
+        gameMode = dropdown.options[dropdown.value].text;
+        suddenDeath = suddenDeathToggle.isOn;
+        Debug.Log("Wybrany tryb gry: " + gameMode);
+        Debug.Log("Tryb Sudden Death: " + suddenDeath);
     }
 
     public void AddBot()
@@ -94,11 +109,21 @@ public class SingleplayerLobby : MonoBehaviour
         // która automatycznie pobierze prefab z pliku BotsSettings.
         gameSettings.maxPlayers = 1 + _botCount;
         gameSettings.matchDuration = timeInSecs;
-        gameSettings.isSuddenDeath = SuddenDeath;
+        GetSettingsFromUI(dropdown, suddenDeathToggle);
+        gameSettings.isSuddenDeath = suddenDeath;
         gameSettings.arenaSceneName = arenaSceneName;
+        Debug.Log($"Initializing game with scene '{arenaSceneName}'");
+        switch (gameMode)
+        {
+            case "Deathmatch":
+                gameSettings.gameMode = 1;
+                break;
+            case "Battle Royale":
+                gameSettings.gameMode = 0;
+                break;
+        }
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
-
         GameSessionBootstrap.SetSession(session);
     }
 
@@ -138,13 +163,13 @@ public class SingleplayerLobby : MonoBehaviour
 
     public void isSuddenDeath()
     {
-        SuddenDeath = !SuddenDeath;
+        suddenDeath = !suddenDeath;
     }
 
     public void tempLog()
     {
         Debug.Log("Powinno dodać się " + _botCount + " botów");
-        Debug.Log("Tryb Sudden death: " + SuddenDeath);
+        Debug.Log("Tryb Sudden death: " + suddenDeath);
         Debug.Log("Czas trwania meczu w sekundach: " + timeInSecs);
     }
 
