@@ -1,9 +1,11 @@
 using System.Collections;
 using System;
+using FishNet;
+using FishNet.Object;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class VehicleLife : MonoBehaviour
+public class VehicleLife : NetworkBehaviour
 {
     public static event Action<VehicleLife, GameObject> AnyVehicleDied;
 
@@ -40,6 +42,9 @@ public class VehicleLife : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (!CanApplyAuthoritativeGameplay())
+            return;
+
         if (!CanBeKilled)
             return;
 
@@ -63,14 +68,16 @@ public class VehicleLife : MonoBehaviour
 
     public bool Kill(GameObject killer)
     {
+        if (!CanApplyAuthoritativeGameplay())
+            return false;
+
         if (!CanBeKilled)
             return false;
 
-        LastKiller = killer;
-        _isDead = true;
-        FreezePhysicsForDeath();
-        SetGameplayActive(false);
-        AnyVehicleDied?.Invoke(this, killer);
+        ApplyDeath(killer, invokeEvent: true);
+        if (IsSpawned && IsServerInitialized)
+            RpcApplyDeath();
+
         return true;
     }
 
@@ -82,6 +89,63 @@ public class VehicleLife : MonoBehaviour
     private Coroutine _invulnerabilityCoroutine;
 
     public void Respawn()
+    {
+        if (!CanApplyAuthoritativeGameplay())
+            return;
+
+        ApplyRespawn();
+        if (IsSpawned && IsServerInitialized)
+            RpcApplyRespawn();
+    }
+
+    public void GrantInvulnerability(float duration)
+    {
+        if (!CanApplyAuthoritativeGameplay())
+            return;
+
+        _isInvulnerable = true;
+        if (_invulnerabilityCoroutine != null)
+        {
+            StopCoroutine(_invulnerabilityCoroutine);
+        }
+        _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(duration));
+    }
+
+    private IEnumerator ClearInvulnerabilityAfterDelay(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        _isInvulnerable = false;
+    }
+
+    [ObserversRpc]
+    private void RpcApplyDeath()
+    {
+        if (IsServerInitialized)
+            return;
+
+        ApplyDeath(null, invokeEvent: true);
+    }
+
+    [ObserversRpc]
+    private void RpcApplyRespawn()
+    {
+        if (IsServerInitialized)
+            return;
+
+        ApplyRespawn();
+    }
+
+    private void ApplyDeath(GameObject killer, bool invokeEvent)
+    {
+        LastKiller = killer;
+        _isDead = true;
+        FreezePhysicsForDeath();
+        SetGameplayActive(false);
+        if (invokeEvent)
+            AnyVehicleDied?.Invoke(this, killer);
+    }
+
+    private void ApplyRespawn()
     {
         transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
         SetVisibility(true);
@@ -100,34 +164,20 @@ public class VehicleLife : MonoBehaviour
         LastKiller = null;
 
         if (_invulnerabilityCoroutine != null)
-        {
             StopCoroutine(_invulnerabilityCoroutine);
-        }
 
         if (respawnProtectionTime > 0f)
-        {
             _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(respawnProtectionTime));
-        }
         else
-        {
             _isInvulnerable = false;
-        }
     }
 
-    public void GrantInvulnerability(float duration)
+    private bool CanApplyAuthoritativeGameplay()
     {
-        _isInvulnerable = true;
-        if (_invulnerabilityCoroutine != null)
-        {
-            StopCoroutine(_invulnerabilityCoroutine);
-        }
-        _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(duration));
-    }
+        if (!InstanceFinder.IsServerStarted && !InstanceFinder.IsClientStarted)
+            return true;
 
-    private IEnumerator ClearInvulnerabilityAfterDelay(float delay)
-    {
-        yield return new WaitForSecondsRealtime(delay);
-        _isInvulnerable = false;
+        return IsServerInitialized;
     }
 
     private void FreezePhysicsForDeath()

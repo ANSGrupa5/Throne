@@ -1,3 +1,4 @@
+using FishNet;
 using UnityEngine;
 
 public class TrailSegment : MonoBehaviour
@@ -53,6 +54,9 @@ public class TrailSegment : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            return;
+
         if (_ownerLife == null || other == null)
             return;
 

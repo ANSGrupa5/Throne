@@ -1,4 +1,5 @@
 using System.Collections;
+using FishNet;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -63,6 +64,9 @@ public class EndGameController : MonoBehaviour
 
     private void HandleTimerEnded()
     {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            return;
+
         Debug.Log("[EndGameController] Timer ended!");
         TryBindSession();
         if (_session == null)
@@ -84,6 +88,9 @@ public class EndGameController : MonoBehaviour
 
     private void HandleVehicleDied(VehicleLife victim, GameObject killer)
     {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            return;
+
         if (victim == null)
             return;
 
@@ -142,6 +149,12 @@ public class EndGameController : MonoBehaviour
         Debug.Log("[EndGameController] _isEnding set to true");
         if (gameTimer != null)
             gameTimer.StopTimer();
+
+        if ((InstanceFinder.IsServerStarted || InstanceFinder.IsClientStarted) && MultiplayerSessionDriver.Instance != null)
+        {
+            MultiplayerSessionDriver.Instance.BeginNetworkEndSequence(reason, slowDownDuration, postFreezeDelay, finalTimescale, gameOverSceneName);
+            return;
+        }
 
         Debug.Log("[EndGameController] Starting RunEndSequence coroutine");
         StartCoroutine(RunEndSequence(reason));

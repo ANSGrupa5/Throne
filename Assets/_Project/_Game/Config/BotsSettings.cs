@@ -14,3 +14,4 @@ public class BotsSettings : ScriptableObject
     public GameObject defaultBotPrefab;
     public List<BotEntry> bots = new List<BotEntry>();
 }
+

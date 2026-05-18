@@ -1,4 +1,5 @@
 using System.Collections;
+using FishNet;
 using UnityEngine;
 
 public class VehicleDeathSequence : MonoBehaviour
@@ -60,7 +61,7 @@ public class VehicleDeathSequence : MonoBehaviour
         }
         else
         {
-            if (life != null)
+            if (life != null && (!InstanceFinder.IsServerStarted || life.IsServerInitialized))
                 life.Respawn();
 
             if (cameraController != null)

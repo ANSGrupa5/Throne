@@ -1,3 +1,4 @@
+using FishNet;
 using UnityEngine;
 
 public enum PowerUpType
@@ -24,6 +25,9 @@ public class PowerUp : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            return;
+
         // Sprawdzamy czy pobrany został VehicleLife z collidera lub Rigidbody
         VehicleLife vehicleLife = other.GetComponentInParent<VehicleLife>();
         if (vehicleLife == null && other.attachedRigidbody != null)

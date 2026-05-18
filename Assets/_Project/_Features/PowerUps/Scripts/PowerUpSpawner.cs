@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using FishNet;
 
 public class PowerUpSpawner : MonoBehaviour
 {
@@ -25,6 +26,12 @@ public class PowerUpSpawner : MonoBehaviour
 
     private void Start()
     {
+        if (InstanceFinder.IsClientStarted || InstanceFinder.IsServerStarted)
+        {
+            enabled = false;
+            return;
+        }
+
         _nextSpawnTime = Time.time + initialSpawnDelay;
     }
 

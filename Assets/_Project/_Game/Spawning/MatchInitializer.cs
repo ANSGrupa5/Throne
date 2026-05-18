@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FishNet;
+using FishNet.Connection;
+using FishNet.Object;
 using UnityEngine;
 
 public class MatchInitializer : MonoBehaviour
@@ -33,15 +36,31 @@ public class MatchInitializer : MonoBehaviour
     public static event Action OnMatchStart;
 
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private bool _hasInitializationStarted;
     private bool _isFreezeOwned;
 
     private void Start()
     {
+        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+            return;
+
+        BeginMatchInitialization();
+    }
+
+    public void BeginMatchInitialization()
+    {
+        if (_hasInitializationStarted)
+            return;
+
+        _hasInitializationStarted = true;
         StartCoroutine(InitializeRoutine());
     }
 
     private IEnumerator InitializeRoutine()
     {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            yield break;
+
         GameSessionRuntime session = ResolveSession();
 
         if (!TryValidateSession(session, out string validationError))
@@ -57,11 +76,13 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
+        List<NetworkConnection> players = GetConnectedPlayers();
+        int totalHumanPlayers = Mathf.Max(1, players.Count);
         int totalBots = 0;
         EnsureBotLooks(session);
-        totalBots = session.botLooks.Count;
+        totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
 
-        int totalToSpawn = totalBots + (session.playerPrefab != null ? 1 : 0);
+        int totalToSpawn = totalBots + totalHumanPlayers;
 
         if (totalToSpawn > spots.Count)
         {
@@ -79,21 +100,24 @@ public class MatchInitializer : MonoBehaviour
         int index = 0;
         SetFreeze(true);
 
-        // Spawn player first
-        if (session.playerPrefab != null)
+        for (int playerIndex = 0; playerIndex < totalHumanPlayers; playerIndex++)
         {
-            SpawnAt(session, session.playerPrefab, chosen[index], session.playerDisplayName, session.playerOwnerId, session.playerTrailColor, false);
+            NetworkConnection ownerConnection = playerIndex < players.Count ? players[playerIndex] : null;
+            string ownerId = ownerConnection != null ? $"player_{ownerConnection.ClientId}" : session.playerOwnerId;
+            string displayName = playerIndex == 0 ? session.playerDisplayName : $"Player {playerIndex + 1}";
+            Color trailColor = ResolvePlayerColor(session, playerIndex);
+            SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
             index++;
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
         // Spawn bots
-        for (int i = 0; i < session.botLooks.Count; i++)
+        for (int i = 0; i < totalBots; i++)
         {
             if (index >= chosen.Count) break;
 
-            PlayerLook botLook = session.botLooks[i];
-            SpawnAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true);
+            PlayerLook botLook = i < session.botLooks.Count ? session.botLooks[i] : CreateFallbackBotLook(session, i);
+            SpawnAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true, null);
             index++;
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
@@ -101,17 +125,27 @@ public class MatchInitializer : MonoBehaviour
         // Wait one frame to ensure all Awake/Start run
         yield return null;
 
-        // Start countdown after all spawns
-        yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
+        if (MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
+        {
+            yield return StartCoroutine(MultiplayerSessionDriver.Instance.RunMatchStartSequence(
+                preMatchCountdownSeconds,
+                goDisplayDuration,
+                gameStartTimer,
+                gameTimer,
+                session.matchDuration));
+        }
+        else
+        {
+            yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
+            if (gameTimer != null)
+                gameTimer.Begin(session.matchDuration);
+        }
 
         SetFreeze(false);
-
-        if (gameTimer != null)
-            gameTimer.Begin(session.matchDuration);
         OnMatchStart?.Invoke();
     }
 
-    private void SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot)
+    private void SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
     {
         if (prefab == null || spot == null) return;
 
@@ -121,42 +155,59 @@ public class MatchInitializer : MonoBehaviour
         _spawned.Add(go);
 
         VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
-        if (colorApplier == null)
-            colorApplier = go.AddComponent<VehicleColorApplier>();
-
         colorApplier.SetColor(trailColor);
 
         VehicleLife life = go.GetComponent<VehicleLife>();
-        if (life == null)
-            life = go.AddComponent<VehicleLife>();
         life.ConfigureSpawn(pos, rot);
         life.ConfigureIdentity(displayName, ownerId);
         session.GetOrCreateStats(ownerId, displayName, trailColor);
 
         TrailEmitter trailEmitter = go.GetComponent<TrailEmitter>();
-        if (trailEmitter == null)
-            trailEmitter = go.AddComponent<TrailEmitter>();
         trailEmitter.Configure(life, trailColor, session != null ? session.trailLength : 1);
-
-        if (go.GetComponent<VehicleDeathSequence>() == null)
-            go.AddComponent<VehicleDeathSequence>();
 
         if (isBot)
         {
-            if (go.GetComponent<IVehicleCommandSource>() == null)
-                go.AddComponent<BotVehicleInput>();
-
             BotVehicleInput botInput = go.GetComponent<BotVehicleInput>();
             if (botInput != null)
                 botInput.ConfigureRuntime(botMapBoundaryMask, botSuddenDeathMask, botTrailMask, botPowerupMask, botMapCenter);
-
-            if (go.GetComponent<BotRaycastDebugger>() == null)
-                go.AddComponent<BotRaycastDebugger>();
-            return;
         }
 
-        if (go.GetComponent<IVehicleCommandSource>() == null)
-            go.AddComponent<PlayerVehicleInput>();
+        NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        if (networkObject != null && InstanceFinder.IsServerStarted)
+            InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
+    }
+
+    private List<NetworkConnection> GetConnectedPlayers()
+    {
+        if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
+            return new List<NetworkConnection>();
+
+        return InstanceFinder.ServerManager.Clients.Values
+            .Where(connection => connection != null && connection.IsAuthenticated)
+            .OrderBy(connection => connection.ClientId)
+            .ToList();
+    }
+
+    private Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex)
+    {
+        if (session == null || session.trailColorPalette == null || session.trailColorPalette.Count == 0)
+            return Color.white;
+
+        if (playerIndex == 0)
+            return session.playerTrailColor;
+
+        return session.trailColorPalette[playerIndex % session.trailColorPalette.Count];
+    }
+
+    private PlayerLook CreateFallbackBotLook(GameSessionRuntime session, int botIndex)
+    {
+        PlayerLook look = ScriptableObject.CreateInstance<PlayerLook>();
+        look.hideFlags = HideFlags.DontSave;
+        look.playerPrefab = session.botDefaultPrefab != null ? session.botDefaultPrefab : session.playerPrefab;
+        look.displayName = $"BOT{botIndex + 1}";
+        look.ownerId = $"bot_{botIndex + 1}";
+        look.trailColor = ResolvePlayerColor(session, botIndex + 1);
+        return look;
     }
 
     private void EnsureBotLooks(GameSessionRuntime session)
@@ -358,6 +409,8 @@ public class MatchInitializer : MonoBehaviour
 
     private void SetFreeze(bool freeze)
     {
+        MultiplayerMatchState.SetFrozen(freeze);
+
         if (freeze)
         {
             if (_isFreezeOwned)

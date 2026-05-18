@@ -1,3 +1,5 @@
+using FishNet;
+using FishNet.Object;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -23,6 +25,7 @@ public class VehicleController : MonoBehaviour
     private IVehicleCommandSource _commandSource;
     private float _currentLeanAngle;
     private Vector3 _visualBaseLocalPosition;
+    private NetworkObject _networkObject;
 
     private float _powerupSpeedMultiplier = 1f;
     private Coroutine _speedModifierCoroutine;
@@ -47,6 +50,7 @@ public class VehicleController : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
+        _networkObject = GetComponent<NetworkObject>();
 
         if (movementData == null)
         {
@@ -83,6 +87,9 @@ public class VehicleController : MonoBehaviour
     // Applies movement physics on a fixed timestep.
     private void FixedUpdate()
     {
+        if (!CanRunAuthoritySimulation())
+            return;
+
         // Guard against NaN from physics breakdown
         if (!IsValidRigidbodyState())
         {
@@ -96,6 +103,20 @@ public class VehicleController : MonoBehaviour
         ApplyYawStabilization();
         ApplyLateralStabilization();
         ApplyBrake();
+    }
+
+    private bool CanRunAuthoritySimulation()
+    {
+        if (MultiplayerMatchState.IsFrozen)
+            return false;
+
+        if (_networkObject == null)
+            return true;
+
+        if (!InstanceFinder.IsServerStarted && !InstanceFinder.IsClientStarted)
+            return true;
+
+        return _networkObject.IsServerInitialized;
     }
 
     // Detects NaN values in rigidbody state
