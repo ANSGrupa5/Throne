@@ -38,6 +38,17 @@ public class VehicleLife : MonoBehaviour
         _renderers = GetComponentsInChildren<Renderer>(true);
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!CanBeKilled)
+            return;
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Map Boundry"))
+        {
+            Kill(collision.gameObject);
+        }
+    }
+
     public void ConfigureSpawn(Vector3 position, Quaternion rotation)
     {
         _spawnPosition = position;
@@ -68,6 +79,8 @@ public class VehicleLife : MonoBehaviour
         SetVisibility(false);
     }
 
+    private Coroutine _invulnerabilityCoroutine;
+
     public void Respawn()
     {
         transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
@@ -86,9 +99,14 @@ public class VehicleLife : MonoBehaviour
         _isDead = false;
         LastKiller = null;
 
+        if (_invulnerabilityCoroutine != null)
+        {
+            StopCoroutine(_invulnerabilityCoroutine);
+        }
+
         if (respawnProtectionTime > 0f)
         {
-            StartCoroutine(ClearInvulnerabilityAfterDelay());
+            _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(respawnProtectionTime));
         }
         else
         {
@@ -96,9 +114,19 @@ public class VehicleLife : MonoBehaviour
         }
     }
 
-    private IEnumerator ClearInvulnerabilityAfterDelay()
+    public void GrantInvulnerability(float duration)
     {
-        yield return new WaitForSecondsRealtime(respawnProtectionTime);
+        _isInvulnerable = true;
+        if (_invulnerabilityCoroutine != null)
+        {
+            StopCoroutine(_invulnerabilityCoroutine);
+        }
+        _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(duration));
+    }
+
+    private IEnumerator ClearInvulnerabilityAfterDelay(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
         _isInvulnerable = false;
     }
 

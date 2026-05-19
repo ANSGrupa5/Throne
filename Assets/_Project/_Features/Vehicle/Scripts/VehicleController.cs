@@ -24,6 +24,25 @@ public class VehicleController : MonoBehaviour
     private float _currentLeanAngle;
     private Vector3 _visualBaseLocalPosition;
 
+    private float _powerupSpeedMultiplier = 1f;
+    private Coroutine _speedModifierCoroutine;
+
+    public void ApplySpeedModifier(float multiplier, float duration)
+    {
+        if (_speedModifierCoroutine != null)
+        {
+            StopCoroutine(_speedModifierCoroutine);
+        }
+        _speedModifierCoroutine = StartCoroutine(ClearSpeedModifierAfterDelay(duration));
+        _powerupSpeedMultiplier = multiplier;
+    }
+
+    private System.Collections.IEnumerator ClearSpeedModifierAfterDelay(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        _powerupSpeedMultiplier = 1f;
+    }
+
     // Initializes Rigidbody setup and validates movement configuration.
     private void Awake()
     {
@@ -98,7 +117,7 @@ public class VehicleController : MonoBehaviour
     private void ApplyMotor()
     {
         float forwardSpeed = Vector3.Dot(_rb.linearVelocity, transform.forward);
-        float targetSpeed = movementData.maxSpeed * (_boostActive ? boostSpeedMultiplier : 1f);
+        float targetSpeed = movementData.maxSpeed * (_boostActive ? boostSpeedMultiplier : 1f) * _powerupSpeedMultiplier;
         float accel = movementData.maxForwardAcceleration > 0f
             ? movementData.maxForwardAcceleration
             : targetSpeed / Mathf.Max(0.01f, movementData.timeToMaxSpeed);

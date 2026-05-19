@@ -362,7 +362,7 @@ MonoBehaviour:
   wheelBack: {fileID: 1853967654864436823}
   visualModel: {fileID: 5391968229695578253}
   maxLeanAngle: 20
-  leanSmooth: 8
+  leanSmooth: 3
   boostSpeedMultiplier: 1.35
   boostAccelerationMultiplier: 1.2
 --- !u!114 &6456904678307494355

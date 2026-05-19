@@ -1,5 +1,9 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Linq;
+using System;
+using System.IO;
 
 [CreateAssetMenu(fileName = "GameSettings", menuName = "Game/Settings/GameSettings")]
 public class GameSettings : ScriptableObject
@@ -27,6 +31,7 @@ public class GameSettings : ScriptableObject
     }
     [Min(2)] public int maxPlayers = 5; // 2-6 players (host+1-5 clients)
     [Range(0,1)] public int gameMode = 0; // 0 - king of the hill, 1 - Team Deathmatch
+    public string arenaSceneName = "Neon City XL"; // Only from folder _Project/_Game/Scenes/Arenas/
     [Min(60f)] public float matchDuration = 600f; // 60-600 seconds
     [Min(1f)] public float respawnTime = 5f; // 1-5 seconds
     public bool isSuddenDeath = false; // Sudden Death mode: when enabled, players have only 1 life and gamez zone is shrinking after some time
@@ -53,7 +58,48 @@ public class GameSettings : ScriptableObject
         vehicleSpeed = Mathf.Clamp(vehicleSpeed, MinVehicleSpeed, MaxVehicleSpeed);
         trailLength = Mathf.Clamp(trailLength, MinTrailLength, MaxTrailLength);
 
+        string[] availableSceneNames = GetSceneNamesFromBuildSettings();
+        if (availableSceneNames.Length == 0)
+        {
+            Debug.LogWarning("[GameSettings] No scenes found in Build Settings.");
+            return;
+        }
+        if (!availableSceneNames.Contains(arenaSceneName))
+        {
+            switch (arenaSceneName)
+            {
+                case "GameOver":
+                case "MainMenu":
+                case "SingleplayerLobby":
+                case "MultiplayerLobby":
+                case "TestEnvironment":
+                    Debug.LogWarning($"[GameSettings] Scene '{arenaSceneName}' is not an arena scene. Please choose a valid arena from Build Settings.");
+                    return;
+            }
+
+            string previousName = arenaSceneName;
+            arenaSceneName = "Neon City XL";
+            Debug.LogWarning(
+                $"[GameSettings] Scene '{previousName}' was not found in Build Settings. " +
+                $"Falling back to '{arenaSceneName}'."
+            );
+        }
+
         if (trailColorPalette == null)
             trailColorPalette = new List<Color>();
+    }
+    private static string[] GetSceneNamesFromBuildSettings()
+    {
+        int count = SceneManager.sceneCountInBuildSettings;
+
+        string[] sceneNames = new string[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            sceneNames[i] = Path.GetFileNameWithoutExtension(scenePath);
+        }
+
+        return sceneNames;
     }
 }

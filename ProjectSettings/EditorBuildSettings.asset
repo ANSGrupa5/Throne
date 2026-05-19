@@ -21,8 +21,11 @@ EditorBuildSettings:
     path: Assets/_Project/_Scenes/GameOver.unity
     guid: 91d24baec70dc9444a982a875819aa26
   - enabled: 1
-    path: Assets/_Project/_Scenes/Neon City.unity
+    path: Assets/_Project/_Scenes/Arenas/Neon City.unity
     guid: df2cede735ba5414293e8602e3ab0fb6
+  - enabled: 1
+    path: Assets/_Project/_Scenes/Arenas/Neon City XL.unity
+    guid: a30e253b0d99ca54fafe1f1801376c48
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
