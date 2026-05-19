@@ -239,6 +239,7 @@ public class Menu : MonoBehaviour
         }
 
         PlayerPrefs.Save();
+        InputManager.Instance.LoadKeybinds();
     }
 
     public void ShowStatisticsScreen()
