@@ -43,7 +43,8 @@ public class VehicleLife : MonoBehaviour
         if (!CanBeKilled)
             return;
 
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Map Boundry"))
+        int layer = collision.gameObject.layer;
+        if (layer == LayerMask.NameToLayer("Map Boundry") || layer == LayerMask.NameToLayer("Dead Zone"))
         {
             Kill(collision.gameObject);
         }

@@ -1,3 +1,4 @@
+using UnityEditor.UI;
 using UnityEngine;
 
 public class AreaBoundaryScript : MonoBehaviour
@@ -70,7 +71,7 @@ public class AreaBoundaryScript : MonoBehaviour
             SetupSquareWalls();
             UpdateWalls();
 
-            // jeœli chcesz efekt te¿ na œcianach:
+            // jeï¿½li chcesz efekt teï¿½ na ï¿½cianach:
             renderers = SquareObject.GetComponentsInChildren<Renderer>();
 
             if (renderers.Length > 0)
@@ -81,7 +82,11 @@ public class AreaBoundaryScript : MonoBehaviour
     private void Update()
     {
         if (!isShrinking) return;
-
+        if (!RingObject.activeInHierarchy || !SquareObject.activeInHierarchy)
+        {
+            RingObject.SetActive(style == ArenaStyle.Circle);
+            SquareObject.SetActive(style == ArenaStyle.Square);
+        }
         if (currentSize > minSize)
         {
             currentSize -= shrinkSpeed * Time.deltaTime;
@@ -140,11 +145,11 @@ public class AreaBoundaryScript : MonoBehaviour
     }
 
     // =========================
-    // SQUARE (4 ŒCIANY)
+    // SQUARE (4 ï¿½CIANY)
     // =========================
     void SetupSquareWalls()
     {
-        // upewnij siê ¿e œciany maj¹ collidery
+        // upewnij siï¿½ ï¿½e ï¿½ciany majï¿½ collidery
         SetupWall(wallTop);
         SetupWall(wallBottom);
         SetupWall(wallLeft);
