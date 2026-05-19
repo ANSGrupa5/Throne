@@ -4252,11 +4252,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerUpSpawner
   powerUpPrefabs:
-  - prefab: {fileID: 3619608186191917022, guid: 749c499a403b6f94cbb876b05c3a3522, type: 3}
+  - prefab: {fileID: 3778662564474911895, guid: 35bd422bd83e35b4c9410f8d954c74c6, type: 3}
     weight: 33
-  - prefab: {fileID: 7981350766114444539, guid: 90e90dc9b44bd5e488bcf0c93cd0942a, type: 3}
+  - prefab: {fileID: 2906490568788834647, guid: 8755b876ec02c27458d26a9092e354a6, type: 3}
     weight: 33
-  - prefab: {fileID: 4572615756618189160, guid: cd8b265de7eadc840a45b900d7595c78, type: 3}
+  - prefab: {fileID: 3062270758569632107, guid: 834d90d1a7657744b9fad8d0e2c18909, type: 3}
     weight: 33
   spawnPoints:
   - {fileID: 242431506}
@@ -4267,10 +4267,10 @@ MonoBehaviour:
   - {fileID: 1593978408}
   - {fileID: 1972537976}
   - {fileID: 2032887832}
-  initialSpawnDelay: 15
-  minSpawnInterval: 15
-  maxSpawnInterval: 30
-  maxPowerUpsOnMap: 3
+  initialSpawnDelay: 10
+  minSpawnInterval: 10
+  maxSpawnInterval: 25
+  maxPowerUpsOnMap: 4
 --- !u!4 &1750029875
 Transform:
   m_ObjectHideFlags: 0
