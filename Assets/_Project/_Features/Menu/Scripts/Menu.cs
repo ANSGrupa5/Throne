@@ -11,10 +11,8 @@ using static UnityEngine.Rendering.DebugUI;
 public class Menu : MonoBehaviour
 {
     public GameObject menu;
-    public TMP_Dropdown resolutionDropdown;
     //public TMP_Dropdown qualityDropdown;
     GameObject[] screens = new GameObject[6];
-    Resolution[] resolutions;
 
     enum ScreenType
     {
@@ -47,27 +45,6 @@ public class Menu : MonoBehaviour
 
         screens[(int)ScreenType.Statistics] = menu.transform.Find("StatisticsScreen").gameObject;
         screens[(int)ScreenType.Statistics].SetActive(false);
-
-
-        resolutions = Screen.resolutions;
-        resolutionDropdown.ClearOptions();
-
-        var options = new System.Collections.Generic.List<string>();
-        int currentResolutionIndex = 0;
-        for (int i = 0; i<resolutions.Length; i++)
-        {
-            int hz = (int)resolutions[i].refreshRateRatio.value;
-            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + hz + "Hz";
-            options.Add(option);
-
-            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
-                currentResolutionIndex = i;
-        }
-
-        resolutionDropdown.AddOptions(options);
-        resolutionDropdown.value = currentResolutionIndex;
-        resolutionDropdown.RefreshShownValue();
-
 
         //qualityDropdown.ClearOptions();
         //qualityDropdown.AddOptions(new List<string>(QualitySettings.names));
@@ -133,13 +110,6 @@ public class Menu : MonoBehaviour
     {
         Screen.fullScreenMode = value ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
         SettingsManager.Instance.SaveFullscreen(value);
-    }
-
-    public void SetResolution(int index)
-    {
-        Resolution res = resolutions[index];
-        Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
-        SettingsManager.Instance.SaveResolution(res.width, res.height, (int)res.refreshRateRatio.value);
     }
 
     public void ShowKeybindsSettings()

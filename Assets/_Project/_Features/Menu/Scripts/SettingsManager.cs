@@ -17,6 +17,9 @@ public class SettingsManager : MonoBehaviour
 
     [SerializeField] private Menu menu;
 
+    Resolution[] resolutions;
+    [SerializeField] private TMP_Dropdown resolutionDropdown;
+
     int keybind;
     KeyCode tempKey;
     bool waitingForKey = false;
@@ -39,11 +42,31 @@ public class SettingsManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        resolutions = Screen.resolutions;
+        resolutionDropdown.ClearOptions();
+
+        var options = new System.Collections.Generic.List<string>();
+        int currentResolutionIndex = 0;
+        for (int i = 0; i < resolutions.Length; i++)
+        {
+            int hz = (int)resolutions[i].refreshRateRatio.value;
+            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + hz + "Hz";
+            options.Add(option);
+
+            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
+                currentResolutionIndex = i;
+        }
+
+        resolutionDropdown.AddOptions(options);
+        resolutionDropdown.value = currentResolutionIndex;
+        resolutionDropdown.RefreshShownValue();
+
         LoadSettings();
         Debug.Log("MainVolume: " + PlayerPrefs.GetFloat("MainVolume"));
         Debug.Log("SFXVolume: " + PlayerPrefs.GetFloat("SFXVolume"));
         Debug.Log("Fullscreen: " + PlayerPrefs.GetInt("Fullscreen"));
         Debug.Log("Resolution: " + PlayerPrefs.GetInt("ResolutionWidth") + "x" + PlayerPrefs.GetInt("ResolutionHeight") + "@" + PlayerPrefs.GetInt("ResolutionRefreshRate") + "Hz");
+        Debug.Log("Resolution index: " + PlayerPrefs.GetInt("ResolutionIndex"));
         Debug.Log("Turn Left Key: " + (KeyCode)PlayerPrefs.GetInt("TurnLeft"));
         Debug.Log("Turn Right Key: " + (KeyCode)PlayerPrefs.GetInt("TurnRight"));
         Debug.Log("Change Camera Key: " + (KeyCode)PlayerPrefs.GetInt("Camera"));
@@ -147,6 +170,8 @@ public class SettingsManager : MonoBehaviour
         refresh.denominator = 1;
         Screen.SetResolution(PlayerPrefs.GetInt("ResolutionWidth", 800), PlayerPrefs.GetInt("ResolutionHeight", 600), Screen.fullScreenMode, refresh);
 
+        resolutionDropdown.value = PlayerPrefs.GetInt("ResolutionIndex",0);
+        
         tempKey = (KeyCode)PlayerPrefs.GetInt("TurnLeft", (int)KeyCode.A);
         TurnLeftButtonText.text = tempKey.ToString();
 
@@ -155,6 +180,13 @@ public class SettingsManager : MonoBehaviour
 
         tempKey = (KeyCode)PlayerPrefs.GetInt("Camera", (int)KeyCode.R);
         CameraButtonText.text = tempKey.ToString();
+    }
+
+    public void SetResolution(int index)
+    {
+        Resolution res = resolutions[index];
+        Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
+        SaveResolution(res.width, res.height, (int)res.refreshRateRatio.value, index);
     }
 
     public void SaveMainVolume(float value)
@@ -178,11 +210,12 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    public void SaveResolution(int width, int height, int refreshRateRatio)
+    public void SaveResolution(int width, int height, int refreshRateRatio, int index)
     {
         PlayerPrefs.SetInt("ResolutionWidth", width);
         PlayerPrefs.SetInt("ResolutionHeight", height);
         PlayerPrefs.SetInt("ResolutionRefreshRate", refreshRateRatio);
+        PlayerPrefs.SetInt("ResolutionIndex", index);
         PlayerPrefs.Save();
     }
 
