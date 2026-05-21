@@ -165,12 +165,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Menu
   menu: {fileID: 2815707300012930558}
   resolutionDropdown: {fileID: 7488820772546277860}
-  MainVolumeSlider: {fileID: 8722953640947173498}
-  SFXVolumeSlider: {fileID: 1866570996930478697}
-  FullscreenToggle: {fileID: 3968954179799748492}
-  TurnLeftButtonText: {fileID: 1996601106882186992}
-  TurnRightButtonText: {fileID: 6812921480294455275}
-  CameraButtonText: {fileID: 8358939660139237467}
 --- !u!1 &346147635
 GameObject:
   m_ObjectHideFlags: 0
@@ -579,6 +573,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InputManager
   TurnLeft: 0
   TurnRight: 0
+  Camera: 0
 --- !u!4 &1857647484
 Transform:
   m_ObjectHideFlags: 0
@@ -589,6 +584,57 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1940053571
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1940053573}
+  - component: {fileID: 1940053572}
+  m_Layer: 0
+  m_Name: SettingsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1940053572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940053571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4971ee5eed56bdc4aac1ae656da81452, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
+  MainVolumeSlider: {fileID: 8722953640947173498}
+  SFXVolumeSlider: {fileID: 1866570996930478697}
+  FullscreenToggle: {fileID: 3968954179799748492}
+  TurnLeftButtonText: {fileID: 1996601106882186992}
+  TurnRightButtonText: {fileID: 6812921480294455275}
+  CameraButtonText: {fileID: 8358939660139237467}
+  menu: {fileID: 147427210}
+--- !u!4 &1940053573
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940053571}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.92048, y: 8.64162, z: 14.99617}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2446,8 +2492,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 147427210}
-        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
+      - m_Target: {fileID: 1940053572}
+        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: StartRebind
         m_Mode: 3
         m_Arguments:
@@ -5879,8 +5925,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 147427210}
-        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
+      - m_Target: {fileID: 1940053572}
+        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: StartRebind
         m_Mode: 3
         m_Arguments:
@@ -12084,8 +12130,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 147427210}
-        m_TargetAssemblyTypeName: Menu, Assembly-CSharp
+      - m_Target: {fileID: 1940053572}
+        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: StartRebind
         m_Mode: 3
         m_Arguments:
@@ -17206,3 +17252,4 @@ SceneRoots:
   - {fileID: 1451796946}
   - {fileID: 1657627023}
   - {fileID: 1857647484}
+  - {fileID: 1940053573}
