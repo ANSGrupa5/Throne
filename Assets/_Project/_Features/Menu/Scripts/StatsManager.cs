@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 
@@ -12,6 +14,10 @@ public class StatsManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI WinsText;
     [SerializeField] private TextMeshProUGUI LossesText;
     [SerializeField] private TextMeshProUGUI DistDrivenText;
+
+    private GameObject StatisticsScreen;
+    private GameObject player = null;
+    private string playerName = null;
 
     private int OppsElim, TimesElim, PowerUpsPickedUp, Wins, Losses;
     private float DistDriven;
@@ -42,8 +48,56 @@ public class StatsManager : MonoBehaviour
         
     }
 
-    void LoadStats()
+    public void GetPlayerPrefab(string playername)
     {
+        player = GameObject.Find("motorFINAL2_WORKING(Clone)");
+        playerName = playername;
+    }
+
+    public bool CheckIfPlayerIsKiller(GameObject objectToCheck)
+    {
+        if (player == objectToCheck)
+            return true;
+        return false;
+    }
+
+    public bool CheckIfPlayerIsEliminated(VehicleLife objectToCheck)
+    {
+        if (player == objectToCheck.gameObject)
+            return true;
+        return false;
+    }
+
+    public bool CheckIfPlayerPickedUpPowerUp(VehicleLife objectToCheck)
+    {
+        if (player == objectToCheck.gameObject && playerName == objectToCheck.DisplayName)
+            return true;
+        return false;
+    }
+
+    public void CheckIfPlayerWon(List<GameOverPayload.MatchResult> results)
+    {
+        if (results == null || results.Count == 0)
+            return;
+
+        GameOverPayload.MatchResult winner = results[0];
+
+        if (winner.displayName == playerName)
+            IncWins();
+        else
+            IncLosses();
+    }
+
+    public void LoadStats()
+    {
+        StatisticsScreen = GameObject.Find("MainMenuObject/Canvas/Panel/MainMenu/StatisticsScreen").gameObject;
+        OppsElimText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Opps_Elim/Value").GetComponent<TextMeshProUGUI>();
+        TimesElimText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Times_Elim/Value").GetComponent<TextMeshProUGUI>();
+        PowerUpsPickedUpText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Total_Pow/Value").GetComponent<TextMeshProUGUI>();
+        WinsText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Wins/Value").GetComponent<TextMeshProUGUI>();
+        LossesText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Losses/Value").GetComponent<TextMeshProUGUI>();
+        DistDrivenText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Dist_Driven/Value").GetComponent<TextMeshProUGUI>();
+
         OppsElim = PlayerPrefs.GetInt("StatOppsElim", 0);
         OppsElimText.text = OppsElim.ToString();
 
@@ -59,7 +113,7 @@ public class StatsManager : MonoBehaviour
         Losses = PlayerPrefs.GetInt("StatLosses", 0);
         LossesText.text = Losses.ToString();
 
-        DistDriven = PlayerPrefs.GetFloat("StatOppsElim", 0f);
+        DistDriven = PlayerPrefs.GetFloat("StatDistDriven", 0f);
         DistDrivenText.text = $"{DistDriven:F2} km";
     }
 
@@ -73,67 +127,75 @@ public class StatsManager : MonoBehaviour
         //SaveDistDriven();
     }
 
-    void IncOppsElim()
+    public void IncOppsElim()
     {
         OppsElim++;
+        SaveOppsElim();
     }
 
-    void IncTimesElim()
+    public void IncTimesElim()
     {
         TimesElim++;
+        SaveTimesElim();
     }
 
-    void IncPowerUpsPickedUp()
+    public void IncPowerUpsPickedUp()
     {
         PowerUpsPickedUp++;
+        SavePowerUpsPickedUp();
     }
 
-    void IncWins()
+    public void IncWins()
     {
         Wins++;
+        SaveWins();
     }
 
-    void IncLosses()
+    public void IncLosses()
     {
         Losses++;
+        SaveLosses();
     }
 
-    /*
-    void IncDistDriven()
+    public void IncDistDriven(float totalDistance)
     {
-
+        DistDriven = DistDriven + (totalDistance / 1000);
+        SaveDistDriven();
     }
-    */
 
     void SaveOppsElim()
     {
         PlayerPrefs.SetInt("StatOppsElim", OppsElim);
+        PlayerPrefs.Save();
     }
 
     void SaveTimesElim()
     {
         PlayerPrefs.SetInt("StatTimesElim", TimesElim);
+        PlayerPrefs.Save();
     }
 
     void SavePowerUpsPickedUp()
     {
         PlayerPrefs.SetInt("StatPowerUpsPickedUp", PowerUpsPickedUp);
+        PlayerPrefs.Save();
     }
 
     void SaveWins()
     {
         PlayerPrefs.SetInt("StatWins", Wins);
+        PlayerPrefs.Save();
     }
 
     void SaveLosses()
     {
         PlayerPrefs.SetInt("StatLosses", Losses);
+        PlayerPrefs.Save();
     }
 
-    /*
-    void SaveDistDriven()
+    public void SaveDistDriven()
     {
-
+        PlayerPrefs.SetFloat("StatDistDriven", DistDriven);
+        PlayerPrefs.Save();
     }
-    */
 }

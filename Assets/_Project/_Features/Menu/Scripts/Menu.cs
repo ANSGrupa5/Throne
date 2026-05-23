@@ -119,6 +119,7 @@ public class Menu : MonoBehaviour
 
     public void ShowStatisticsScreen()
     {
+        StatsManager.Instance.LoadStats();
         ShowScreen((int)ScreenType.Statistics);
     }
 

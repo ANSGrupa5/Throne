@@ -84,6 +84,8 @@ public class MatchInitializer : MonoBehaviour
         {
             SpawnAt(session, session.playerPrefab, chosen[index], session.playerDisplayName, session.playerOwnerId, session.playerTrailColor, false);
             index++;
+            StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
+            DistanceTracker.Instance.GetTarget();
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
