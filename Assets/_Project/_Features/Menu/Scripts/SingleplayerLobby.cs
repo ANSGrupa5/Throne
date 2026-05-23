@@ -19,11 +19,16 @@ public class SingleplayerLobby : MonoBehaviour
     [SerializeField] private TMP_Text minutes;
     [SerializeField] private TMP_Text seconds;
 
+    [Header("Trail Length")]
+    [SerializeField] private TMP_Text trailLengthText;
+
     private int _botCount;
     private bool SuddenDeath = true;
     private int min, sec, maxmin, minmin;
     private float timeInSecs;
     private string arenaSceneName;
+    private int trailLength;
+    private int trailColor;
 
     private void Awake()
     {
@@ -47,6 +52,23 @@ public class SingleplayerLobby : MonoBehaviour
         timeInSecs = 60f;
         minutes.text = min.ToString("00");
         seconds.text = sec.ToString("00");
+
+        trailLength = gameSettings.trailLength;
+        switch (trailLength)
+        {
+            case 0:
+                trailLengthText.text = "Short";
+                break;
+            case 1:
+                trailLengthText.text = "Medium";
+                break;
+            case 2:
+                trailLengthText.text = "Long";
+                break;
+            case 3:
+                trailLengthText.text = "Permanent";
+                break;
+        }
     }
 
     public void LoadScene(string sceneName)
@@ -96,6 +118,9 @@ public class SingleplayerLobby : MonoBehaviour
         gameSettings.matchDuration = timeInSecs;
         gameSettings.isSuddenDeath = SuddenDeath;
         gameSettings.arenaSceneName = arenaSceneName;
+
+        SetPlayerTrailColorFromPaletteIndex(trailColor);
+
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
 
@@ -146,6 +171,8 @@ public class SingleplayerLobby : MonoBehaviour
         Debug.Log("Powinno dodać się " + _botCount + " botów");
         Debug.Log("Tryb Sudden death: " + SuddenDeath);
         Debug.Log("Czas trwania meczu w sekundach: " + timeInSecs);
+        Debug.Log("Trail length: " + trailLength);
+        Debug.Log("Trail color: " + trailColor);
     }
 
     public void ShowGameTime()
@@ -200,5 +227,35 @@ public class SingleplayerLobby : MonoBehaviour
             sec = 0;
         UpdateTimeInSeconds();
         ShowGameTime();
+    }
+
+    public void ChangeTrailLength()
+    {
+        trailLength++;
+        if (trailLength > gameSettings.GetMaxTrailLength())
+            trailLength = gameSettings.GetMinTrailLength();
+
+        gameSettings.trailLength = trailLength;
+
+        switch(trailLength)
+        {
+            case 0:
+                trailLengthText.text = "Short";
+                break;
+            case 1:
+                trailLengthText.text = "Medium";
+                break;
+            case 2:
+                trailLengthText.text = "Long";
+                break;
+            case 3:
+                trailLengthText.text = "Permanent";
+                break;
+        }
+    }
+
+    public void SetTrailColor(int value)
+    {
+        trailColor = value;
     }
 }
