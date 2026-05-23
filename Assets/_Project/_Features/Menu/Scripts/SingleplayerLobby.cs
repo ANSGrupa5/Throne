@@ -2,6 +2,7 @@ using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Device;
 using UnityEngine.SceneManagement;
 
 public class SingleplayerLobby : MonoBehaviour
@@ -21,6 +22,11 @@ public class SingleplayerLobby : MonoBehaviour
 
     [Header("Trail Length")]
     [SerializeField] private TMP_Text trailLengthText;
+
+    [Header("Vechicle Previews")]
+    [SerializeField] private int currentModel;
+    [SerializeField] private GameObject[] motorPreview;
+    [SerializeField] private GameObject[] motorPlayable;
 
     private int _botCount;
     private bool SuddenDeath = true;
@@ -69,6 +75,9 @@ public class SingleplayerLobby : MonoBehaviour
                 trailLengthText.text = "Permanent";
                 break;
         }
+
+        currentModel = 0;
+        motorPreview[0].SetActive(true);
     }
 
     public void LoadScene(string sceneName)
@@ -120,6 +129,8 @@ public class SingleplayerLobby : MonoBehaviour
         gameSettings.arenaSceneName = arenaSceneName;
 
         SetPlayerTrailColorFromPaletteIndex(trailColor);
+
+        playerLook.playerPrefab = motorPlayable[currentModel];
 
         var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
         session.isSingleplayer = true;
@@ -257,5 +268,34 @@ public class SingleplayerLobby : MonoBehaviour
     public void SetTrailColor(int value)
     {
         trailColor = value;
+    }
+
+    public void ChangePlayerModelUp()
+    {
+        currentModel++;
+        if(currentModel >= motorPreview.Length)
+            currentModel = 0;
+
+        SetPlayerModel(currentModel);
+    }
+
+    public void ChangePlayerModelDown()
+    {
+        currentModel--;
+        if (currentModel < 0)
+            currentModel = motorPreview.Length-1;
+
+        SetPlayerModel(currentModel);
+    }
+
+    public void SetPlayerModel(int selectedMotor)
+    {
+        for (int i = 0; i < motorPreview.Length; i++)
+        {
+            if (i == selectedMotor)
+                motorPreview[i].SetActive(true);
+            else
+                motorPreview[i].SetActive(false);
+        }
     }
 }

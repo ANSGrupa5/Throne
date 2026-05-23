@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.Rendering.DebugUI;
 
 public class StatsManager : MonoBehaviour
@@ -50,7 +52,15 @@ public class StatsManager : MonoBehaviour
 
     public void GetPlayerPrefab(string playername)
     {
-        player = GameObject.Find("motorFINAL2_WORKING(Clone)");
+        try
+        {
+            player = GameObject.Find("motorFINAL2_WORKING(Clone)");
+        }
+        catch (NullReferenceException)
+        {
+            player = GameObject.Find("motor22(Clone)");
+        }
+
         playerName = playername;
     }
 

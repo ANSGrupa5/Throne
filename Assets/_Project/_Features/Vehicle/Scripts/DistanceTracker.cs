@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -38,7 +39,14 @@ public class DistanceTracker : MonoBehaviour
 
     public void GetTarget()
     {
-        target = GameObject.Find("motorFINAL2_WORKING(Clone)").GetComponent<Transform>();
+        try
+        {
+            target = GameObject.Find("motorFINAL2_WORKING(Clone)").GetComponent<Transform>();
+        }
+        catch(NullReferenceException)
+        {
+            target = GameObject.Find("motor22(Clone)").GetComponent<Transform>();
+        }
         totalDistance = 0f;
         lastPosition = target.position;
     }
