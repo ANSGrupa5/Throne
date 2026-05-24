@@ -1,0 +1,3 @@
+# Use Unity's YAML merge driver for scenes and prefabs
+*.unity merge=unityyamlmerge
+*.prefab merge=unityyamlmerge

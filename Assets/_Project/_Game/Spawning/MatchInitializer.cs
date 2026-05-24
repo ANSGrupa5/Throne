@@ -35,9 +35,29 @@ public class MatchInitializer : MonoBehaviour
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _isFreezeOwned;
 
+    [Obsolete]
+    private void Awake()
+    {
+        BindSceneReferences();
+    }
+
     private void Start()
     {
         StartCoroutine(InitializeRoutine());
+    }
+
+    [Obsolete]
+    private void BindSceneReferences()
+    {
+        if (endGameController == null)
+            endGameController = FindObjectOfType<EndGameController>();
+
+        if (endGameController == null)
+            return;
+
+        AreaBoundaryScript areaBoundary = FindObjectOfType<AreaBoundaryScript>();
+        if (areaBoundary != null)
+            endGameController.SetAreaBoundary(areaBoundary);
     }
 
     private IEnumerator InitializeRoutine()

@@ -383,27 +383,27 @@ MonoBehaviour:
   suddenDeathMask:
     serializedVersion: 2
     m_Bits: 128
-  safetyRayLength: 25
-  safetyRayAngle: 18
-  safetyAvoidanceStrength: 2
+  safetyRayLength: 35
+  safetyRayAngle: 30
+  safetyAvoidanceStrength: 5
   trailMask:
     serializedVersion: 2
     m_Bits: 8
-  trailRayLength: 20
+  trailRayLength: 25
   trailRayAngle: 45
-  trailAvoidanceStrength: 3
+  trailAvoidanceStrength: 4
   playerSearchRadius: 175
   blockAheadDistance: 8
   lateralBlockOffset: 2.5
   interceptLeadTime: 0.55
   interceptBuffer: 5
   interceptMaxPredictionTime: 4
-  interceptSteeringStrength: 2.1
+  interceptSteeringStrength: 2.5
   powerupMask:
     serializedVersion: 2
     m_Bits: 256
   powerupSearchRadius: 500
-  powerupSteeringStrength: 1.5
+  powerupSteeringStrength: 4
   mapCenter: {fileID: 0}
   centerRoamRadius: 12
   centerSteeringStrength: 1.5
