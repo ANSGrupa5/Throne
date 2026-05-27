@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class EndGameController : MonoBehaviour
 {
     [SerializeField] private GameTimer gameTimer;
+    [SerializeField] private AreaBoundaryScript areaBoundary;
     [SerializeField] private string gameOverSceneName = "GameOver";
     [SerializeField, Min(0.1f)] private float slowDownDuration = 1.5f;
     [SerializeField, Min(0f)] private float postFreezeDelay = 1f;
@@ -19,6 +20,8 @@ public class EndGameController : MonoBehaviour
     {
         if (gameTimer == null)
             gameTimer = GetComponent<GameTimer>();
+
+        TryBindAreaBoundary();
     }
 
     private void OnEnable()
@@ -62,6 +65,14 @@ public class EndGameController : MonoBehaviour
             _session = session;
     }
 
+    private void TryBindAreaBoundary()
+    {
+        if (areaBoundary != null)
+            return;
+
+        areaBoundary = Object.FindObjectOfType<AreaBoundaryScript>();
+    }
+
     private void HandleTimerEnded()
     {
         if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
@@ -76,6 +87,21 @@ public class EndGameController : MonoBehaviour
         }
 
         Debug.Log($"[EndGameController] gameMode: {_session.gameMode}");
+
+        if (_session.gameMode == 0 && _session.isSuddenDeath)
+        {
+            TryBindAreaBoundary();
+            if (areaBoundary == null)
+            {
+                Debug.LogWarning("[EndGameController] Sudden death requested, but no AreaBoundaryScript was found. Match will continue without shrinking.");
+                return;
+            }
+
+            Debug.Log("[EndGameController] Sudden death triggered - enabling arena shrink.");
+            areaBoundary.isShrinking = true;
+            return;
+        }
+
         if (_session.gameMode != 1)
         {
             Debug.LogWarning($"[EndGameController] Skipping end sequence - gameMode is {_session.gameMode}, expected 1");
@@ -160,6 +186,11 @@ public class EndGameController : MonoBehaviour
         StartCoroutine(RunEndSequence(reason));
     }
 
+    public void SetAreaBoundary(AreaBoundaryScript boundary)
+    {
+        areaBoundary = boundary;
+    }
+
     private IEnumerator RunEndSequence(string reason)
     {
         Debug.Log("[EndGameController] RunEndSequence started");
@@ -182,6 +213,8 @@ public class EndGameController : MonoBehaviour
         PrepareGameOverPayload(reason);
         Debug.Log($"[EndGameController] Loaded game over payload. Loading scene: {gameOverSceneName}");
         Time.timeScale = 1f;
+
+        StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
 
         SceneManager.LoadScene(gameOverSceneName);
         Debug.Log("[EndGameController] SceneManager.LoadScene called - sequence complete");

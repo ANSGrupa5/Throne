@@ -35,6 +35,12 @@ public class VehicleDeathSequence : MonoBehaviour
         if (victim == null || victim != life || _isHandlingDeath)
             return;
 
+        if (StatsManager.Instance.CheckIfPlayerIsKiller(killer))
+            StatsManager.Instance.IncOppsElim();
+
+        if (StatsManager.Instance.CheckIfPlayerIsEliminated(victim))
+            StatsManager.Instance.IncTimesElim();
+
         StartCoroutine(DeathRoutine());
     }
 

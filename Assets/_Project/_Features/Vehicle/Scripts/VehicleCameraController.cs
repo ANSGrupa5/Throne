@@ -37,7 +37,7 @@ public class VehicleCameraController : MonoBehaviour
     // Handles preset switching input and updates camera interpolation.
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(InputManager.Instance.Camera))
             // Cycle through presets
             _currentPreset = (_currentPreset + 1) % presets.Length;
 

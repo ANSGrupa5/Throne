@@ -102,4 +102,14 @@ public class GameSettings : ScriptableObject
 
         return sceneNames;
     }
+
+    public int GetMinTrailLength()
+    {
+        return MinTrailLength;
+    }
+
+    public int GetMaxTrailLength()
+    {
+        return MaxTrailLength;
+    }
 }

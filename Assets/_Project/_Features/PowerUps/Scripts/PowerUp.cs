@@ -11,6 +11,7 @@ public enum PowerUpType
 public class PowerUp : MonoBehaviour
 {
     public PowerUpType powerUpType;
+    private bool collected = false;
 
     [Header("Speed Up Settings")]
     [SerializeField] private float speedMultiplier = 1.5f;
@@ -37,6 +38,13 @@ public class PowerUp : MonoBehaviour
 
         if (vehicleLife == null || vehicleLife.IsDead)
             return;
+
+        if (StatsManager.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
+        {
+            Debug.Log("POWER UP PICKED UP. Power Ups picked up before: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
+            StatsManager.Instance.IncPowerUpsPickedUp();
+            Debug.Log("Power Ups picked up after update: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
+        }
 
         ApplyEffect(vehicleLife);
         

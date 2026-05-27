@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using static UnityEngine.Rendering.DebugUI;
 
 public class Menu : MonoBehaviour
 {
     public GameObject menu;
-    public TMP_Dropdown resolutionDropdown;
     //public TMP_Dropdown qualityDropdown;
     GameObject[] screens = new GameObject[6];
-    Resolution[] resolutions;
 
     enum ScreenType
     {
@@ -44,27 +46,6 @@ public class Menu : MonoBehaviour
         screens[(int)ScreenType.Statistics] = menu.transform.Find("StatisticsScreen").gameObject;
         screens[(int)ScreenType.Statistics].SetActive(false);
 
-
-        resolutions = Screen.resolutions;
-        resolutionDropdown.ClearOptions();
-
-        var options = new System.Collections.Generic.List<string>();
-        int currentResolutionIndex = 0;
-        for (int i = 0; i<resolutions.Length; i++)
-        {
-            int hz = (int)resolutions[i].refreshRateRatio.value;
-            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + hz + "Hz";
-            options.Add(option);
-
-            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
-                currentResolutionIndex = i;
-        }
-
-        resolutionDropdown.AddOptions(options);
-        resolutionDropdown.value = currentResolutionIndex;
-        resolutionDropdown.RefreshShownValue();
-
-
         //qualityDropdown.ClearOptions();
         //qualityDropdown.AddOptions(new List<string>(QualitySettings.names));
         //qualityDropdown.value = QualitySettings.GetQualityLevel();
@@ -74,7 +55,7 @@ public class Menu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        
     }
 
     public void LoadScene(string sceneName)
@@ -111,6 +92,12 @@ public class Menu : MonoBehaviour
     public void SetVolume(float value)
     {
         AudioListener.volume = value;
+        SettingsManager.Instance.SaveMainVolume(value);
+    }
+
+    public void SetSFXVolume(float value)
+    {
+        SettingsManager.Instance.SaveSFXVolume(value);
     }
 
     public void ShowGraphicsSettings()
@@ -122,12 +109,7 @@ public class Menu : MonoBehaviour
     public void FullScreen(bool value)
     {
         Screen.fullScreenMode = value ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
-    }
-
-    public void SetResolution(int index)
-    {
-        Resolution res = resolutions[index];
-        Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
+        SettingsManager.Instance.SaveFullscreen(value);
     }
 
     public void ShowKeybindsSettings()
@@ -137,6 +119,7 @@ public class Menu : MonoBehaviour
 
     public void ShowStatisticsScreen()
     {
+        StatsManager.Instance.LoadStats();
         ShowScreen((int)ScreenType.Statistics);
     }
 

@@ -39,6 +39,12 @@ public class MatchInitializer : MonoBehaviour
     private bool _hasInitializationStarted;
     private bool _isFreezeOwned;
 
+    [Obsolete]
+    private void Awake()
+    {
+        BindSceneReferences();
+    }
+
     private void Start()
     {
         if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
@@ -54,6 +60,20 @@ public class MatchInitializer : MonoBehaviour
 
         _hasInitializationStarted = true;
         StartCoroutine(InitializeRoutine());
+    }
+
+    [Obsolete]
+    private void BindSceneReferences()
+    {
+        if (endGameController == null)
+            endGameController = FindObjectOfType<EndGameController>();
+
+        if (endGameController == null)
+            return;
+
+        AreaBoundaryScript areaBoundary = FindObjectOfType<AreaBoundaryScript>();
+        if (areaBoundary != null)
+            endGameController.SetAreaBoundary(areaBoundary);
     }
 
     private IEnumerator InitializeRoutine()
@@ -108,6 +128,8 @@ public class MatchInitializer : MonoBehaviour
             Color trailColor = ResolvePlayerColor(session, playerIndex);
             SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
             index++;
+            StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
+            DistanceTracker.Instance.GetTarget();
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 

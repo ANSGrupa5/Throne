@@ -59,6 +59,8 @@ public class GameOverController : MonoBehaviour
             .ThenBy(result => result.displayName)
             .ToList();
 
+        StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+
         ApplyFallbackResultsText(orderedResults);
         ApplyRowResults(orderedResults);
     }
