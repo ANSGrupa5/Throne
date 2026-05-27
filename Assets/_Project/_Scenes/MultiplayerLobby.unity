@@ -8976,6 +8976,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a229c791a8fa7874a9c0e15cc14b72d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultiplayerMenuButtons
+  ConnectionTypePanel: {fileID: 729201719}
+  HostPanel: {fileID: 1841471365}
 --- !u!1 &1815798577
 GameObject:
   m_ObjectHideFlags: 0
