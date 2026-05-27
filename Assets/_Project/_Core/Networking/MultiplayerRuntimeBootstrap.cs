@@ -7,7 +7,8 @@ using UnityEngine.SceneManagement;
 
 public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 {
-    private const string MultiplayerScenePrefix = "multi ";
+    private const string MainMenuSceneName = "MainMenu";
+    private const string MultiplayerScenePrefix = "Multiplayer";
     private const string PrefabCollectionResourcePath = "Networking/DefaultPrefabObjects";
     private const string SessionDriverResourcePath = "Networking/MultiplayerSessionDriver";
 
@@ -18,6 +19,11 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     private GameObject _sessionDriverPrefab;
     private string _joinAddress = "127.0.0.1";
     private bool _driverSpawnRequested;
+    private bool _showJoinHud;
+    private GameObject _connectionTypePanel;
+    private GameObject _hostPanel;
+
+    public static MultiplayerRuntimeBootstrap Instance => _instance;
 
     public static bool IsMultiplayerScene(Scene scene)
     {
@@ -70,18 +76,17 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!IsActiveMultiplayerScene())
+        if (!IsActiveMultiplayerScene() || !_showJoinHud)
             return;
 
         EnsureNetworkManager();
-        DrawHud();
+        DrawJoinHud();
     }
 
-    private void DrawHud()
+    private void DrawJoinHud()
     {
-        GUILayout.BeginArea(new Rect(16f, 16f, 320f, 220f), GUI.skin.box);
-        GUILayout.Label("Multiplayer Arena");
-        GUILayout.Label($"Scene: {SceneManager.GetActiveScene().name}");
+        GUILayout.BeginArea(new Rect(16f, 16f, 320f, 170f), GUI.skin.box);
+        GUILayout.Label("Join Game");
 
         if (_networkManager == null)
         {
@@ -90,42 +95,55 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             return;
         }
 
-        GUILayout.Label($"Server: {(_networkManager.IsServerStarted ? "Online" : "Offline")}");
-        GUILayout.Label($"Client: {(_networkManager.IsClientStarted ? "Online" : "Offline")}");
-        GUILayout.Space(6f);
+        GUILayout.Label("Join Address");
+        _joinAddress = GUILayout.TextField(_joinAddress ?? "127.0.0.1");
 
-        if (_networkManager.IsOffline)
+        GUILayout.Space(8f);
+        if (GUILayout.Button("Join", GUILayout.Height(28f)))
         {
-            if (GUILayout.Button("Start Host", GUILayout.Height(28f)))
-                StartHost();
-
-            GUILayout.Space(4f);
-            GUILayout.Label("Join Address");
-            _joinAddress = GUILayout.TextField(_joinAddress ?? "127.0.0.1");
-
-            if (GUILayout.Button("Join Client", GUILayout.Height(28f)))
-                StartClient();
-        }
-        else
-        {
-            if (_networkManager.IsServerStarted)
-            {
-                MultiplayerSessionDriver driver = MultiplayerSessionDriver.Instance;
-                int connectedPlayers = _networkManager.ServerManager != null ? _networkManager.ServerManager.Clients.Count : 0;
-                GUILayout.Label($"Connected Players: {Mathf.Max(1, connectedPlayers)}");
-
-                bool canStartMatch = driver != null && !driver.IsMatchRunning;
-                GUI.enabled = canStartMatch;
-                if (GUILayout.Button("Start Match", GUILayout.Height(28f)))
-                    driver.StartMatch();
-                GUI.enabled = true;
-            }
-
-            if (GUILayout.Button("Stop Networking", GUILayout.Height(28f)))
-                StopNetworking();
+            StartClient();
         }
 
         GUILayout.EndArea();
+    }
+
+    public void HostGame()
+    {
+        EnsureNetworkManager();
+        if (_networkManager == null)
+            return;
+
+        SetConnectionTypeVisible(false);
+        SetHostPanelVisible(true);
+        _showJoinHud = false;
+        StartHost();
+    }
+
+    public void JoinGame()
+    {
+        EnsureNetworkManager();
+        if (_networkManager == null)
+            return;
+
+        SetConnectionTypeVisible(false);
+        SetHostPanelVisible(false);
+        _showJoinHud = true;
+    }
+
+    public void BackToMainMenu()
+    {
+        StopNetworkingIfNeeded();
+        SceneManager.LoadScene(MainMenuSceneName);
+    }
+
+    public void StartMatch()
+    {
+        if (_networkManager == null || !_networkManager.IsServerStarted)
+            return;
+
+        MultiplayerSessionDriver driver = MultiplayerSessionDriver.Instance;
+        if (driver != null && !driver.IsMatchRunning)
+            driver.StartMatch();
     }
 
     private void StartHost()
@@ -147,6 +165,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
         string address = string.IsNullOrWhiteSpace(_joinAddress) ? "127.0.0.1" : _joinAddress.Trim();
         _networkManager.ClientManager.StartConnection(address);
+        _showJoinHud = false;
     }
 
     private void StopNetworking()
@@ -162,6 +181,13 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         _driverSpawnRequested = false;
         MultiplayerMatchState.SetFrozen(false);
         Time.timeScale = 1f;
+        _showJoinHud = false;
+    }
+
+    private void StopNetworkingIfNeeded()
+    {
+        if (_networkManager != null && (_networkManager.IsServerStarted || _networkManager.IsClientStarted))
+            StopNetworking();
     }
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -170,15 +196,66 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         {
             MultiplayerMatchState.SetFrozen(false);
             Time.timeScale = 1f;
+            _showJoinHud = false;
             return;
         }
 
         EnsureNetworkManager();
+        RefreshSceneUiState();
         if (_networkManager != null && _networkManager.IsServerStarted)
         {
             _driverSpawnRequested = true;
             EnsureSessionDriverSpawned();
         }
+    }
+
+    private void RefreshSceneUiState()
+    {
+        if (_networkManager == null)
+            return;
+
+        if (_networkManager.IsServerStarted)
+        {
+            SetConnectionTypeVisible(false);
+            SetHostPanelVisible(true);
+            _showJoinHud = false;
+            return;
+        }
+
+        if (_networkManager.IsClientStarted)
+        {
+            SetConnectionTypeVisible(false);
+            SetHostPanelVisible(false);
+            _showJoinHud = false;
+            return;
+        }
+
+        SetConnectionTypeVisible(true);
+        SetHostPanelVisible(false);
+        _showJoinHud = false;
+    }
+
+    private void SetConnectionTypeVisible(bool visible)
+    {
+        CacheScenePanels();
+        if (_connectionTypePanel != null)
+            _connectionTypePanel.SetActive(visible);
+    }
+
+    private void SetHostPanelVisible(bool visible)
+    {
+        CacheScenePanels();
+        if (_hostPanel != null)
+            _hostPanel.SetActive(visible);
+    }
+
+    private void CacheScenePanels()
+    {
+        if (_connectionTypePanel == null)
+            _connectionTypePanel = GameObject.Find("ConnectionType");
+
+        if (_hostPanel == null)
+            _hostPanel = GameObject.Find("Panel");
     }
 
     private void EnsureNetworkManager()
