@@ -8455,7 +8455,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   spawnInterval: 0.25
-  preMatchCountdownSeconds: 5
+  preMatchCountdownSeconds: 3
   goDisplayDuration: 0.75
   gameStartTimer: {fileID: 949385214433765062}
   gameTimer: {fileID: 4101060509138089424}

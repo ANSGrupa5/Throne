@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
@@ -10,6 +11,10 @@ public class SettingsManager : MonoBehaviour
     [SerializeField] private Slider MainVolumeSlider;
     [SerializeField] private Slider SFXVolumeSlider;
     [SerializeField] private Toggle FullscreenToggle;
+    [Header("Menu Music")]
+    [SerializeField] private AudioClip menuMusicClip;
+    [SerializeField, Range(0f, 1f)] private float menuMusicVolume = 1f;
+
     //Keybinds
     [SerializeField] private TextMeshProUGUI TurnLeftButtonText;
     [SerializeField] private TextMeshProUGUI TurnRightButtonText;
@@ -23,6 +28,7 @@ public class SettingsManager : MonoBehaviour
     int keybind;
     KeyCode tempKey;
     bool waitingForKey = false;
+    private AudioSource menuMusicSource;
 
     enum Keybind
     {
@@ -62,6 +68,7 @@ public class SettingsManager : MonoBehaviour
         resolutionDropdown.RefreshShownValue();
 
         LoadSettings();
+        InitializeMenuMusic();
         Debug.Log("MainVolume: " + PlayerPrefs.GetFloat("MainVolume"));
         Debug.Log("SFXVolume: " + PlayerPrefs.GetFloat("SFXVolume"));
         Debug.Log("Fullscreen: " + PlayerPrefs.GetInt("Fullscreen"));
@@ -70,6 +77,16 @@ public class SettingsManager : MonoBehaviour
         Debug.Log("Turn Left Key: " + (KeyCode)PlayerPrefs.GetInt("TurnLeft"));
         Debug.Log("Turn Right Key: " + (KeyCode)PlayerPrefs.GetInt("TurnRight"));
         Debug.Log("Change Camera Key: " + (KeyCode)PlayerPrefs.GetInt("Camera"));
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance != this)
+            return;
+
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        MatchInitializer.OnMatchStart -= StopMenuMusic;
+        Instance = null;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -83,6 +100,54 @@ public class SettingsManager : MonoBehaviour
     {
         if (waitingForKey)
             WaitForUserInput(keybind);
+    }
+
+    private void InitializeMenuMusic()
+    {
+        menuMusicSource = GetComponent<AudioSource>();
+        if (menuMusicSource == null)
+            menuMusicSource = gameObject.AddComponent<AudioSource>();
+
+        menuMusicSource.playOnAwake = false;
+        menuMusicSource.loop = true;
+        menuMusicSource.volume = menuMusicVolume;
+
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+        MatchInitializer.OnMatchStart -= StopMenuMusic;
+        MatchInitializer.OnMatchStart += StopMenuMusic;
+
+        PlayMenuMusic();
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (FindFirstObjectByType<MatchInitializer>(FindObjectsInactive.Include) == null)
+        {
+            PlayMenuMusic();
+            return;
+        }
+
+        StopMenuMusic();
+    }
+
+    private void PlayMenuMusic()
+    {
+        if (menuMusicClip == null || menuMusicSource == null)
+            return;
+
+        menuMusicSource.clip = menuMusicClip;
+        menuMusicSource.volume = menuMusicVolume;
+        menuMusicSource.loop = true;
+
+        if (!menuMusicSource.isPlaying)
+            menuMusicSource.Play();
+    }
+
+    private void StopMenuMusic()
+    {
+        if (menuMusicSource != null)
+            menuMusicSource.Stop();
     }
 
     public void StartRebind(int k)

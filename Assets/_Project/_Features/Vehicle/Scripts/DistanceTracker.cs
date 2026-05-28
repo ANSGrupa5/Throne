@@ -39,16 +39,18 @@ public class DistanceTracker : MonoBehaviour
 
     public void GetTarget()
     {
-        try
-        {
-            target = GameObject.Find("motorFINAL2_WORKING(Clone)").GetComponent<Transform>();
-        }
-        catch(NullReferenceException)
-        {
-            target = GameObject.Find("motor22(Clone)").GetComponent<Transform>();
-        }
+        GameObject playerObject = GameObject.Find("motorFINAL2_WORKING(Clone)");
+        if (playerObject == null)
+            playerObject = GameObject.Find("motor22(Clone)");
+
+        SetTarget(playerObject != null ? playerObject.transform : null);
+    }
+
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
         totalDistance = 0f;
-        lastPosition = target.position;
+        lastPosition = target != null ? target.position : Vector3.zero;
     }
 
     void CalculateDistance()

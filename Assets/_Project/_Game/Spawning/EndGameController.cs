@@ -70,7 +70,7 @@ public class EndGameController : MonoBehaviour
         if (areaBoundary != null)
             return;
 
-        areaBoundary = Object.FindObjectOfType<AreaBoundaryScript>();
+        areaBoundary = Object.FindFirstObjectByType<AreaBoundaryScript>();
     }
 
     private void HandleTimerEnded()

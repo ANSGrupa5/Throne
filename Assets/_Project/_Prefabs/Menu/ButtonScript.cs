@@ -27,6 +27,9 @@ public class ButtonScript : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+
         button = GetComponent<Button>();
         try
         {
@@ -60,7 +63,7 @@ public class ButtonScript : MonoBehaviour
 
     public void OnClick()
     {
-        audioSource.PlayOneShot(clickSound);
+        PersistentUiAudioPlayer.PlayOneShot(clickSound);
     }
 
     void StartColorFade(Color targetColor)
@@ -97,6 +100,9 @@ public class ButtonScript : MonoBehaviour
 
     IEnumerator FadeInSound(AudioClip clip)
     {
+        if (clip == null || audioSource == null)
+            yield break;
+
         audioSource.clip = clip;
         audioSource.volume = 0f;
         audioSource.Play();

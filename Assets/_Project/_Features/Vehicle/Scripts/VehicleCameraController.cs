@@ -37,7 +37,8 @@ public class VehicleCameraController : MonoBehaviour
     // Handles preset switching input and updates camera interpolation.
     private void Update()
     {
-        if (Input.GetKeyDown(InputManager.Instance.Camera))
+        KeyCode cameraKey = InputManager.Instance != null ? InputManager.Instance.Camera : KeyCode.R;
+        if (Input.GetKeyDown(cameraKey))
             // Cycle through presets
             _currentPreset = (_currentPreset + 1) % presets.Length;
 
@@ -47,6 +48,9 @@ public class VehicleCameraController : MonoBehaviour
     // Smoothly moves and rotates the camera toward the active preset.
     private void SmoothTransition()
     {
+        if (cameraTransform == null || presets == null || presets.Length == 0)
+            return;
+
         if (_useSpectatorTarget && _spectatorTarget != null)
         {
             cameraTransform.position = Vector3.Lerp(

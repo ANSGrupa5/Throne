@@ -20,7 +20,7 @@ public class MatchInitializer : MonoBehaviour
     [Header("Spawn")]
     [SerializeField] private LayerMask obstacleMask;
     [SerializeField, Min(0f)] private float spawnInterval = 0.25f;
-    [SerializeField, Min(1)] private int preMatchCountdownSeconds = 5;
+    [SerializeField, Min(1)] private int preMatchCountdownSeconds = 3;
     [SerializeField, Min(0f)] private float goDisplayDuration = 0.75f;
     [SerializeField] private GameStartTimer gameStartTimer;
     [SerializeField] private GameTimer gameTimer;
@@ -47,10 +47,21 @@ public class MatchInitializer : MonoBehaviour
 
     private void Start()
     {
-        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+        if (ShouldWaitForNetworkMatchStart())
             return;
 
         BeginMatchInitialization();
+    }
+
+    private bool ShouldWaitForNetworkMatchStart()
+    {
+        if (GameSessionBootstrap.TryGetSession(out GameSessionRuntime session))
+            return !session.isSingleplayer;
+
+        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+            return true;
+
+        return InstanceFinder.IsClientStarted || InstanceFinder.IsServerStarted;
     }
 
     public void BeginMatchInitialization()
@@ -78,10 +89,10 @@ public class MatchInitializer : MonoBehaviour
 
     private IEnumerator InitializeRoutine()
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            yield break;
-
         GameSessionRuntime session = ResolveSession();
+
+        if (!session.isSingleplayer && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            yield break;
 
         if (!TryValidateSession(session, out string validationError))
         {
@@ -96,11 +107,12 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
-        List<NetworkConnection> players = GetConnectedPlayers();
+        List<NetworkConnection> players = session.isSingleplayer
+            ? new List<NetworkConnection>()
+            : GetConnectedPlayers();
         int totalHumanPlayers = Mathf.Max(1, players.Count);
-        int totalBots = 0;
         EnsureBotLooks(session);
-        totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
+        int totalBots = GetRequestedBotCount(session, totalHumanPlayers);
 
         int totalToSpawn = totalBots + totalHumanPlayers;
 
@@ -125,11 +137,11 @@ public class MatchInitializer : MonoBehaviour
             NetworkConnection ownerConnection = playerIndex < players.Count ? players[playerIndex] : null;
             string ownerId = ownerConnection != null ? $"player_{ownerConnection.ClientId}" : session.playerOwnerId;
             string displayName = playerIndex == 0 ? session.playerDisplayName : $"Player {playerIndex + 1}";
-            Color trailColor = ResolvePlayerColor(session, playerIndex);
-            SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
+            Color trailColor = ResolvePlayerColor(session, playerIndex, ownerConnection);
+            GameObject spawnedPlayer = SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
+            if (playerIndex == 0)
+                RegisterLocalPlayer(spawnedPlayer, displayName);
             index++;
-            StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
-            DistanceTracker.Instance.GetTarget();
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
@@ -167,25 +179,38 @@ public class MatchInitializer : MonoBehaviour
         OnMatchStart?.Invoke();
     }
 
-    private void SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
+    private GameObject SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
     {
-        if (prefab == null || spot == null) return;
+        if (prefab == null || spot == null)
+            return null;
 
         Vector3 pos = spot.Position;
         Quaternion rot = spot.Rotation;
-        GameObject go = Instantiate(prefab, pos, rot);
+        GameObject go = InstantiateVehiclePrefab(session, prefab, pos, rot);
+        PrepareSpawnedVehicleObject(go, isBot);
         _spawned.Add(go);
 
         VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
+        if (colorApplier == null)
+        {
+            Debug.LogError($"Spawned vehicle '{go.name}' is missing VehicleColorApplier.", go);
+            return go;
+        }
         colorApplier.SetColor(trailColor);
 
         VehicleLife life = go.GetComponent<VehicleLife>();
+        if (life == null)
+        {
+            Debug.LogError($"Spawned vehicle '{go.name}' is missing VehicleLife.", go);
+            return go;
+        }
         life.ConfigureSpawn(pos, rot);
         life.ConfigureIdentity(displayName, ownerId);
         session.GetOrCreateStats(ownerId, displayName, trailColor);
 
         TrailEmitter trailEmitter = go.GetComponent<TrailEmitter>();
-        trailEmitter.Configure(life, trailColor, session != null ? session.trailLength : 1);
+        if (trailEmitter != null)
+            trailEmitter.Configure(life, trailColor, session != null ? session.trailLength : 1);
 
         if (isBot)
         {
@@ -195,8 +220,152 @@ public class MatchInitializer : MonoBehaviour
         }
 
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        if (networkObject != null && InstanceFinder.IsServerStarted)
+        if (networkObject != null && InstanceFinder.IsServerStarted && !session.isSingleplayer)
             InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
+
+        return go;
+    }
+
+    private GameObject InstantiateVehiclePrefab(GameSessionRuntime session, GameObject prefab, Vector3 position, Quaternion rotation)
+    {
+        if (session == null || !session.isSingleplayer)
+            return Instantiate(prefab, position, rotation);
+
+        GameObject inactiveParent = new GameObject("OfflineVehicleSpawnRoot");
+        inactiveParent.SetActive(false);
+
+        GameObject instance = Instantiate(prefab, position, rotation, inactiveParent.transform);
+        StripSingleplayerNetworkComponents(instance);
+        instance.transform.SetParent(null, true);
+        Destroy(inactiveParent);
+        return instance;
+    }
+
+    private void StripSingleplayerNetworkComponents(GameObject instance)
+    {
+        if (instance == null)
+            return;
+
+        NetworkBehaviour[] networkBehaviours = instance.GetComponents<NetworkBehaviour>();
+        for (int i = networkBehaviours.Length - 1; i >= 0; i--)
+        {
+            NetworkBehaviour behaviour = networkBehaviours[i];
+            if (behaviour == null)
+                continue;
+
+            if (behaviour is PlayerVehicleInput || behaviour is VehicleLife)
+                continue;
+
+            DestroyImmediate(behaviour);
+        }
+
+        NetworkObject networkObject = instance.GetComponent<NetworkObject>();
+        if (networkObject != null)
+            DestroyImmediate(networkObject);
+    }
+
+    private void PrepareSpawnedVehicleObject(GameObject vehicle, bool isBot)
+    {
+        if (vehicle == null)
+            return;
+
+        vehicle.SetActive(true);
+        SetVehicleChildrenActive(vehicle, !isBot);
+
+        EnableBehaviour<VehicleController>(vehicle, true);
+        EnableBehaviour<VehicleLife>(vehicle, true);
+        EnableBehaviour<VehicleColorApplier>(vehicle, true);
+        EnableBehaviour<TrailEmitter>(vehicle, true);
+        EnableBehaviour<VehicleDeathSequence>(vehicle, true);
+
+        BotVehicleInput botInput = vehicle.GetComponent<BotVehicleInput>();
+        if (botInput != null)
+            botInput.enabled = isBot;
+        else if (isBot)
+            Debug.LogError($"Spawned bot '{vehicle.name}' is missing BotVehicleInput.", vehicle);
+
+        PlayerVehicleInput playerInput = vehicle.GetComponent<PlayerVehicleInput>();
+        if (playerInput != null)
+        {
+            playerInput.enabled = !isBot;
+            if (!isBot)
+                playerInput.RefreshLocalPresentation();
+        }
+        else if (!isBot)
+            Debug.LogError($"Spawned player '{vehicle.name}' is missing PlayerVehicleInput.", vehicle);
+
+        VehicleCameraController cameraController = vehicle.GetComponent<VehicleCameraController>();
+        if (cameraController != null)
+            cameraController.enabled = !isBot;
+
+        if (isBot)
+            SetVehicleCameraState(vehicle, false);
+
+        Rigidbody rb = vehicle.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.detectCollisions = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    private void SetVehicleChildrenActive(GameObject vehicle, bool includeCameras)
+    {
+        Transform[] children = vehicle.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null || child == vehicle.transform)
+                continue;
+
+            if (!includeCameras && (child.GetComponent<Camera>() != null || child.GetComponent<AudioListener>() != null))
+                continue;
+
+            child.gameObject.SetActive(true);
+        }
+    }
+
+    private void SetVehicleCameraState(GameObject vehicle, bool active)
+    {
+        Camera[] cameras = vehicle.GetComponentsInChildren<Camera>(true);
+        for (int i = 0; i < cameras.Length; i++)
+        {
+            Camera camera = cameras[i];
+            if (camera == null)
+                continue;
+
+            camera.gameObject.SetActive(active);
+            camera.enabled = active;
+        }
+
+        AudioListener[] listeners = vehicle.GetComponentsInChildren<AudioListener>(true);
+        for (int i = 0; i < listeners.Length; i++)
+        {
+            AudioListener listener = listeners[i];
+            if (listener != null)
+                listener.enabled = active;
+        }
+    }
+
+    private void EnableBehaviour<T>(GameObject owner, bool enabled) where T : Behaviour
+    {
+        T behaviour = owner.GetComponent<T>();
+        if (behaviour != null)
+            behaviour.enabled = enabled;
+    }
+
+    private void RegisterLocalPlayer(GameObject spawnedPlayer, string displayName)
+    {
+        if (spawnedPlayer == null)
+            return;
+
+        if (StatsManager.Instance != null)
+            StatsManager.Instance.SetPlayer(spawnedPlayer, displayName);
+
+        if (DistanceTracker.Instance != null)
+            DistanceTracker.Instance.SetTarget(spawnedPlayer.transform);
     }
 
     private List<NetworkConnection> GetConnectedPlayers()
@@ -204,21 +373,80 @@ public class MatchInitializer : MonoBehaviour
         if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
             return new List<NetworkConnection>();
 
-        return InstanceFinder.ServerManager.Clients.Values
+        List<NetworkConnection> players = InstanceFinder.ServerManager.Clients.Values
             .Where(connection => connection != null && connection.IsAuthenticated)
             .OrderBy(connection => connection.ClientId)
             .ToList();
+
+        NetworkConnection localConnection = InstanceFinder.IsClientStarted && InstanceFinder.ClientManager != null
+            ? InstanceFinder.ClientManager.Connection
+            : null;
+
+        if (localConnection != null && localConnection.IsAuthenticated && !ContainsLocalClient(players, localConnection))
+            players.Insert(0, localConnection);
+
+        return players;
     }
 
-    private Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex)
+    private bool ContainsLocalClient(List<NetworkConnection> players, NetworkConnection localConnection)
+    {
+        if (players == null || localConnection == null)
+            return false;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            NetworkConnection connection = players[i];
+            if (connection == null)
+                continue;
+
+            if (connection == localConnection || connection.IsLocalClient || connection.IsHost)
+                return true;
+
+            if (localConnection.IsValid && connection.ClientId == localConnection.ClientId)
+                return true;
+        }
+
+        return false;
+    }
+
+    private Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex, NetworkConnection ownerConnection = null)
     {
         if (session == null || session.trailColorPalette == null || session.trailColorPalette.Count == 0)
             return Color.white;
 
+        if (!session.isSingleplayer &&
+            ownerConnection != null &&
+            MultiplayerSessionDriver.Instance != null &&
+            MultiplayerSessionDriver.Instance.TryGetTrailColorIndex(ownerConnection.ClientId, out int selectedColorIndex))
+        {
+            selectedColorIndex = Mathf.Clamp(selectedColorIndex, 0, session.trailColorPalette.Count - 1);
+            return session.trailColorPalette[selectedColorIndex];
+        }
+
         if (playerIndex == 0)
             return session.playerTrailColor;
 
-        return session.trailColorPalette[playerIndex % session.trailColorPalette.Count];
+        List<Color> availableColors = new List<Color>();
+        for (int i = 0; i < session.trailColorPalette.Count; i++)
+        {
+            Color color = session.trailColorPalette[i];
+            if (!ApproximatelySameColor(color, session.playerTrailColor))
+                availableColors.Add(color);
+        }
+
+        if (availableColors.Count == 0)
+            return session.trailColorPalette[playerIndex % session.trailColorPalette.Count];
+
+        return availableColors[(playerIndex - 1) % availableColors.Count];
+    }
+
+    private bool ApproximatelySameColor(Color first, Color second)
+    {
+        const float tolerance = 0.001f;
+        return Mathf.Abs(first.r - second.r) < tolerance &&
+               Mathf.Abs(first.g - second.g) < tolerance &&
+               Mathf.Abs(first.b - second.b) < tolerance &&
+               Mathf.Abs(first.a - second.a) < tolerance;
     }
 
     private PlayerLook CreateFallbackBotLook(GameSessionRuntime session, int botIndex)
@@ -284,6 +512,25 @@ public class MatchInitializer : MonoBehaviour
             look.trailColor = color;
             session.botLooks.Add(look);
         }
+    }
+
+    private int GetRequestedBotCount(GameSessionRuntime session, int totalHumanPlayers)
+    {
+        if (session == null)
+            return 0;
+
+        int configuredBots = 0;
+        for (int i = 0; i < session.bots.Count; i++)
+        {
+            GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
+            if (entry != null)
+                configuredBots += Mathf.Max(0, entry.count);
+        }
+
+        if (configuredBots > 0)
+            return Mathf.Min(configuredBots, Mathf.Max(0, session.maxPlayers - totalHumanPlayers));
+
+        return Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
     }
 
     private Color PickAndRemoveColor(List<Color> availableColors)
@@ -396,7 +643,6 @@ public class MatchInitializer : MonoBehaviour
             return false;
         }
 
-        int totalBots = 0;
         for (int i = 0; i < session.bots.Count; i++)
         {
             GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
@@ -414,11 +660,11 @@ public class MatchInitializer : MonoBehaviour
                 error = $"Bot entry at index {i} has negative count ({entry.count}).";
                 return false;
             }
-
-            totalBots += entry.count;
         }
 
-        int totalPlayers = totalBots + 1;
+        int humanPlayers = session.isSingleplayer ? 1 : Mathf.Max(1, GetConnectedPlayers().Count);
+        int totalBots = GetRequestedBotCount(session, humanPlayers);
+        int totalPlayers = totalBots + humanPlayers;
         if (totalPlayers > session.maxPlayers)
         {
             error = $"Total participants ({totalPlayers}) exceed maxPlayers ({session.maxPlayers}).";

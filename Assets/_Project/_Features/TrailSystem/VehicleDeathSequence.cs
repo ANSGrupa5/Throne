@@ -67,7 +67,7 @@ public class VehicleDeathSequence : MonoBehaviour
         }
         else
         {
-            if (life != null && (!InstanceFinder.IsServerStarted || life.IsServerInitialized))
+            if (life != null && life.CanRunLocalRespawn())
                 life.Respawn();
 
             if (cameraController != null)

@@ -25,6 +25,8 @@ public class VehicleController : MonoBehaviour
     private IVehicleCommandSource _commandSource;
     private float _currentLeanAngle;
     private Vector3 _visualBaseLocalPosition;
+    private Vector3 _lastObservedPosition;
+    private float _observedSpeed;
     private NetworkObject _networkObject;
 
     private float _powerupSpeedMultiplier = 1f;
@@ -69,11 +71,21 @@ public class VehicleController : MonoBehaviour
         {
             _visualBaseLocalPosition = visualModel.localPosition;
         }
+
+        _lastObservedPosition = transform.position;
+    }
+
+    private void OnEnable()
+    {
+        _lastObservedPosition = transform.position;
+        _observedSpeed = 0f;
     }
 
     // Reads the current command source every frame.
     private void Update()
     {
+        UpdateObservedSpeed();
+
         if (_commandSource == null)
             _commandSource = GetComponent<IVehicleCommandSource>();
 
@@ -82,6 +94,17 @@ public class VehicleController : MonoBehaviour
         _boostActive = command.boost;
 
         ApplyVisualLean();
+    }
+
+    private void UpdateObservedSpeed()
+    {
+        float deltaTime = Time.deltaTime;
+        if (deltaTime <= 0f)
+            return;
+
+        Vector3 currentPosition = transform.position;
+        _observedSpeed = Vector3.Distance(currentPosition, _lastObservedPosition) / deltaTime;
+        _lastObservedPosition = currentPosition;
     }
 
     // Applies movement physics on a fixed timestep.
@@ -111,6 +134,9 @@ public class VehicleController : MonoBehaviour
             return false;
 
         if (_networkObject == null)
+            return true;
+
+        if (GameSessionBootstrap.CurrentSession != null && GameSessionBootstrap.CurrentSession.isSingleplayer)
             return true;
 
         if (!InstanceFinder.IsServerStarted && !InstanceFinder.IsClientStarted)
@@ -294,7 +320,7 @@ public class VehicleController : MonoBehaviour
             return;
         // Make lean more visible even when maxSpeed is set very high.
         // Reach full lean at a fraction of configured maxSpeed (tweak 0.25f as needed).
-        float currentSpeed = _rb.linearVelocity.magnitude;
+        float currentSpeed = Mathf.Max(_rb.linearVelocity.magnitude, _observedSpeed);
         float denom = Mathf.Max(0.1f, movementData.maxSpeed * 0.25f);
         float speedFactor = Mathf.Clamp01(currentSpeed / denom);
         float targetLean = -_inputTurn * maxLeanAngle * speedFactor;

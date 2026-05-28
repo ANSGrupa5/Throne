@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using FishNet;
 using FishNet.Managing.Scened;
 using FishNet.Object;
@@ -17,13 +18,24 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     }
 
     public static MultiplayerSessionDriver Instance { get; private set; }
+    public static event System.Action TrailColorSelectionsChanged;
 
     public bool IsMatchRunning { get; private set; }
+
+    private static readonly Dictionary<int, int> TrailColorSelections = new();
+    private static int _localPreferredTrailColorIndex;
+    private static int _localPaletteColorCount = 1;
 
     public override void OnStartNetwork()
     {
         base.OnStartNetwork();
         Instance = this;
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        SubmitLocalPreferredTrailColor();
     }
 
     public override void OnStopNetwork()
@@ -34,6 +46,154 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
 
         IsMatchRunning = false;
         MultiplayerMatchState.SetFrozen(false);
+    }
+
+    public static void ClearTrailColorSelections()
+    {
+        TrailColorSelections.Clear();
+        TrailColorSelectionsChanged?.Invoke();
+    }
+
+    public static void RequestLocalTrailColor(int colorIndex, int paletteColorCount)
+    {
+        _localPreferredTrailColorIndex = Mathf.Max(0, colorIndex);
+        _localPaletteColorCount = Mathf.Max(1, paletteColorCount);
+
+        if (Instance != null)
+            Instance.SubmitLocalPreferredTrailColor();
+    }
+
+    public static bool IsTrailColorTakenByOtherLocalPlayer(int colorIndex)
+    {
+        if (Instance == null)
+            return false;
+
+        return Instance.IsTrailColorTakenByOther(colorIndex);
+    }
+
+    public static bool TryGetLocalTrailColorIndex(out int colorIndex)
+    {
+        colorIndex = _localPreferredTrailColorIndex;
+
+        if (Instance == null)
+            return false;
+
+        int localClientId = Instance.GetLocalClientId();
+        if (localClientId < 0)
+            return false;
+
+        return TrailColorSelections.TryGetValue(localClientId, out colorIndex);
+    }
+
+    public bool TryGetTrailColorIndex(int clientId, out int colorIndex)
+    {
+        return TrailColorSelections.TryGetValue(clientId, out colorIndex);
+    }
+
+    private void SubmitLocalPreferredTrailColor()
+    {
+        if (!IsClientStarted)
+            return;
+
+        int colorIndex = Mathf.Clamp(_localPreferredTrailColorIndex, 0, _localPaletteColorCount - 1);
+        if (IsServerStarted)
+        {
+            int clientId = GetLocalClientId();
+            if (clientId >= 0)
+            {
+                SetTrailColorSelection(clientId, colorIndex, _localPaletteColorCount);
+                SyncTrailColorSelections();
+            }
+            return;
+        }
+
+        if (IsClientInitialized && IsSpawned)
+            SubmitTrailColorServerRpc(colorIndex, _localPaletteColorCount);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SubmitTrailColorServerRpc(int colorIndex, int paletteColorCount, FishNet.Connection.NetworkConnection caller = null)
+    {
+        if (caller == null || !caller.IsValid)
+            return;
+
+        SetTrailColorSelection(caller.ClientId, colorIndex, paletteColorCount);
+        SyncTrailColorSelections();
+    }
+
+    private void SetTrailColorSelection(int clientId, int requestedColorIndex, int paletteColorCount)
+    {
+        if (clientId < 0)
+            return;
+
+        int colorCount = Mathf.Max(1, paletteColorCount);
+        int assignedColorIndex = GetAvailableTrailColorIndex(clientId, requestedColorIndex, colorCount);
+        TrailColorSelections[clientId] = assignedColorIndex;
+    }
+
+    private int GetAvailableTrailColorIndex(int clientId, int requestedColorIndex, int paletteColorCount)
+    {
+        int colorCount = Mathf.Max(1, paletteColorCount);
+        int startIndex = Mathf.Clamp(requestedColorIndex, 0, colorCount - 1);
+        HashSet<int> usedByOthers = TrailColorSelections
+            .Where(selection => selection.Key != clientId)
+            .Select(selection => selection.Value)
+            .ToHashSet();
+
+        if (!usedByOthers.Contains(startIndex))
+            return startIndex;
+
+        for (int offset = 1; offset < colorCount; offset++)
+        {
+            int candidate = (startIndex + offset) % colorCount;
+            if (!usedByOthers.Contains(candidate))
+                return candidate;
+        }
+
+        return startIndex;
+    }
+
+    private void SyncTrailColorSelections()
+    {
+        var selections = TrailColorSelections.OrderBy(selection => selection.Key).ToArray();
+        int[] clientIds = selections.Select(selection => selection.Key).ToArray();
+        int[] colorIndices = selections.Select(selection => selection.Value).ToArray();
+        RpcSyncTrailColorSelections(clientIds, colorIndices);
+    }
+
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
+    private void RpcSyncTrailColorSelections(int[] clientIds, int[] colorIndices)
+    {
+        TrailColorSelections.Clear();
+
+        if (clientIds != null && colorIndices != null)
+        {
+            int count = Mathf.Min(clientIds.Length, colorIndices.Length);
+            for (int i = 0; i < count; i++)
+                TrailColorSelections[clientIds[i]] = colorIndices[i];
+        }
+
+        if (TryGetLocalTrailColorIndex(out int assignedColorIndex))
+            _localPreferredTrailColorIndex = assignedColorIndex;
+
+        TrailColorSelectionsChanged?.Invoke();
+    }
+
+    private bool IsTrailColorTakenByOther(int colorIndex)
+    {
+        int localClientId = GetLocalClientId();
+        if (localClientId < 0)
+            return false;
+
+        return TrailColorSelections.Any(selection => selection.Key != localClientId && selection.Value == colorIndex);
+    }
+
+    private int GetLocalClientId()
+    {
+        if (!IsClientStarted || ClientManager == null || ClientManager.Connection == null)
+            return -1;
+
+        return ClientManager.Connection.ClientId;
     }
 
     [Server]
@@ -61,23 +221,12 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
 
         for (int i = seconds; i > 0; i--)
         {
-            if (startTimer != null)
-                startTimer.ShowCount(i);
-
             RpcShowCount(i);
             yield return new WaitForSecondsRealtime(1f);
         }
 
-        if (startTimer != null)
-            startTimer.ShowGo();
-
         RpcShowGo();
         yield return new WaitForSecondsRealtime(goDuration);
-
-        if (startTimer != null)
-            startTimer.Hide();
-        if (timer != null)
-            timer.Begin(matchDuration);
 
         RpcHideCountdown();
         RpcBeginTimer(matchDuration);
@@ -132,45 +281,33 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         return results;
     }
 
-    [ObserversRpc]
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
     private void RpcShowCount(int seconds)
     {
-        if (IsServerInitialized)
-            return;
-
         GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
         if (startTimer != null)
             startTimer.ShowCount(seconds);
     }
 
-    [ObserversRpc]
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
     private void RpcShowGo()
     {
-        if (IsServerInitialized)
-            return;
-
         GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
         if (startTimer != null)
             startTimer.ShowGo();
     }
 
-    [ObserversRpc]
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
     private void RpcHideCountdown()
     {
-        if (IsServerInitialized)
-            return;
-
         GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
         if (startTimer != null)
             startTimer.Hide();
     }
 
-    [ObserversRpc]
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
     private void RpcBeginTimer(float matchDuration)
     {
-        if (IsServerInitialized)
-            return;
-
         GameTimer timer = FindFirstObjectByType<GameTimer>(FindObjectsInactive.Include);
         if (timer != null)
             timer.Begin(matchDuration);

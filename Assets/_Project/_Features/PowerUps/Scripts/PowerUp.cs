@@ -11,7 +11,7 @@ public enum PowerUpType
 public class PowerUp : MonoBehaviour
 {
     public PowerUpType powerUpType;
-    private bool collected = false;
+    private bool collected;
 
     [Header("Speed Up Settings")]
     [SerializeField] private float speedMultiplier = 1.5f;
@@ -29,6 +29,9 @@ public class PowerUp : MonoBehaviour
         if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
             return;
 
+        if (collected)
+            return;
+
         // Sprawdzamy czy pobrany został VehicleLife z collidera lub Rigidbody
         VehicleLife vehicleLife = other.GetComponentInParent<VehicleLife>();
         if (vehicleLife == null && other.attachedRigidbody != null)
@@ -38,6 +41,8 @@ public class PowerUp : MonoBehaviour
 
         if (vehicleLife == null || vehicleLife.IsDead)
             return;
+
+        collected = true;
 
         if (StatsManager.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
         {

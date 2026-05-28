@@ -99,11 +99,9 @@ public class GameSessionRuntime
         if (desiredBotCount.HasValue)
         {
             // Force an exact bot count when the caller requests one.
-            int requestedBots = desiredBotCount.Value;
-            if (requestedBots <= 0)
-                requestedBots = 1;
-            session.maxPlayers = (requestedBots>5 ? 5 : requestedBots) + 1;
-            PopulateBotsForCount(session, botsSettings, requestedBots, requestedBots);
+            int requestedBots = Mathf.Max(0, desiredBotCount.Value);
+            int maxBots = Mathf.Max(requestedBots, session.maxPlayers - 1);
+            PopulateBotsForCount(session, botsSettings, maxBots, requestedBots);
         }
         else if (botsSettings != null && botsSettings.bots != null)
         {

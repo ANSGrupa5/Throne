@@ -13,36 +13,42 @@ public class RotatePreview : MonoBehaviour
 
     [SerializeField] private int rotateAxis = (int)Axis.Y;
 
-    private float X;
-    private float Y;
-    private float Z;
+    private Vector3 rotationAxis = Vector3.up;
 
-    void Start()
+    void OnValidate()
+    {
+        CacheRotationAxis();
+    }
+
+    void Awake()
+    {
+        CacheRotationAxis();
+    }
+
+    private void CacheRotationAxis()
     {
         switch(rotateAxis)
         {
             case (int)Axis.X:
-                X = speed * Time.deltaTime;
-                Y = 0f;
-                Z = 0f;
+                rotationAxis = Vector3.right;
                 break;
 
             case (int)Axis.Y:
-                X = 0f;
-                Y = speed * Time.deltaTime;
-                Z = 0f;
+                rotationAxis = Vector3.up;
                 break;
 
             case (int)Axis.Z:
-                X = 0f;
-                Y = 0f;
-                Z = speed * Time.deltaTime;
+                rotationAxis = Vector3.forward;
+                break;
+
+            default:
+                rotationAxis = Vector3.up;
                 break;
         }
     }
 
     void Update()
     {
-        transform.Rotate(X, Y, Z);
+        transform.Rotate(rotationAxis * speed * Time.unscaledDeltaTime, Space.Self);
     }
 }

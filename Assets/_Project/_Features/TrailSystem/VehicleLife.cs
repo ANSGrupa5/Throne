@@ -28,7 +28,7 @@ public class VehicleLife : NetworkBehaviour
     public bool CanBeKilled => !_isDead && !_isInvulnerable;
     public GameObject LastKiller { get; private set; }
     public string DisplayName => string.IsNullOrWhiteSpace(_displayName) ? gameObject.name : _displayName;
-    public string OwnerId => string.IsNullOrWhiteSpace(_ownerId) ? DisplayName : _ownerId;
+    public new string OwnerId => string.IsNullOrWhiteSpace(_ownerId) ? DisplayName : _ownerId;
 
     private void Awake()
     {
@@ -76,7 +76,7 @@ public class VehicleLife : NetworkBehaviour
             return false;
 
         ApplyDeath(killer, invokeEvent: true);
-        if (IsSpawned && IsServerInitialized)
+        if (!IsSingleplayerSession() && IsSpawned && IsServerInitialized)
             RpcApplyDeath();
 
         return true;
@@ -95,7 +95,7 @@ public class VehicleLife : NetworkBehaviour
             return;
 
         ApplyRespawn();
-        if (IsSpawned && IsServerInitialized)
+        if (!IsSingleplayerSession() && IsSpawned && IsServerInitialized)
             RpcApplyRespawn();
     }
 
@@ -154,10 +154,10 @@ public class VehicleLife : NetworkBehaviour
 
         if (_rb != null)
         {
-            _rb.linearVelocity = Vector3.zero;
-            _rb.angularVelocity = Vector3.zero;
             _rb.isKinematic = false;
             _rb.detectCollisions = true;
+            _rb.linearVelocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
         }
 
         _isInvulnerable = respawnProtectionTime > 0f;
@@ -175,10 +175,23 @@ public class VehicleLife : NetworkBehaviour
 
     private bool CanApplyAuthoritativeGameplay()
     {
+        if (IsSingleplayerSession())
+            return true;
+
         if (!InstanceFinder.IsServerStarted && !InstanceFinder.IsClientStarted)
             return true;
 
         return IsServerInitialized;
+    }
+
+    public bool CanRunLocalRespawn()
+    {
+        return IsSingleplayerSession() || !InstanceFinder.IsServerStarted || IsServerInitialized;
+    }
+
+    private bool IsSingleplayerSession()
+    {
+        return GameSessionBootstrap.CurrentSession != null && GameSessionBootstrap.CurrentSession.isSingleplayer;
     }
 
     private void FreezePhysicsForDeath()
