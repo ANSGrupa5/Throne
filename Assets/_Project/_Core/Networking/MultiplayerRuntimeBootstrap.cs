@@ -37,8 +37,6 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     private bool _clientJoinPending;
     private bool _clientAuthenticated;
     private Coroutine _joinTimeoutCoroutine;
-    private GameObject _connectionTypePanel;
-    private GameObject _hostPanel;
 
     public static MultiplayerRuntimeBootstrap Instance => _instance;
     public bool IsServerStarted => _networkManager != null && _networkManager.IsServerStarted;
@@ -109,9 +107,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (_networkManager == null)
             return;
 
-        SetConnectionTypeVisible(false);
-        SetHostPanelVisible(true);
         MultiplayerSessionDriver.ClearTrailColorSelections();
+        MultiplayerSessionDriver.ClearLobbyState();
         StartHost();
         EmitLobbyStatus();
     }
@@ -122,8 +119,6 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (_networkManager == null)
             return false;
 
-        SetConnectionTypeVisible(false);
-        SetHostPanelVisible(false);
         _joinAddress = string.IsNullOrWhiteSpace(address) ? "127.0.0.1" : address.Trim();
         bool started = StartClient();
         if (started)
@@ -144,7 +139,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     public void BackToMainMenu()
     {
         StopNetworkingIfNeeded();
-        UnitySceneManager.LoadScene(MainMenuSceneName);
+        SceneTransitionLoader.LoadScene(MainMenuSceneName);
     }
 
     public void StartMatch()
@@ -227,6 +222,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         _clientAuthenticated = false;
         StopJoinTimeout();
         MultiplayerSessionDriver.ClearTrailColorSelections();
+        MultiplayerSessionDriver.ClearLobbyState();
         MultiplayerMatchState.SetFrozen(false);
         Time.timeScale = 1f;
         EmitStatus(string.Empty);
@@ -251,7 +247,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         }
 
         EnsureNetworkManager();
-        RefreshSceneUiState();
+        RefreshSceneNetworkState();
         if (_networkManager != null && _networkManager.IsServerStarted)
         {
             _driverSpawnRequested = true;
@@ -262,50 +258,17 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             StartCoroutine(StartMatchWhenSceneReady());
     }
 
-    private void RefreshSceneUiState()
+    private void RefreshSceneNetworkState()
     {
         if (_networkManager == null)
             return;
 
         if (_networkManager.IsServerStarted)
-        {
-            SetConnectionTypeVisible(false);
-            SetHostPanelVisible(true);
-            return;
-        }
-
-        if (_networkManager.IsClientStarted)
-        {
-            SetConnectionTypeVisible(false);
-            SetHostPanelVisible(false);
-            return;
-        }
-
-        SetConnectionTypeVisible(true);
-        SetHostPanelVisible(false);
-    }
-
-    private void SetConnectionTypeVisible(bool visible)
-    {
-        CacheScenePanels();
-        if (_connectionTypePanel != null)
-            _connectionTypePanel.SetActive(visible);
-    }
-
-    private void SetHostPanelVisible(bool visible)
-    {
-        CacheScenePanels();
-        if (_hostPanel != null)
-            _hostPanel.SetActive(visible);
-    }
-
-    private void CacheScenePanels()
-    {
-        if (_connectionTypePanel == null)
-            _connectionTypePanel = GameObject.Find("ConnectionType");
-
-        if (_hostPanel == null)
-            _hostPanel = GameObject.Find("Panel");
+            EmitLobbyStatus();
+        else if (_networkManager.IsClientStarted)
+            EmitStatus("Waiting for host to start the game");
+        else
+            EmitStatus(string.Empty);
     }
 
     private void EnsureNetworkManager()

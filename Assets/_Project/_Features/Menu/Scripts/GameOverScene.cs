@@ -37,7 +37,7 @@ public class GameOverController : MonoBehaviour
     public void LoadScene(string sceneName)
     {
         CleanupPayload();
-        SceneManager.LoadScene(sceneName);
+        SceneTransitionLoader.LoadScene(sceneName);
     }
 
     public void ReturnToMainMenu()

@@ -1,121 +1,377 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
-using System;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
-public class ButtonScript : MonoBehaviour
+[DisallowMultipleComponent]
+[AddComponentMenu("Throne/UI/Button Feedback")]
+public sealed class ButtonScript : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerClickHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
+    private const float ClickDeduplicationSeconds = 0.05f;
+
+    [Header("References")]
+    [SerializeField] private Graphic targetGraphic;
+
     [Header("Audio")]
-    public AudioClip hoverSound;
-    public AudioClip clickSound;
-    public float hoverCooldownSeconds = 0.7f;
-    public float audioFadeDuration = 0.2f;
+    [FormerlySerializedAs("hooverSound")]
+    [SerializeField] private AudioClip hoverSound;
+    [SerializeField] private AudioClip clickSound;
+    [SerializeField, Min(0f)] private float hoverCooldownSeconds = 0.7f;
+    [SerializeField, Min(0f)] private float audioFadeDuration = 0.2f;
 
     [Header("Color Fade")]
-    public Color normalColor = Color.white;
-    public Color hoverColor = Color.gray;
-    public float colorFadeDuration = 0.2f;
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color hoverColor = Color.gray;
+    [SerializeField, Min(0f)] private float colorFadeDuration = 0.2f;
 
-    private AudioSource audioSource;
-    private Button button;
-    private Image buttonImage;
+    private AudioSource _audioSource;
+    private Selectable _selectable;
+    private Coroutine _audioCoroutine;
+    private Coroutine _colorCoroutine;
+    private bool _isPointerInside;
+    private bool _isSelected;
+    private bool _isHighlighted;
+    private float _lastHoverSoundTime = -Mathf.Infinity;
+    private float _lastClickSoundTime = -Mathf.Infinity;
 
-    private float lastPlayedHoverSoundTime = -Mathf.Infinity;
-    private Coroutine colorCoroutine;
-    private Coroutine audioCoroutine;
-
-    void Start()
+    public AudioClip HoverSound
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-            audioSource = gameObject.AddComponent<AudioSource>();
+        get => hoverSound;
+        set => hoverSound = value;
+    }
 
-        button = GetComponent<Button>();
-        try
+    public AudioClip ClickSound
+    {
+        get => clickSound;
+        set => clickSound = value;
+    }
+
+    public float HoverCooldownSeconds
+    {
+        get => hoverCooldownSeconds;
+        set => hoverCooldownSeconds = Mathf.Max(0f, value);
+    }
+
+    public float AudioFadeDuration
+    {
+        get => audioFadeDuration;
+        set => audioFadeDuration = Mathf.Max(0f, value);
+    }
+
+    public Color NormalColor
+    {
+        get => normalColor;
+        set
         {
-            buttonImage = button.GetComponent<Image>();
-            buttonImage.color = normalColor;
+            normalColor = value;
+            ApplyCurrentColorInstantly();
         }
-        catch (NullReferenceException)
+    }
+
+    public Color HoverColor
+    {
+        get => hoverColor;
+        set
         {
-            buttonImage = null;
+            hoverColor = value;
+            ApplyCurrentColorInstantly();
         }
+    }
+
+    public float ColorFadeDuration
+    {
+        get => colorFadeDuration;
+        set => colorFadeDuration = Mathf.Max(0f, value);
+    }
+
+    private void Awake()
+    {
+        CacheComponents();
+        ConfigureAudioSource();
+    }
+
+    private void OnEnable()
+    {
+        CacheComponents();
+        ConfigureAudioSource();
+        ApplyCurrentColorInstantly();
+    }
+
+    private void OnDisable()
+    {
+        StopRunningCoroutines();
+        _isPointerInside = false;
+        _isSelected = false;
+        _isHighlighted = false;
+    }
+
+    private void Reset()
+    {
+        CacheComponents();
+        ConfigureAudioSource();
+        ApplyCurrentColorInstantly();
+    }
+
+    private void OnValidate()
+    {
+        hoverCooldownSeconds = Mathf.Max(0f, hoverCooldownSeconds);
+        audioFadeDuration = Mathf.Max(0f, audioFadeDuration);
+        colorFadeDuration = Mathf.Max(0f, colorFadeDuration);
+
+        CacheComponents();
+        ConfigureAudioSource();
+
+        if (!Application.isPlaying)
+            ApplyCurrentColorInstantly();
+    }
+
+    public void ApplyStyleFrom(ButtonScript source, bool includeColors = true)
+    {
+        if (source == null || source == this)
+            return;
+
+        hoverSound = source.hoverSound;
+        clickSound = source.clickSound;
+        hoverCooldownSeconds = source.hoverCooldownSeconds;
+        audioFadeDuration = source.audioFadeDuration;
+        colorFadeDuration = source.colorFadeDuration;
+
+        if (includeColors)
+            SetColors(source.normalColor, source.hoverColor);
+    }
+
+    public void SetColors(Color normal, Color hover, bool applyImmediately = true)
+    {
+        normalColor = normal;
+        hoverColor = hover;
+
+        if (applyImmediately)
+            ApplyCurrentColorInstantly();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        _isPointerInside = true;
+        RefreshHighlightState(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        _isPointerInside = false;
+        RefreshHighlightState(false);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        PlayClickFeedback();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        // Pointer click fires on release. Feedback is already played on press.
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        _isSelected = true;
+        RefreshHighlightState(true);
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        _isSelected = false;
+        RefreshHighlightState(false);
+    }
+
+    public void OnSubmit(BaseEventData eventData)
+    {
+        PlayClickFeedback();
     }
 
     public void OnHoverEnter()
     {
-        // Color fade in
-        StartColorFade(hoverColor);
-
-        // Audio fade in with cooldown
-        if (Time.time - lastPlayedHoverSoundTime >= hoverCooldownSeconds)
-        {
-            lastPlayedHoverSoundTime = Time.time;
-            StartAudioFadeIn(hoverSound);
-        }
+        _isPointerInside = true;
+        RefreshHighlightState(true);
     }
 
     public void OnHoverExit()
     {
-        // Color fade out
-        StartColorFade(normalColor);
+        _isPointerInside = false;
+        RefreshHighlightState(false);
     }
 
     public void OnClick()
     {
+        // Legacy EventTrigger hook. Pointer feedback is handled on press.
+    }
+
+    private void CacheComponents()
+    {
+        if (_selectable == null)
+            _selectable = GetComponent<Selectable>();
+
+        if (_audioSource == null)
+            _audioSource = GetComponent<AudioSource>();
+
+        if (targetGraphic == null)
+            targetGraphic = _selectable != null && _selectable.targetGraphic != null
+                ? _selectable.targetGraphic
+                : GetComponent<Graphic>();
+    }
+
+    private void ConfigureAudioSource()
+    {
+        if (_audioSource == null)
+            return;
+
+        _audioSource.playOnAwake = false;
+        _audioSource.loop = false;
+        _audioSource.spatialBlend = 0f;
+        _audioSource.ignoreListenerPause = true;
+    }
+
+    private void RefreshHighlightState(bool playHoverSound)
+    {
+        bool shouldHighlight = CanPlayFeedback() && (_isPointerInside || _isSelected);
+        if (_isHighlighted == shouldHighlight)
+            return;
+
+        _isHighlighted = shouldHighlight;
+        StartColorFade(_isHighlighted ? hoverColor : normalColor);
+
+        if (_isHighlighted && playHoverSound)
+            TryPlayHoverSound();
+    }
+
+    private bool CanPlayFeedback()
+    {
+        return isActiveAndEnabled && (_selectable == null || (_selectable.isActiveAndEnabled && _selectable.interactable));
+    }
+
+    private void PlayClickFeedback()
+    {
+        if (!CanPlayFeedback())
+            return;
+
+        float now = Time.unscaledTime;
+        if (now - _lastClickSoundTime < ClickDeduplicationSeconds)
+            return;
+
+        _lastClickSoundTime = now;
         PersistentUiAudioPlayer.PlayOneShot(clickSound);
     }
 
-    void StartColorFade(Color targetColor)
+    private void TryPlayHoverSound()
     {
-        if (colorCoroutine != null)
-            StopCoroutine(colorCoroutine);
+        float now = Time.unscaledTime;
+        if (now - _lastHoverSoundTime < hoverCooldownSeconds)
+            return;
 
-        if (buttonImage != null)
-            colorCoroutine = StartCoroutine(FadeColor(targetColor));
+        _lastHoverSoundTime = now;
+        StartAudioFadeIn(hoverSound);
     }
 
-    IEnumerator FadeColor(Color target)
+    private void StartColorFade(Color targetColor)
     {
-        Color start = buttonImage.color;
-        float time = 0f;
+        if (targetGraphic == null)
+            return;
 
-        while (time < colorFadeDuration)
+        if (_colorCoroutine != null)
+            StopCoroutine(_colorCoroutine);
+
+        if (colorFadeDuration <= 0f || !Application.isPlaying)
         {
-            time += Time.deltaTime;
-            buttonImage.color = Color.Lerp(start, target, time / colorFadeDuration);
+            targetGraphic.color = targetColor;
+            _colorCoroutine = null;
+            return;
+        }
+
+        _colorCoroutine = StartCoroutine(FadeColor(targetColor));
+    }
+
+    private IEnumerator FadeColor(Color targetColor)
+    {
+        Color startColor = targetGraphic.color;
+        float elapsed = 0f;
+
+        while (elapsed < colorFadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            targetGraphic.color = Color.Lerp(startColor, targetColor, elapsed / colorFadeDuration);
             yield return null;
         }
 
-        buttonImage.color = target;
+        targetGraphic.color = targetColor;
+        _colorCoroutine = null;
     }
 
-    void StartAudioFadeIn(AudioClip clip)
+    private void StartAudioFadeIn(AudioClip clip)
     {
-        if (audioCoroutine != null)
-            StopCoroutine(audioCoroutine);
+        if (clip == null)
+            return;
 
-        audioCoroutine = StartCoroutine(FadeInSound(clip));
-    }
-
-    IEnumerator FadeInSound(AudioClip clip)
-    {
-        if (clip == null || audioSource == null)
-            yield break;
-
-        audioSource.clip = clip;
-        audioSource.volume = 0f;
-        audioSource.Play();
-
-        float time = 0f;
-
-        while (time < audioFadeDuration)
+        if (_audioSource == null)
         {
-            time += Time.deltaTime;
-            audioSource.volume = Mathf.Lerp(0f, 1f, time / audioFadeDuration);
+            PersistentUiAudioPlayer.PlayOneShot(clip);
+            return;
+        }
+
+        if (_audioCoroutine != null)
+            StopCoroutine(_audioCoroutine);
+
+        if (audioFadeDuration <= 0f)
+        {
+            _audioSource.volume = 1f;
+            _audioSource.PlayOneShot(clip);
+            _audioCoroutine = null;
+            return;
+        }
+
+        _audioCoroutine = StartCoroutine(FadeInSound(clip));
+    }
+
+    private IEnumerator FadeInSound(AudioClip clip)
+    {
+        _audioSource.clip = clip;
+        _audioSource.volume = 0f;
+        _audioSource.Play();
+
+        float elapsed = 0f;
+        while (elapsed < audioFadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            _audioSource.volume = Mathf.Lerp(0f, 1f, elapsed / audioFadeDuration);
             yield return null;
         }
 
-        audioSource.volume = 1f;
+        _audioSource.volume = 1f;
+        _audioCoroutine = null;
+    }
+
+    private void ApplyCurrentColorInstantly()
+    {
+        CacheComponents();
+
+        if (targetGraphic != null)
+            targetGraphic.color = _isHighlighted ? hoverColor : normalColor;
+    }
+
+    private void StopRunningCoroutines()
+    {
+        if (_colorCoroutine != null)
+        {
+            StopCoroutine(_colorCoroutine);
+            _colorCoroutine = null;
+        }
+
+        if (_audioCoroutine != null)
+        {
+            StopCoroutine(_audioCoroutine);
+            _audioCoroutine = null;
+        }
     }
 }

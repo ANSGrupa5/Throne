@@ -41,5 +41,8 @@ public sealed class PersistentUiAudioPlayer : MonoBehaviour
             _audioSource = gameObject.AddComponent<AudioSource>();
 
         _audioSource.playOnAwake = false;
+        _audioSource.loop = false;
+        _audioSource.spatialBlend = 0f;
+        _audioSource.ignoreListenerPause = true;
     }
 }

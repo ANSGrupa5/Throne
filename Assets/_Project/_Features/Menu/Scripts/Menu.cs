@@ -60,7 +60,7 @@ public class Menu : MonoBehaviour
 
     public void LoadScene(string sceneName)
     {
-        SceneManager.LoadScene(sceneName);
+        SceneTransitionLoader.LoadScene(sceneName);
     }
 
     public void ShowScreen(int screenNumber)

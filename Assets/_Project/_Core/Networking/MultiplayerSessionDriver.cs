@@ -8,6 +8,33 @@ using UnityEngine;
 
 public sealed class MultiplayerSessionDriver : NetworkBehaviour
 {
+    public readonly struct LobbyStateSnapshot
+    {
+        public readonly int HumanPlayers;
+        public readonly int SlotCount;
+        public readonly int BotSlotMask;
+        public readonly int TrailLength;
+        public readonly float MatchDuration;
+        public readonly int GameModeIndex;
+        public readonly bool SuddenDeath;
+
+        public LobbyStateSnapshot(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
+        {
+            HumanPlayers = humanPlayers;
+            SlotCount = slotCount;
+            BotSlotMask = botSlotMask;
+            TrailLength = trailLength;
+            MatchDuration = matchDuration;
+            GameModeIndex = gameModeIndex;
+            SuddenDeath = suddenDeath;
+        }
+
+        public bool IsBotSlotOccupied(int slotIndex)
+        {
+            return slotIndex >= 0 && slotIndex < 31 && (BotSlotMask & (1 << slotIndex)) != 0;
+        }
+    }
+
     public struct MatchResultSnapshot
     {
         public string OwnerId;
@@ -19,10 +46,13 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
 
     public static MultiplayerSessionDriver Instance { get; private set; }
     public static event System.Action TrailColorSelectionsChanged;
+    public static event System.Action LobbyStateChanged;
 
     public bool IsMatchRunning { get; private set; }
 
     private static readonly Dictionary<int, int> TrailColorSelections = new();
+    private static LobbyStateSnapshot _lobbyStateSnapshot;
+    private static bool _hasLobbyStateSnapshot;
     private static int _localPreferredTrailColorIndex;
     private static int _localPaletteColorCount = 1;
 
@@ -52,6 +82,36 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     {
         TrailColorSelections.Clear();
         TrailColorSelectionsChanged?.Invoke();
+    }
+
+    public static void ClearLobbyState()
+    {
+        _hasLobbyStateSnapshot = false;
+        _lobbyStateSnapshot = default;
+        LobbyStateChanged?.Invoke();
+    }
+
+    public static bool TryGetLobbyState(out LobbyStateSnapshot snapshot)
+    {
+        snapshot = _lobbyStateSnapshot;
+        return _hasLobbyStateSnapshot;
+    }
+
+    public static void PublishHostLobbyState(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
+    {
+        if (Instance == null || !Instance.IsServerStarted)
+            return;
+
+        slotCount = Mathf.Clamp(slotCount, 0, 31);
+        int validSlotMask = slotCount <= 0 ? 0 : (1 << slotCount) - 1;
+        Instance.RpcSyncLobbyState(
+            Mathf.Clamp(humanPlayers, 0, slotCount),
+            slotCount,
+            botSlotMask & validSlotMask,
+            trailLength,
+            Mathf.Max(0f, matchDuration),
+            Mathf.Max(0, gameModeIndex),
+            suddenDeath);
     }
 
     public static void RequestLocalTrailColor(int colorIndex, int paletteColorCount)
@@ -177,6 +237,14 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
             _localPreferredTrailColorIndex = assignedColorIndex;
 
         TrailColorSelectionsChanged?.Invoke();
+    }
+
+    [ObserversRpc(RunLocally = true, BufferLast = true)]
+    private void RpcSyncLobbyState(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
+    {
+        _lobbyStateSnapshot = new LobbyStateSnapshot(humanPlayers, slotCount, botSlotMask, trailLength, matchDuration, gameModeIndex, suddenDeath);
+        _hasLobbyStateSnapshot = true;
+        LobbyStateChanged?.Invoke();
     }
 
     private bool IsTrailColorTakenByOther(int colorIndex)

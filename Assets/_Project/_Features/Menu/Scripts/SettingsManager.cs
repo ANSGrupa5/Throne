@@ -13,6 +13,7 @@ public class SettingsManager : MonoBehaviour
     [SerializeField] private Toggle FullscreenToggle;
     [Header("Menu Music")]
     [SerializeField] private AudioClip menuMusicClip;
+    [SerializeField] private string menuMusicResourcesPath = "Audio/MenuMusic";
     [SerializeField, Range(0f, 1f)] private float menuMusicVolume = 1f;
 
     //Keybinds
@@ -133,6 +134,9 @@ public class SettingsManager : MonoBehaviour
 
     private void PlayMenuMusic()
     {
+        if (menuMusicClip == null && !string.IsNullOrWhiteSpace(menuMusicResourcesPath))
+            menuMusicClip = Resources.Load<AudioClip>(menuMusicResourcesPath);
+
         if (menuMusicClip == null || menuMusicSource == null)
             return;
 
