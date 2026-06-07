@@ -8500,48 +8500,48 @@ MonoBehaviour:
     colorImage: {fileID: 1753210066}
     selectionFrame: {fileID: 741126096}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1208203160}
     colorImage: {fileID: 1208203161}
     selectionFrame: {fileID: 667122642}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 800846681}
     colorImage: {fileID: 800846682}
     selectionFrame: {fileID: 1809727445}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1311807390}
     colorImage: {fileID: 1311807391}
     selectionFrame: {fileID: 1213020432}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 151609141}
     colorImage: {fileID: 151609142}
     selectionFrame: {fileID: 1028047950}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 279903811}
     colorImage: {fileID: 279903812}
     selectionFrame: {fileID: 2106992884}
     availabilityGroup: {fileID: 0}
-    selectionFrameFill: {r: 0, g: 0, b: 0, a: 0}
-    selectionFrameOutline: {r: 0, g: 0, b: 0, a: 0}
+    selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
     availableAlpha: 1
     unavailableAlpha: 0.35
   opponentHeading: {fileID: 296322053}
