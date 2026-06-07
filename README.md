@@ -1,93 +1,123 @@
-# Struktura Projektu
+# Throne - struktura projektu
 
-## Drzewo Katalogów
+Ten projekt jest projektem Unity. Aktualna struktura trzyma zasoby gry w `Assets/Project`, zewnętrzne paczki w `Assets/Plugins`, a konfigurację Unity w standardowych folderach `Packages` i `ProjectSettings`.
+
+## Główne katalogi
+
 ```text
 Assets/
-└── _Project/
-    ├── _Art/
-    │   ├── Animations/
-    │   ├── Environments/
+├── Plugins/
+│   ├── FishNet/
+│   │   └── FishNet.Config.XML
+│   ├── ParrelSync/
+│   └── Suggo Creations/
+└── Project/
+    ├── Art/
+    │   ├── Audio/
+    │   ├── Lighting/
     │   ├── Materials/
     │   ├── Models/
-    │   ├── Shaders/
     │   ├── Textures/
-    │   └── VFX/
-    ├── _Common/
-    │   └── Enums/
-    ├── _Core/
-    │   ├── Editor/
+    │   └── UI/
+    ├── Data/
+    │   ├── Animation/
     │   ├── Networking/
-    │   ├── Plugins/
-    │   └── Systems/
-    ├── _Data/
-    │   ├── ScriptableObjects/
-    │   └── Settings/
-    ├── _Debug/
-    ├── _Features/
-    │   ├── AI/
-    │   ├── Customization/
-    │   ├── PowerUps/
-    │   ├── TrailSystem/
+    │   ├── Renderer/
+    │   ├── Settings/
+    │   ├── URPDefaultResources/
     │   └── Vehicle/
-    ├── _Prefabs/
+    ├── Prefabs/
+    │   ├── BackRock-NeonCity/
     │   ├── Environment/
     │   ├── Networking/
-    │   ├── Vehicles/
-    │   └── VFX/
-    ├── _Scenes/
-    ├── _Settings/
-    └── _UI/
-        ├── Fonts/
-        └── Icons/
+    │   ├── PowerUps/
+    │   ├── UI/
+    │   └── Vehicles/
+    ├── Scenes/
+    │   ├── Arenas/
+    │   └── UI/
+    └── Scripts/
+        ├── AreaBoundary/
+        ├── Config/
+        ├── Editor/
+        ├── GameFlow/
+        ├── GameSession/
+        ├── Menu/
+        ├── Networking/
+        ├── PowerUps/
+        ├── TrailSystem/
+        └── Vehicle/
 ```
----
 
-## Opis Zawartości
+## Zasady organizacji
 
-### 🎨 _Art
-Zasoby wizualne i graficzne.
-* **Animations**: Klipy, kontrolery animatorów.
-* **Environments**: Modele i tekstury otoczenia.
-* **Materials**: Materiały Unity.
-* **Models**: Surowe pliki geometrii (.fbx, .obj).
-* **Shaders**: Pliki Shader Graph / HLSL.
-* **Textures**: Mapy tekstur.
-* **VFX**: Systemy cząsteczkowe (VFX Graph / Shuriken).
+`Assets/Project` jest miejscem na kod i zasoby należące do gry. Nowe skrypty, sceny, prefaby, modele, materiały i dane projektu powinny trafiać do odpowiedniego podfolderu tutaj.
 
-### ⚙️ _Core
-Kluczowe systemy i fundamenty gry.
-* **Editor**: Skrypty rozszerzające edytor (nie trafiają do buildu).
-* **Networking**: Zarządzanie połączeniami, synchronizacja stanu, lobby.
-* **Plugins**: Zewnętrzne biblioteki (np. Netcode, Mirror).
-* **Systems**: Globalne menedżery (GameManager, SaveSystem, Audio).
+`Assets/Plugins` jest miejscem na zewnętrzne biblioteki i assety dostawców. Aktualnie znajdują się tam FishNet, ParrelSync oraz Suggo Creations. Kod gry nie powinien być dokładany bezpośrednio do tych folderów, chyba że jest to świadoma modyfikacja paczki.
 
-### 🛠️ _Features
-Logika podzielona na konkretne mechaniki (Moduły).
-* **AI**: Zachowania botów i nawigacja.
-* **Customization**: System zmiany wyglądu pojazdów.
-* **PowerUps**: Logika bonusów na trasie.
-* **TrailSystem**: Mechanika śladu i detekcji kolizji.
-* **Vehicle**: Fizyka jazdy i obsługa Inputu.
+`Assets/Plugins/FishNet/FishNet.Config.XML` przechowuje konfigurację FishNet, w tym ścieżkę do generowanej kolekcji prefabów sieciowych: `Assets/Project/Data/Networking/DefaultPrefabObjects.asset`.
 
-### 📦 _Prefabs
-Skonfigurowane obiekty gotowe do użycia na scenach.
-* Podzielone analogicznie do systemów (Vehicles, Environment, Networking, VFX).
+## Opis folderów `Assets/Project`
 
-### 📊 _Data & _Settings
-Dane statyczne i konfiguracja.
-* **ScriptableObjects**: Dane statystyczne, bazy przedmiotów.
-* **Settings**: Profile URP, Input Actions, Physics Settings.
+### Art
 
-### 🧪 _Debug
-Przestrzeń robocza programistów: sceny testowe, cheaty, prototypy mechanik.
+Zasoby wizualne, dźwiękowe i importowane assety:
 
-### 🖼️ _UI
-Interfejs użytkownika: czcionki (TMP), ikony, sprite'y, atlasy.
+- `Audio` - efekty dźwiękowe i muzyka menu.
+- `Lighting` - dane oświetlenia dla środowisk.
+- `Materials` - materiały Unity, w tym materiały aren i paczki BackRock-NeonCity.
+- `Models` - modele FBX i powiązane pliki źródłowe, w tym pojazdy, ringi, power-upy i elementy Neon City.
+- `Textures` - tekstury, pliki `.fbm` oraz mapy używane przez modele i materiały.
+- `UI` - grafiki interfejsu, ikony, zasoby menu oraz TextMesh Pro.
 
-### 🎬 _Scenes
-Oficjalne sceny: Bootstrap (startowa), Menus, Levels.
+### Data
 
-### 🧩 _Common
-Elementy współdzielone (Enums, Constants, Shared Data Models).
+Dane konfiguracyjne i assety techniczne:
 
+- `Animation` - klipy i dane animacji.
+- `Networking` - dane FishNet, w tym `DefaultPrefabObjects.asset`.
+- `Renderer` - assety renderera i dane związane z renderowaniem środowisk.
+- `Settings` - ustawienia gry i Unity.
+- `URPDefaultResources` - zasoby domyślne Universal Render Pipeline.
+- `Vehicle` - dane konfiguracyjne pojazdów.
 
+### Prefabs
+
+Gotowe obiekty Unity używane na scenach:
+
+- `BackRock-NeonCity` - prefaby środowiska Neon City, budynki, ulice, park, elementy dekoracyjne i efekty.
+- `Environment` - prefaby areny, granic mapy i środowiska.
+- `Networking` - prefaby startowe i sterujące trybem multiplayer.
+- `PowerUps` - prefaby bonusów rozgrywki.
+- `UI` - prefaby menu, lobby i leaderboardu.
+- `Vehicles` - prefaby pojazdów, warianty botów, preview i lusterka.
+
+### Scenes
+
+Oficjalne sceny projektu:
+
+- `Arenas` - sceny rozgrywki: `Neon City`, `Neon City XL`, `Neon City XL Multiplayer`, `Neon City XXL`.
+- `UI/Menu` - `MainMenu` i `MultiplayerConnection`.
+- `UI/Lobby` - `SingleplayerLobby` i `MultiplayerLobby`.
+- `UI` - `GameOver`.
+
+### Scripts
+
+Kod gry podzielony według funkcji:
+
+- `AreaBoundary` - logika granic areny.
+- `Config` - ScriptableObjecty i ustawienia gry, botów oraz wyglądu gracza.
+- `Editor` - rozszerzenia edytora Unity, obecnie dla systemu śladu i życia pojazdu.
+- `GameFlow` - timer, start meczu, koniec gry i spawn pointy.
+- `GameSession` - inicjalizacja i runtime sesji meczu.
+- `Menu` - obsługa menu, lobby, wyboru pojazdu, wyników, ustawień i przejść scen.
+- `Networking` - bootstrap multiplayer, stan meczu i driver sesji FishNet.
+- `PowerUps` - logika power-upów i spawnera.
+- `TrailSystem` - emisja śladu, segmenty, kolor pojazdu i sekwencja śmierci.
+- `Vehicle` - sterowanie graczem i botami, komendy wejścia, kamera, ruch i synchronizacja kół.
+
+## Pliki i foldery Unity poza `Assets`
+
+- `Packages/manifest.json` - zależności Unity Package Manager.
+- `ProjectSettings/` - ustawienia projektu Unity.
+- `UserSettings/`, `Library/`, `Temp/`, `Logs/` - lokalne foldery Unity, nie są częścią ręcznie utrzymywanej struktury źródeł.

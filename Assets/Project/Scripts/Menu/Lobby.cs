@@ -1,0 +1,626 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
+
+public abstract class Lobby : MonoBehaviour
+{
+    [Header("Default Config Assets")]
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private BotsSettings botsSettings;
+    [SerializeField] private PlayerLook playerLook;
+
+    [Header("Bots")]
+    [SerializeField] private TMP_Text botCountText;
+
+    [Header("Player Color")]
+    [SerializeField] private Color playerTrailColor = Color.white;
+    [SerializeField] private TrailColorButtonView[] trailColorButtons;
+
+    [Header("Opponent Slots")]
+    [FormerlySerializedAs("playerHeading")]
+    [SerializeField] private TMP_Text opponentHeading;
+    [FormerlySerializedAs("lobbySlots")]
+    [SerializeField] private OpponentSlotEntryView[] opponentSlots;
+
+    [Header("Settings UI")]
+    [SerializeField] private TMP_Text minutes;
+    [SerializeField] private TMP_Text seconds;
+    [SerializeField] private TMP_Dropdown dropdown;
+    [SerializeField] private Toggle suddenDeathToggle;
+
+    [Header("Scene Buttons")]
+    [SerializeField] private Button startButton;
+    [SerializeField] private Button backButton;
+
+    [Header("UI Audio")]
+    [SerializeField] private AudioClip uiClickSound;
+
+    [Header("Trail Length")]
+    [SerializeField] private TMP_Text trailLengthText;
+
+    [Header("Vehicle Previews")]
+    [SerializeField] private int currentModel;
+    [SerializeField] private GameObject[] motorPreview;
+    [SerializeField] private GameObject[] motorPlayable;
+
+    [SerializeField] private string multiplayerArenaSceneName = "Neon City XL Multiplayer";
+
+    private OpponentSlotView _opponentSlots;
+    private ScooterSelectView _scooterSelect;
+    private TrailColorSelectionView _trailColorSelection;
+    private MatchSettingsView _matchSettings;
+    private bool _componentsEnabled;
+    private bool _lobbyStateDirty = true;
+
+    protected string ArenaSceneName { get; private set; } = "Neon City XL";
+
+    public int BotCount => _opponentSlots != null ? _opponentSlots.BotCount : 0;
+
+    internal GameSettings GameSettings => gameSettings;
+    internal BotsSettings BotsSettings => botsSettings;
+    internal PlayerLook PlayerLook => playerLook;
+    internal TrailColorButtonView[] TrailColorButtons => trailColorButtons;
+    internal OpponentSlotEntryView[] OpponentSlots => opponentSlots;
+    internal TMP_Text OpponentHeading => opponentHeading;
+    internal TMP_Text BotCountText => botCountText;
+    internal TMP_Text MinutesText => minutes;
+    internal TMP_Text SecondsText => seconds;
+    internal TMP_Dropdown GameModeDropdown => dropdown;
+    internal Toggle SuddenDeathToggle => suddenDeathToggle;
+    internal TMP_Text TrailLengthText => trailLengthText;
+    internal GameObject[] MotorPreview => motorPreview;
+    internal GameObject[] MotorPlayable => motorPlayable;
+    internal int CurrentModel
+    {
+        get => currentModel;
+        set => currentModel = value;
+    }
+
+    internal Color PlayerTrailColor
+    {
+        get => playerTrailColor;
+        set => playerTrailColor = value;
+    }
+
+    internal OpponentSlotView Opponents => _opponentSlots;
+    internal MatchSettingsView MatchSettings => _matchSettings;
+    internal TrailColorSelectionView TrailColors => _trailColorSelection;
+
+    protected abstract bool IsSingleplayerLobby { get; }
+    protected abstract void ConfigureComponentsForCurrentRole();
+
+    protected virtual void Awake()
+    {
+        ValidateSceneReferences();
+        ResolveSceneButtons();
+
+        if (gameSettings != null)
+            ArenaSceneName = gameSettings.arenaSceneName;
+
+        if (playerLook != null)
+            playerTrailColor = playerLook.trailColor;
+
+        ConfigureComponentsForCurrentRole();
+        RefreshLobby();
+    }
+
+    protected virtual void OnEnable()
+    {
+        ConfigureComponentsForCurrentRole();
+        EnableActiveComponents();
+        RefreshLobby();
+    }
+
+    protected virtual void OnDisable()
+    {
+        DisableActiveComponents();
+    }
+
+    protected virtual void Update()
+    {
+        ConfigureComponentsForCurrentRole();
+        _opponentSlots?.Tick();
+        _scooterSelect?.Tick();
+        _trailColorSelection?.Tick();
+        _matchSettings?.Tick();
+        RefreshStartButtonInteractivity();
+    }
+
+    protected void UseComponents(
+        OpponentSlotView opponentSlots,
+        ScooterSelectView scooterSelect,
+        TrailColorSelectionView trailColorSelection,
+        MatchSettingsView matchSettings)
+    {
+        if (_opponentSlots == opponentSlots &&
+            _scooterSelect == scooterSelect &&
+            _trailColorSelection == trailColorSelection &&
+            _matchSettings == matchSettings)
+        {
+            return;
+        }
+
+        bool reenable = _componentsEnabled;
+        if (reenable)
+            DisableActiveComponents();
+
+        _opponentSlots = opponentSlots;
+        _scooterSelect = scooterSelect;
+        _trailColorSelection = trailColorSelection;
+        _matchSettings = matchSettings;
+
+        InitializeActiveComponents();
+
+        if (reenable)
+        {
+            EnableActiveComponents();
+            RefreshActiveComponents();
+        }
+    }
+
+    public void RefreshLobby()
+    {
+        ConfigureComponentsForCurrentRole();
+        RefreshActiveComponents();
+        RefreshStartButtonInteractivity();
+    }
+
+    private void RefreshActiveComponents()
+    {
+        _opponentSlots?.Refresh();
+        _matchSettings?.Refresh();
+        _scooterSelect?.Refresh();
+        _trailColorSelection?.Refresh();
+    }
+
+    public void RefreshSlots()
+    {
+        RefreshLobby();
+    }
+
+    public void LoadScene(string sceneName)
+    {
+        if (IsMainMenuScene(sceneName))
+        {
+            BackToMainMenu();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            StartMatch();
+            return;
+        }
+
+        ArenaSceneName = sceneName;
+        LoadConfiguredScene(sceneName);
+    }
+
+    public void LoadScene()
+    {
+        StartMatch();
+    }
+
+    public void StartMatch()
+    {
+        string configuredSceneName = !string.IsNullOrWhiteSpace(ArenaSceneName)
+            ? ArenaSceneName
+            : gameSettings != null
+                ? gameSettings.arenaSceneName
+                : string.Empty;
+
+        if (string.IsNullOrWhiteSpace(configuredSceneName) || IsNonMatchScene(configuredSceneName))
+            configuredSceneName = "Neon City XL";
+
+        ArenaSceneName = configuredSceneName;
+        LoadConfiguredScene(configuredSceneName);
+    }
+
+    public void BackToMainMenu()
+    {
+        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+        {
+            if (MultiplayerRuntimeBootstrap.Instance != null)
+            {
+                MultiplayerRuntimeBootstrap.Instance.BackToMainMenu();
+                return;
+            }
+
+            SceneTransitionLoader.LoadScene("MainMenu");
+            return;
+        }
+
+        SceneTransitionLoader.LoadScene("MainMenu");
+    }
+
+    public void AddBot()
+    {
+        ConfigureComponentsForCurrentRole();
+        _opponentSlots?.AddBot();
+    }
+
+    public void RemoveBot()
+    {
+        ConfigureComponentsForCurrentRole();
+        _opponentSlots?.RemoveBot();
+    }
+
+    public void SetBotSlot(int slotIndex, bool occupied)
+    {
+        ConfigureComponentsForCurrentRole();
+        _opponentSlots?.SetBotSlot(slotIndex, occupied);
+    }
+
+    public void SetPlayerTrailColor(Color color)
+    {
+        ConfigureComponentsForCurrentRole();
+        _trailColorSelection?.SetPlayerTrailColor(color);
+    }
+
+    public void SetPlayerTrailColorFromPaletteIndex(int index)
+    {
+        ConfigureComponentsForCurrentRole();
+        _trailColorSelection?.SetTrailColorIndex(index);
+    }
+
+    public void SetTrailColor(int value)
+    {
+        SetPlayerTrailColorFromPaletteIndex(value);
+    }
+
+    public void ToggleSuddenDeath()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.ToggleSuddenDeath();
+    }
+
+    public void ShowGameTime()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.ShowGameTime();
+    }
+
+    public void IncreaseMin()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.IncreaseMin();
+    }
+
+    public void DecreaseMin()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.DecreaseMin();
+    }
+
+    public void IncreaseSec()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.IncreaseSec();
+    }
+
+    public void DecreaseSec()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.DecreaseSec();
+    }
+
+    public void ChangeTrailLength()
+    {
+        ConfigureComponentsForCurrentRole();
+        _matchSettings?.ChangeTrailLength();
+    }
+
+    public void ChangePlayerModelUp()
+    {
+        ConfigureComponentsForCurrentRole();
+        _scooterSelect?.ChangePlayerModelUp();
+    }
+
+    public void ChangePlayerModelDown()
+    {
+        ConfigureComponentsForCurrentRole();
+        _scooterSelect?.ChangePlayerModelDown();
+    }
+
+    public void SetPlayerModel(int selectedMotor)
+    {
+        ConfigureComponentsForCurrentRole();
+        _scooterSelect?.SetPlayerModel(selectedMotor);
+    }
+
+    public void LogLobbyState()
+    {
+        Debug.Log("Bots to add: " + BotCount);
+        Debug.Log("Sudden death: " + (_matchSettings != null && _matchSettings.SuddenDeath));
+        Debug.Log("Match duration seconds: " + (_matchSettings != null ? _matchSettings.MatchDuration : 0f));
+        Debug.Log("Trail length: " + (_matchSettings != null ? _matchSettings.TrailLength : 0));
+        Debug.Log("Trail color: " + (_trailColorSelection != null ? _trailColorSelection.SelectedColorIndex : 0));
+    }
+
+    internal void MarkLobbyStateDirty()
+    {
+        _lobbyStateDirty = true;
+    }
+
+    internal bool IsLobbyStateDirty => _lobbyStateDirty;
+
+    internal void ClearLobbyStateDirty()
+    {
+        _lobbyStateDirty = false;
+    }
+
+    internal void PlayUiClickSound()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        ResolveUiClickSound();
+        PersistentUiAudioPlayer.PlayOneShot(uiClickSound);
+    }
+
+    internal bool IsReadOnlyMultiplayerClient()
+    {
+        if (!MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+            return false;
+
+        MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
+        return bootstrap != null && bootstrap.IsClientStarted && !bootstrap.IsServerStarted;
+    }
+
+    protected virtual bool CanStartMatch()
+    {
+        return IsSingleplayerLobby;
+    }
+
+    protected bool InitializeGame(bool singleplayer)
+    {
+        ConfigureComponentsForCurrentRole();
+        RefreshLobby();
+
+        if (gameSettings == null)
+            return false;
+
+        _trailColorSelection?.ApplyCurrentSelectionToDefaults();
+
+        int humanSlots = singleplayer ? 1 : Mathf.Max(2, _opponentSlots != null ? _opponentSlots.GetHumanSlotCount() : 1);
+        int botCount = _opponentSlots != null ? _opponentSlots.BotCount : 0;
+        gameSettings.maxPlayers = humanSlots + botCount;
+        gameSettings.IsSingleplayer = singleplayer;
+        gameSettings.arenaSceneName = ArenaSceneName;
+
+        _matchSettings?.ApplyToGameSettings(gameSettings);
+
+        GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, botCount);
+        session.isSingleplayer = singleplayer;
+        GameSessionBootstrap.SetSession(session);
+        return true;
+    }
+
+    private void LoadConfiguredScene(string sceneName)
+    {
+        if (IsMainMenuScene(sceneName))
+        {
+            BackToMainMenu();
+            return;
+        }
+
+        ArenaSceneName = sceneName;
+        bool isMultiplayerLobby = !IsSingleplayerLobby;
+
+        RefreshLobby();
+        if (!isMultiplayerLobby && BotCount <= 0)
+        {
+            Debug.LogWarning("Add at least one bot before starting a singleplayer match.");
+            return;
+        }
+
+        if (!InitializeGame(!isMultiplayerLobby))
+            return;
+
+        if (!isMultiplayerLobby)
+        {
+            SceneTransitionLoader.LoadScene(sceneName);
+            return;
+        }
+
+        if (MultiplayerRuntimeBootstrap.Instance == null || !MultiplayerRuntimeBootstrap.Instance.IsServerStarted)
+        {
+            Debug.LogWarning("Only the host can start a multiplayer match.");
+            return;
+        }
+
+        string networkSceneName = string.IsNullOrWhiteSpace(multiplayerArenaSceneName)
+            ? sceneName
+            : multiplayerArenaSceneName;
+
+        MultiplayerRuntimeBootstrap.Instance.LoadMultiplayerMatchScene(networkSceneName);
+    }
+
+    private void InitializeActiveComponents()
+    {
+        _opponentSlots?.Initialize(this);
+        _scooterSelect?.Initialize(this);
+        _trailColorSelection?.Initialize(this);
+        _matchSettings?.Initialize(this);
+    }
+
+    private void EnableActiveComponents()
+    {
+        if (_componentsEnabled)
+            return;
+
+        InitializeActiveComponents();
+        _opponentSlots?.OnEnable();
+        _scooterSelect?.OnEnable();
+        _trailColorSelection?.OnEnable();
+        _matchSettings?.OnEnable();
+        _componentsEnabled = true;
+    }
+
+    private void DisableActiveComponents()
+    {
+        if (!_componentsEnabled)
+            return;
+
+        _matchSettings?.OnDisable();
+        _trailColorSelection?.OnDisable();
+        _scooterSelect?.OnDisable();
+        _opponentSlots?.OnDisable();
+        _componentsEnabled = false;
+    }
+
+    private void RefreshStartButtonInteractivity()
+    {
+        ResolveSceneButtons();
+        if (startButton != null)
+            startButton.interactable = CanStartMatch();
+    }
+
+    private void ResolveSceneButtons()
+    {
+        if (startButton == null)
+            startButton = FindNamedButton("PlayButton");
+        if (backButton == null)
+            backButton = FindNamedButton("BackButton");
+    }
+
+    private Button FindNamedButton(string objectName)
+    {
+        Transform match = FindDeepChild(transform.root, objectName);
+        return match != null ? match.GetComponent<Button>() : null;
+    }
+
+    private static Transform FindDeepChild(Transform parent, string childName)
+    {
+        if (parent == null)
+            return null;
+
+        if (parent.name == childName)
+            return parent;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform match = FindDeepChild(parent.GetChild(i), childName);
+            if (match != null)
+                return match;
+        }
+
+        return null;
+    }
+
+    private void ResolveUiClickSound()
+    {
+        if (uiClickSound != null)
+            return;
+
+        ButtonScript[] localFeedback = GetComponentsInChildren<ButtonScript>(true);
+        for (int i = 0; i < localFeedback.Length; i++)
+        {
+            if (localFeedback[i] != null && localFeedback[i].ClickSound != null)
+            {
+                uiClickSound = localFeedback[i].ClickSound;
+                return;
+            }
+        }
+
+        ButtonScript[] sceneFeedback = UnityEngine.Object.FindObjectsByType<ButtonScript>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < sceneFeedback.Length; i++)
+        {
+            if (sceneFeedback[i] != null && sceneFeedback[i].ClickSound != null)
+            {
+                uiClickSound = sceneFeedback[i].ClickSound;
+                return;
+            }
+        }
+    }
+
+    private bool IsMainMenuScene(string sceneName)
+    {
+        return string.Equals(sceneName?.Trim(), "MainMenu", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsNonMatchScene(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+            return true;
+
+        switch (sceneName.Trim().ToLowerInvariant())
+        {
+            case "mainmenu":
+            case "singleplayerlobby":
+            case "multiplayerlobby":
+            case "multiplayerconnection":
+            case "gameover":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void ValidateSceneReferences()
+    {
+        ValidateReference(opponentHeading, nameof(opponentHeading));
+
+        if (trailColorButtons == null || trailColorButtons.Length == 0)
+            Debug.LogError($"{nameof(Lobby)} on {name} has no trail color buttons assigned.", this);
+        else
+        {
+            for (int i = 0; i < trailColorButtons.Length; i++)
+                trailColorButtons[i]?.Validate(this, i);
+        }
+
+        if (opponentSlots == null || opponentSlots.Length == 0)
+            Debug.LogError($"{nameof(Lobby)} on {name} has no opponent slots assigned.", this);
+        else
+        {
+            for (int i = 0; i < opponentSlots.Length; i++)
+                opponentSlots[i]?.Validate(this, i);
+        }
+    }
+
+    private void ValidateReference(UnityEngine.Object reference, string fieldName)
+    {
+        if (reference == null)
+            Debug.LogError($"{nameof(Lobby)} on {name} is missing scene reference '{fieldName}'.", this);
+    }
+}
+
+public abstract class LobbyComponent
+{
+    private bool _initialized;
+
+    protected Lobby Lobby { get; private set; }
+
+    public void Initialize(Lobby lobby)
+    {
+        Lobby = lobby;
+        if (_initialized)
+            return;
+
+        _initialized = true;
+        OnInitialize();
+    }
+
+    protected virtual void OnInitialize()
+    {
+    }
+
+    public virtual void OnEnable()
+    {
+    }
+
+    public virtual void OnDisable()
+    {
+    }
+
+    public virtual void Refresh()
+    {
+    }
+
+    public virtual void Tick()
+    {
+    }
+}
