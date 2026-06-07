@@ -19,6 +19,9 @@ public class GameOverController : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private string lobbySceneName = "SingleplayerLobby";
 
+    private readonly List<GameOverResultRow> _generatedRows = new();
+    private bool _hasAppliedWinLossStats;
+
     private void Awake()
     {
         Time.timeScale = 1f;
@@ -59,7 +62,11 @@ public class GameOverController : MonoBehaviour
             .ThenBy(result => result.displayName)
             .ToList();
 
-        StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+        if (!_hasAppliedWinLossStats && StatsManager.Instance != null)
+        {
+            StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+            _hasAppliedWinLossStats = true;
+        }
 
         ApplyFallbackResultsText(orderedResults);
         ApplyRowResults(orderedResults);
@@ -71,8 +78,9 @@ public class GameOverController : MonoBehaviour
             return;
 
         bool hasDedicatedRows = resultsRoot != null && resultRowPrefab != null;
-        fallbackResultsText.gameObject.SetActive(!hasDedicatedRows);
-        if (hasDedicatedRows)
+        bool shouldUseFallback = !hasDedicatedRows || results.Count == 0;
+        fallbackResultsText.gameObject.SetActive(shouldUseFallback);
+        if (!shouldUseFallback)
             return;
 
         fallbackResultsText.color = fallbackTextColor;
@@ -103,12 +111,9 @@ public class GameOverController : MonoBehaviour
         if (resultsRoot == null || resultRowPrefab == null)
             return;
 
-        for (int i = resultsRoot.childCount - 1; i >= 0; i--)
-        {
-            Transform child = resultsRoot.GetChild(i);
-            if (child != null)
-                Destroy(child.gameObject);
-        }
+        ClearGeneratedRows();
+        if (resultRowPrefab.gameObject.scene.IsValid())
+            resultRowPrefab.gameObject.SetActive(false);
 
         if (results.Count == 0)
             return;
@@ -116,7 +121,7 @@ public class GameOverController : MonoBehaviour
         int rowIndex = 0;
 
         // Wstawiamy nagłówek (Header)
-        GameOverResultRow headerRow = Instantiate(resultRowPrefab, resultsRoot);
+        GameOverResultRow headerRow = CreateGeneratedRow();
         PositionRow(headerRow.transform as RectTransform, rowIndex);
         headerRow.BindHeader();
         rowIndex++;
@@ -127,11 +132,31 @@ public class GameOverController : MonoBehaviour
             if (result == null)
                 continue;
 
-            GameOverResultRow row = Instantiate(resultRowPrefab, resultsRoot);
+            GameOverResultRow row = CreateGeneratedRow();
             PositionRow(row.transform as RectTransform, rowIndex);
             row.Bind(i + 1, result, i == 0 ? winnerColor : Color.white);
             rowIndex++;
         }
+    }
+
+    private GameOverResultRow CreateGeneratedRow()
+    {
+        GameOverResultRow row = Instantiate(resultRowPrefab, resultsRoot);
+        row.gameObject.SetActive(true);
+        _generatedRows.Add(row);
+        return row;
+    }
+
+    private void ClearGeneratedRows()
+    {
+        for (int i = _generatedRows.Count - 1; i >= 0; i--)
+        {
+            GameOverResultRow row = _generatedRows[i];
+            if (row != null)
+                Destroy(row.gameObject);
+        }
+
+        _generatedRows.Clear();
     }
 
     private void PositionRow(RectTransform rect, int index)

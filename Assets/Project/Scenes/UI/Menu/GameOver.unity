@@ -753,7 +753,7 @@ GameObject:
   - component: {fileID: 908144644}
   - component: {fileID: 908144643}
   m_Layer: 0
-  m_Name: GameOverBackdropPlane
+  m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1032,7 +1032,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -24.385002}
-  m_SizeDelta: {x: -900, y: -410.77002}
+  m_SizeDelta: {x: -220, y: -260}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1617187701
 MonoBehaviour:
@@ -1256,10 +1256,6 @@ PrefabInstance:
     m_TransformParent: {fileID: 1623535369}
     m_Modifications:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_Colors.m_NormalColor.b
       value: 1
       objectReference: {fileID: 0}
@@ -1290,10 +1286,6 @@ PrefabInstance:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
       value: MainMenu
-      objectReference: {fileID: 0}
-    - target: {fileID: 4290501773980548307, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
-      propertyPath: m_Name
-      value: ButtonLabel
       objectReference: {fileID: 0}
     - target: {fileID: 6460748927959307248, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_Name
@@ -1402,42 +1394,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6460748927959307248, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1837773282}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
---- !u!1 &1837773280 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6460748927959307248, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
-  m_PrefabInstance: {fileID: 1837773279}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1837773281 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8397920769503461148, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
-  m_PrefabInstance: {fileID: 1837773279}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1837773280}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!114 &1837773282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1837773280}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d78a3799c656c8c4cbcba153b4c552c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
-  hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
-  clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
 --- !u!1 &2023659857
 GameObject:
   m_ObjectHideFlags: 0

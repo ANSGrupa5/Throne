@@ -9,8 +9,8 @@ public sealed class TrailColorButtonView
     [SerializeField] private Image colorImage;
     [SerializeField] private GameObject selectionFrame;
     [SerializeField] private CanvasGroup availabilityGroup;
-    [SerializeField] private Color selectionFrameFill = new(0f, 0.996f, 0.925f, 0.12f);
-    [SerializeField] private Color selectionFrameOutline = new(0f, 0.996f, 0.925f, 0.95f);
+    [SerializeField] private Color selectionFrameFill = new(0f, 0.996f, 0.925f, 1.0f);
+    [SerializeField] private Color selectionFrameOutline = new(0f, 0.996f, 0.925f, 1.0f);
     [SerializeField, Range(0f, 1f)] private float availableAlpha = 1f;
     [SerializeField, Range(0f, 1f)] private float unavailableAlpha = 0.35f;
 

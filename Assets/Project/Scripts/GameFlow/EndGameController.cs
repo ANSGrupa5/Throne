@@ -214,7 +214,8 @@ public class EndGameController : MonoBehaviour
         Debug.Log($"[EndGameController] Loaded game over payload. Loading scene: {gameOverSceneName}");
         Time.timeScale = 1f;
 
-        StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
+        if (StatsManager.Instance != null && DistanceTracker.Instance != null)
+            StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
 
         SceneManager.LoadScene(gameOverSceneName);
         Debug.Log("[EndGameController] SceneManager.LoadScene called - sequence complete");

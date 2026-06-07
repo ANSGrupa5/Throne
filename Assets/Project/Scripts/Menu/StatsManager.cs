@@ -32,7 +32,7 @@ public class StatsManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        LoadStats();
+        LoadStatValues();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -71,6 +71,9 @@ public class StatsManager : MonoBehaviour
 
     public bool CheckIfPlayerIsEliminated(VehicleLife objectToCheck)
     {
+        if (objectToCheck == null)
+            return false;
+
         if (player == objectToCheck.gameObject)
             return true;
         return false;
@@ -78,6 +81,9 @@ public class StatsManager : MonoBehaviour
 
     public bool CheckIfPlayerPickedUpPowerUp(VehicleLife objectToCheck)
     {
+        if (objectToCheck == null)
+            return false;
+
         if (player == objectToCheck.gameObject && playerName == objectToCheck.DisplayName)
             return true;
         return false;
@@ -98,31 +104,86 @@ public class StatsManager : MonoBehaviour
 
     public void LoadStats()
     {
-        StatisticsScreen = GameObject.Find("MainMenuObject/Canvas/Panel/MainMenu/StatisticsScreen").gameObject;
-        OppsElimText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Opps_Elim/Value").GetComponent<TextMeshProUGUI>();
-        TimesElimText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Times_Elim/Value").GetComponent<TextMeshProUGUI>();
-        PowerUpsPickedUpText = StatisticsScreen.transform.Find("StatsRowLeft/Stat_Total_Pow/Value").GetComponent<TextMeshProUGUI>();
-        WinsText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Wins/Value").GetComponent<TextMeshProUGUI>();
-        LossesText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Losses/Value").GetComponent<TextMeshProUGUI>();
-        DistDrivenText = StatisticsScreen.transform.Find("StatsRowRight/Stat_Dist_Driven/Value").GetComponent<TextMeshProUGUI>();
+        LoadStatValues();
+        TryBindStatisticsScreen();
+        RefreshStatsUi();
+    }
 
+    private void LoadStatValues()
+    {
         OppsElim = PlayerPrefs.GetInt("StatOppsElim", 0);
-        OppsElimText.text = OppsElim.ToString();
-
         TimesElim = PlayerPrefs.GetInt("StatTimesElim", 0);
-        TimesElimText.text = TimesElim.ToString();
-
         PowerUpsPickedUp = PlayerPrefs.GetInt("StatPowerUpsPickedUp", 0);
-        PowerUpsPickedUpText.text = PowerUpsPickedUp.ToString();
-
         Wins = PlayerPrefs.GetInt("StatWins", 0);
-        WinsText.text = Wins.ToString();
-
         Losses = PlayerPrefs.GetInt("StatLosses", 0);
-        LossesText.text = Losses.ToString();
-
         DistDriven = PlayerPrefs.GetFloat("StatDistDriven", 0f);
-        DistDrivenText.text = $"{DistDriven:F2} km";
+    }
+
+    private void RefreshStatsUi()
+    {
+        if (OppsElimText != null)
+            OppsElimText.text = OppsElim.ToString();
+        if (TimesElimText != null)
+            TimesElimText.text = TimesElim.ToString();
+        if (PowerUpsPickedUpText != null)
+            PowerUpsPickedUpText.text = PowerUpsPickedUp.ToString();
+        if (WinsText != null)
+            WinsText.text = Wins.ToString();
+        if (LossesText != null)
+            LossesText.text = Losses.ToString();
+        if (DistDrivenText != null)
+            DistDrivenText.text = $"{DistDriven:F2} km";
+    }
+
+    private void TryBindStatisticsScreen()
+    {
+        if (HasStatsTextReferences())
+            return;
+
+        if (StatisticsScreen == null)
+            StatisticsScreen = FindStatisticsScreen();
+        if (StatisticsScreen == null)
+            return;
+
+        BindTextIfMissing(ref OppsElimText, "StatsRowLeft/Stat_Opps_Elim/Value");
+        BindTextIfMissing(ref TimesElimText, "StatsRowLeft/Stat_Times_Elim/Value");
+        BindTextIfMissing(ref PowerUpsPickedUpText, "StatsRowLeft/Stat_Total_Pow/Value");
+        BindTextIfMissing(ref WinsText, "StatsRowRight/Stat_Wins/Value");
+        BindTextIfMissing(ref LossesText, "StatsRowRight/Stat_Losses/Value");
+        BindTextIfMissing(ref DistDrivenText, "StatsRowRight/Stat_Dist_Driven/Value");
+    }
+
+    private bool HasStatsTextReferences()
+    {
+        return OppsElimText != null &&
+               TimesElimText != null &&
+               PowerUpsPickedUpText != null &&
+               WinsText != null &&
+               LossesText != null &&
+               DistDrivenText != null;
+    }
+
+    private GameObject FindStatisticsScreen()
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform current = transforms[i];
+            if (current != null && current.name == "StatisticsScreen")
+                return current.gameObject;
+        }
+
+        return null;
+    }
+
+    private void BindTextIfMissing(ref TextMeshProUGUI target, string path)
+    {
+        if (target != null || StatisticsScreen == null)
+            return;
+
+        Transform child = StatisticsScreen.transform.Find(path);
+        if (child != null)
+            target = child.GetComponent<TextMeshProUGUI>();
     }
 
     void SaveStats()
@@ -175,35 +236,41 @@ public class StatsManager : MonoBehaviour
     {
         PlayerPrefs.SetInt("StatOppsElim", OppsElim);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 
     void SaveTimesElim()
     {
         PlayerPrefs.SetInt("StatTimesElim", TimesElim);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 
     void SavePowerUpsPickedUp()
     {
         PlayerPrefs.SetInt("StatPowerUpsPickedUp", PowerUpsPickedUp);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 
     void SaveWins()
     {
         PlayerPrefs.SetInt("StatWins", Wins);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 
     void SaveLosses()
     {
         PlayerPrefs.SetInt("StatLosses", Losses);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 
     public void SaveDistDriven()
     {
         PlayerPrefs.SetFloat("StatDistDriven", DistDriven);
         PlayerPrefs.Save();
+        RefreshStatsUi();
     }
 }

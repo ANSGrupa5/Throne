@@ -11107,7 +11107,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 704911395}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1208203160}
@@ -11115,7 +11115,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 647957084}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 800846681}
@@ -11123,7 +11123,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 1034241052}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1311807390}
@@ -11131,7 +11131,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 944345551}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 151609141}
@@ -11139,7 +11139,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 2078206253}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 279903811}
@@ -11147,7 +11147,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 929400988}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   opponentHeading: {fileID: 296322053}

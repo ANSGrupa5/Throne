@@ -893,7 +893,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -1641,7 +1641,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -4206,7 +4206,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -5027,7 +5027,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -5191,7 +5191,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -6051,7 +6051,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_Colors.m_ColorMultiplier
-      value: 5
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_Colors.m_DisabledColor.a
@@ -6545,7 +6545,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
     m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 5
+    m_ColorMultiplier: 2.5
     m_FadeDuration: 0.33
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -8501,7 +8501,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 741126096}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1208203160}
@@ -8509,7 +8509,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 667122642}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 800846681}
@@ -8517,7 +8517,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 1809727445}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 1311807390}
@@ -8525,7 +8525,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 1213020432}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 151609141}
@@ -8533,7 +8533,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 1028047950}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   - button: {fileID: 279903811}
@@ -8541,7 +8541,7 @@ MonoBehaviour:
     selectionFrame: {fileID: 2106992884}
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
-    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.95}
+    selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
   opponentHeading: {fileID: 296322053}
