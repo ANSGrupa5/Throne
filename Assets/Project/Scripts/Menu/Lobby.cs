@@ -45,7 +45,6 @@ public abstract class Lobby : MonoBehaviour
     private bool _componentsEnabled;
     private bool _componentsConfigured;
     private LobbyMode _configuredLobbyMode;
-    private bool _lobbyStateDirty = true;
     private LobbyState _lobbyState;
 
     protected string ArenaSceneName { get; private set; } = "Neon City XL";
@@ -110,6 +109,14 @@ public abstract class Lobby : MonoBehaviour
     {
         DisableActiveComponents();
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (startButton == null || backButton == null)
+            ResolveSceneButtons();
+    }
+#endif
 
     protected virtual void Update()
     {
@@ -328,9 +335,10 @@ public abstract class Lobby : MonoBehaviour
 
     internal void MarkLobbyStateDirty(bool syncCurrentSelections = true)
     {
-        _lobbyStateDirty = true;
-        if (_lobbyState != null)
-            _lobbyState.IsDirty = true;
+        if (_lobbyState == null)
+            InitializeLobbyStateMirror();
+
+        _lobbyState.IsDirty = true;
 
         if (syncCurrentSelections)
             SyncLobbyStateFromCurrentSelections();
@@ -338,11 +346,10 @@ public abstract class Lobby : MonoBehaviour
         RefreshStartButtonInteractivity();
     }
 
-    internal bool IsLobbyStateDirty => _lobbyState != null ? _lobbyState.IsDirty : _lobbyStateDirty;
+    internal bool IsLobbyStateDirty => _lobbyState != null && _lobbyState.IsDirty;
 
     internal void ClearLobbyStateDirty()
     {
-        _lobbyStateDirty = false;
         if (_lobbyState != null)
             _lobbyState.IsDirty = false;
     }
@@ -399,7 +406,7 @@ public abstract class Lobby : MonoBehaviour
         _lobbyState.SelectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
         _lobbyState.SelectedTrailColorIndex = ResolveTrailColorIndex(_lobbyState.SelectedTrailColor);
         _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
-        _lobbyState.IsDirty = _lobbyStateDirty;
+        _lobbyState.IsDirty = true;
     }
 
     private void SyncLobbyStateFromCurrentSelections(bool? singleplayerOverride = null)
@@ -407,6 +414,7 @@ public abstract class Lobby : MonoBehaviour
         if (_lobbyState == null)
             InitializeLobbyStateMirror();
 
+        bool wasDirty = _lobbyState.IsDirty;
         LobbyMode lobbyMode = ResolveLobbyMode(singleplayerOverride);
         Color selectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
 
@@ -421,7 +429,6 @@ public abstract class Lobby : MonoBehaviour
             ? _trailColorSelection.SelectedColorIndex
             : ResolveTrailColorIndex(selectedTrailColor);
         _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
-        _lobbyState.IsDirty = _lobbyStateDirty;
 
         if (_matchSettings != null)
         {
@@ -429,16 +436,16 @@ public abstract class Lobby : MonoBehaviour
             _lobbyState.MatchDurationSeconds = _matchSettings.MatchDuration;
             _lobbyState.SuddenDeath = _matchSettings.SuddenDeath;
             _lobbyState.TrailLength = _matchSettings.TrailLength;
-            return;
+        }
+        else if (gameSettings != null)
+        {
+            _lobbyState.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(gameSettings.gameMode);
+            _lobbyState.MatchDurationSeconds = gameSettings.matchDuration;
+            _lobbyState.SuddenDeath = gameSettings.isSuddenDeath;
+            _lobbyState.TrailLength = gameSettings.trailLength;
         }
 
-        if (gameSettings == null)
-            return;
-
-        _lobbyState.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(gameSettings.gameMode);
-        _lobbyState.MatchDurationSeconds = gameSettings.matchDuration;
-        _lobbyState.SuddenDeath = gameSettings.isSuddenDeath;
-        _lobbyState.TrailLength = gameSettings.trailLength;
+        _lobbyState.IsDirty = wasDirty;
     }
 
     private LobbyMode ResolveLobbyMode(bool? singleplayerOverride = null)
@@ -564,7 +571,6 @@ public abstract class Lobby : MonoBehaviour
         if (_componentsEnabled)
             return;
 
-        InitializeActiveComponents();
         _opponentSlots?.OnEnable();
         _scooterSelect?.OnEnable();
         _trailColorSelection?.OnEnable();
@@ -597,7 +603,9 @@ public abstract class Lobby : MonoBehaviour
 
     private void RefreshStartButtonInteractivity()
     {
-        ResolveSceneButtons();
+        if (startButton == null)
+            ResolveSceneButtons();
+
         if (startButton != null)
             startButton.interactable = CanStartMatch();
     }
@@ -610,6 +618,7 @@ public abstract class Lobby : MonoBehaviour
             backButton = FindNamedButton("BackButton");
     }
 
+    // Temporary migration fallback for old or missing serialized scene button references.
     private Button FindNamedButton(string objectName)
     {
         Transform match = FindDeepChild(transform.root, objectName);
@@ -634,6 +643,7 @@ public abstract class Lobby : MonoBehaviour
         return null;
     }
 
+    // Temporary migration fallback until UI audio is handled by MenuSelectable/audio presets.
     private void ResolveUiClickSound()
     {
         if (uiClickSound != null)
