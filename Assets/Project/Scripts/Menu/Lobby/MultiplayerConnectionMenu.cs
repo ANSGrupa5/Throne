@@ -128,7 +128,7 @@ public class MultiplayerConnectionMenu : MonoBehaviour
 
     public void RefreshSlots()
     {
-        matchLobby?.RefreshLobby();
+        matchLobby?.RefreshSlots();
     }
 
     private void BindSceneEvents()

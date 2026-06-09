@@ -109,7 +109,13 @@ public class Lobby : MonoBehaviour
 
     protected virtual void Update()
     {
-        EnsureComponentsForCurrentRole();
+        if (EnsureComponentsForCurrentRole())
+        {
+            RefreshActiveComponents();
+            SyncLobbyStateFromCurrentSelections();
+            RefreshStartButtonInteractivity();
+        }
+
         _opponentSlots?.Tick();
         _scooterSelect?.Tick();
         _trailColorSelection?.Tick();
@@ -385,6 +391,8 @@ public class Lobby : MonoBehaviour
             state.MatchDurationSeconds,
             LobbyStateGameSettingsAdapter.ToGameSettingsMatchMode(state.MatchMode),
             state.SuddenDeath);
+
+        ClearLobbyStateDirty();
     }
 
     internal string ResolveSingleplayerArenaSceneName(LobbyState state)
@@ -565,16 +573,17 @@ public class Lobby : MonoBehaviour
         _componentsEnabled = false;
     }
 
-    private void EnsureComponentsForCurrentRole(bool force = false)
+    private bool EnsureComponentsForCurrentRole(bool force = false)
     {
         LobbyMode lobbyMode = ResolveLobbyMode();
         if (!force && _componentsConfigured && _activeLobbyMode == lobbyMode)
-            return;
+            return false;
 
         _activeLobbyMode = lobbyMode;
         _componentsConfigured = true;
         ConfigureComponentsForCurrentRole(lobbyMode);
         ConfigureStartFlow(lobbyMode);
+        return true;
     }
 
     private void ConfigureComponentsForCurrentRole(LobbyMode lobbyMode)
