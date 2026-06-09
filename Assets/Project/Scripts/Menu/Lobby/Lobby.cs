@@ -1,6 +1,4 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public abstract class Lobby : MonoBehaviour
@@ -11,18 +9,9 @@ public abstract class Lobby : MonoBehaviour
     [SerializeField] private PlayerLook playerLook;
     [SerializeField] private MatchRules matchRules;
 
-    [Header("Bots")]
-    [SerializeField] private TMP_Text botCountText;
-
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
     [SerializeField] private TrailColorButtonView[] trailColorButtons;
-
-    [Header("Opponent Slots")]
-    [FormerlySerializedAs("playerHeading")]
-    [SerializeField] private TMP_Text opponentHeading;
-    [FormerlySerializedAs("lobbySlots")]
-    [SerializeField] private OpponentSlotEntryView[] opponentSlots;
 
     [Header("Scene Buttons")]
     [SerializeField] private Button startButton;
@@ -55,9 +44,6 @@ public abstract class Lobby : MonoBehaviour
     internal BotsSettings BotsSettings => botsSettings;
     internal PlayerLook PlayerLook => playerLook;
     internal TrailColorButtonView[] TrailColorButtons => trailColorButtons;
-    internal OpponentSlotEntryView[] OpponentSlots => opponentSlots;
-    internal TMP_Text OpponentHeading => opponentHeading;
-    internal TMP_Text BotCountText => botCountText;
     internal GameObject[] MotorPreview => motorPreview;
     internal GameObject[] MotorPlayable => motorPlayable;
     internal int CurrentModel
@@ -92,6 +78,7 @@ public abstract class Lobby : MonoBehaviour
 
         InitializeLobbyStateMirror();
         EnsureComponentsForCurrentRole(true);
+        _opponentSlots?.Validate(this);
         RefreshActiveComponents();
         RefreshStartButtonInteractivity();
         SyncLobbyStateFromCurrentSelections();
@@ -697,8 +684,6 @@ public abstract class Lobby : MonoBehaviour
 
     private void ValidateSceneReferences()
     {
-        ValidateReference(opponentHeading, nameof(opponentHeading));
-
         if (trailColorButtons == null || trailColorButtons.Length == 0)
             Debug.LogError($"{nameof(Lobby)} on {name} has no trail color buttons assigned.", this);
         else
@@ -706,20 +691,6 @@ public abstract class Lobby : MonoBehaviour
             for (int i = 0; i < trailColorButtons.Length; i++)
                 trailColorButtons[i]?.Validate(this, i);
         }
-
-        if (opponentSlots == null || opponentSlots.Length == 0)
-            Debug.LogError($"{nameof(Lobby)} on {name} has no opponent slots assigned.", this);
-        else
-        {
-            for (int i = 0; i < opponentSlots.Length; i++)
-                opponentSlots[i]?.Validate(this, i);
-        }
-    }
-
-    private void ValidateReference(UnityEngine.Object reference, string fieldName)
-    {
-        if (reference == null)
-            Debug.LogError($"{nameof(Lobby)} on {name} is missing scene reference '{fieldName}'.", this);
     }
 }
 

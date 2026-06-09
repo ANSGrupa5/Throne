@@ -1,8 +1,18 @@
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
+[Serializable]
 public abstract class OpponentSlotView : LobbyComponent
 {
+    [Header("Summary")]
+    [SerializeField] private TMP_Text botCountText;
+    [SerializeField] private TMP_Text opponentHeading;
+
+    [Header("Slots")]
+    [SerializeField] private OpponentSlotEntryView[] opponentSlots;
+
     private bool _slotButtonsBound;
     private int _lastBotMutationFrame = -1;
     private UnityAction[] _addActions;
@@ -11,8 +21,28 @@ public abstract class OpponentSlotView : LobbyComponent
     protected bool[] BotSlots;
 
     public int BotCount { get; protected set; }
+    public int SlotCount => opponentSlots != null ? opponentSlots.Length : 0;
+    public bool HasSlots => SlotCount > 0;
 
     protected virtual bool CanEditBots => false;
+    protected OpponentSlotEntryView[] Slots => opponentSlots;
+
+    public void Validate(Lobby owner)
+    {
+        string ownerName = owner != null ? owner.name : nameof(Lobby);
+
+        if (opponentHeading == null)
+            Debug.LogError($"{nameof(Lobby)} on {ownerName} is missing scene reference '{nameof(opponentHeading)}'.", owner);
+
+        if (opponentSlots == null || opponentSlots.Length == 0)
+        {
+            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no opponent slots assigned.", owner);
+            return;
+        }
+
+        for (int i = 0; i < opponentSlots.Length; i++)
+            opponentSlots[i]?.Validate(owner, i);
+    }
 
     public override void OnEnable()
     {
@@ -30,7 +60,7 @@ public abstract class OpponentSlotView : LobbyComponent
         BindLobbySlotButtons();
         RefreshHeading();
 
-        if (Lobby.OpponentSlots == null || Lobby.OpponentSlots.Length == 0)
+        if (!HasSlots)
             return;
 
         int humanPlayers = GetHumanSlotCount();
@@ -118,7 +148,7 @@ public abstract class OpponentSlotView : LobbyComponent
 
     protected virtual int GetMaxBotCount()
     {
-        int maxPlayers = Lobby.OpponentSlots != null && Lobby.OpponentSlots.Length > 0 ? Lobby.OpponentSlots.Length : 6;
+        int maxPlayers = HasSlots ? SlotCount : 6;
         return Mathf.Max(0, maxPlayers - GetHumanSlotCount());
     }
 
@@ -132,7 +162,7 @@ public abstract class OpponentSlotView : LobbyComponent
 
     protected void ApplySlotViews(int humanPlayers, bool canEditBots)
     {
-        OpponentSlotEntryView[] slots = Lobby.OpponentSlots;
+        OpponentSlotEntryView[] slots = Slots;
         if (slots == null)
             return;
 
@@ -174,13 +204,13 @@ public abstract class OpponentSlotView : LobbyComponent
 
     protected void RefreshBotCountUI()
     {
-        if (Lobby.BotCountText != null)
-            Lobby.BotCountText.text = "Opponents";
+        if (botCountText != null)
+            botCountText.text = "Opponents";
     }
 
     protected void EnsureBotSlotBuffer()
     {
-        int slotCount = Lobby.OpponentSlots != null ? Lobby.OpponentSlots.Length : 0;
+        int slotCount = SlotCount;
         if (BotSlots != null && BotSlots.Length == slotCount)
             return;
 
@@ -208,10 +238,10 @@ public abstract class OpponentSlotView : LobbyComponent
 
     private void BindLobbySlotButtons()
     {
-        if (_slotButtonsBound || Lobby.OpponentSlots == null)
+        if (_slotButtonsBound || opponentSlots == null)
             return;
 
-        int slotCount = Lobby.OpponentSlots.Length;
+        int slotCount = opponentSlots.Length;
         _addActions = new UnityAction[slotCount];
         _removeActions = new UnityAction[slotCount];
 
@@ -220,7 +250,7 @@ public abstract class OpponentSlotView : LobbyComponent
             int slotIndex = i;
             _addActions[i] = () => SetBotSlot(slotIndex, true);
             _removeActions[i] = () => SetBotSlot(slotIndex, false);
-            Lobby.OpponentSlots[i]?.Bind(_addActions[i], _removeActions[i]);
+            opponentSlots[i]?.Bind(_addActions[i], _removeActions[i]);
         }
 
         _slotButtonsBound = true;
@@ -228,21 +258,24 @@ public abstract class OpponentSlotView : LobbyComponent
 
     private void UnbindLobbySlotButtons()
     {
-        if (!_slotButtonsBound || Lobby.OpponentSlots == null)
+        if (!_slotButtonsBound)
             return;
 
-        for (int i = 0; i < Lobby.OpponentSlots.Length; i++)
-            Lobby.OpponentSlots[i]?.Unbind();
+        if (opponentSlots != null)
+        {
+            for (int i = 0; i < opponentSlots.Length; i++)
+                opponentSlots[i]?.Unbind();
+        }
 
         _slotButtonsBound = false;
         _addActions = null;
         _removeActions = null;
     }
 
-    private void RefreshHeading()
+    protected void RefreshHeading()
     {
-        if (Lobby.OpponentHeading != null)
-            Lobby.OpponentHeading.text = HeadingText;
+        if (opponentHeading != null)
+            opponentHeading.text = HeadingText;
     }
 
     private bool TryBeginBotMutation()
@@ -284,6 +317,7 @@ public abstract class OpponentSlotView : LobbyComponent
     }
 }
 
+[Serializable]
 public sealed class SingleplayerOpponentSlotView : OpponentSlotView
 {
     private const int FallbackDefaultBotCount = 3;
@@ -300,7 +334,7 @@ public sealed class SingleplayerOpponentSlotView : OpponentSlotView
 
     protected override int GetMaxBotCount()
     {
-        return Lobby.OpponentSlots != null ? Lobby.OpponentSlots.Length : 0;
+        return SlotCount;
     }
 
     private void SeedDefaultBots()
@@ -343,6 +377,7 @@ public sealed class SingleplayerOpponentSlotView : OpponentSlotView
     }
 }
 
+[Serializable]
 public sealed class MultiplayerHostOpponentSlotView : OpponentSlotView
 {
     protected override bool CanEditBots
@@ -374,11 +409,12 @@ public sealed class MultiplayerHostOpponentSlotView : OpponentSlotView
 
     protected override int GetMaxBotCount()
     {
-        int maxPlayers = Lobby.OpponentSlots != null && Lobby.OpponentSlots.Length > 0 ? Lobby.OpponentSlots.Length : 6;
+        int maxPlayers = HasSlots ? SlotCount : 6;
         return Mathf.Max(0, maxPlayers - Mathf.Max(1, GetHumanSlotCount()));
     }
 }
 
+[Serializable]
 public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
 {
     protected override string HeadingText => "Players";
@@ -428,11 +464,9 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
     {
         EnsureBotSlotBuffer();
         RefreshBotCountUI();
+        RefreshHeading();
 
-        if (Lobby.OpponentHeading != null)
-            Lobby.OpponentHeading.text = HeadingText;
-
-        OpponentSlotEntryView[] slots = Lobby.OpponentSlots;
+        OpponentSlotEntryView[] slots = Slots;
         if (slots == null)
             return;
 
@@ -469,7 +503,7 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
     private int CountBots(MultiplayerSessionDriver.LobbyStateSnapshot snapshot)
     {
         int count = 0;
-        int limit = Mathf.Min(snapshot.SlotCount, Lobby.OpponentSlots != null ? Lobby.OpponentSlots.Length : snapshot.SlotCount);
+        int limit = Mathf.Min(snapshot.SlotCount, HasSlots ? SlotCount : snapshot.SlotCount);
         for (int i = snapshot.HumanPlayers; i < limit; i++)
         {
             if (snapshot.IsBotSlotOccupied(i))

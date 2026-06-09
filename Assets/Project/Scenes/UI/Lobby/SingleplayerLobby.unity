@@ -8384,7 +8384,6 @@ MonoBehaviour:
   botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
   matchRules: {fileID: 0}
-  botCountText: {fileID: 296322053}
   playerTrailColor: {r: 0.95, g: 0.24, b: 0.24, a: 1}
   trailColorButtons:
   - button: {fileID: 1753210065}
@@ -8435,44 +8434,6 @@ MonoBehaviour:
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
     availableAlpha: 1
     unavailableAlpha: 0.35
-  opponentHeading: {fileID: 296322053}
-  opponentSlots:
-  - root: {fileID: 1327168091}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
-  - root: {fileID: 1164646291}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
-  - root: {fileID: 674113798}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
-  - root: {fileID: 1749253721}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
-  - root: {fileID: 1530098101}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
-  - root: {fileID: 138276304}
-    statusText: {fileID: 0}
-    addBotButton: {fileID: 0}
-    removeBotButton: {fileID: 0}
-    frameImage: {fileID: 0}
-    frameOutline: {fileID: 0}
   startButton: {fileID: 1138206832}
   backButton: {fileID: 1097410976}
   uiClickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
@@ -8484,6 +8445,46 @@ MonoBehaviour:
   - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
   - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
   multiplayerArenaSceneName: Neon City XL Multiplayer
+  opponents:
+    botCountText: {fileID: 296322053}
+    opponentHeading: {fileID: 296322053}
+    opponentSlots:
+    - root: {fileID: 1327168091}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
+    - root: {fileID: 1164646291}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
+    - root: {fileID: 674113798}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
+    - root: {fileID: 1749253721}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
+    - root: {fileID: 1530098101}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
+    - root: {fileID: 138276304}
+      statusText: {fileID: 0}
+      addBotButton: {fileID: 0}
+      removeBotButton: {fileID: 0}
+      frameImage: {fileID: 0}
+      frameOutline: {fileID: 0}
   matchSettings:
     minutesText: {fileID: 1611307722}
     secondsText: {fileID: 1718153334}

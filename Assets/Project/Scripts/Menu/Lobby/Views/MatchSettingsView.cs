@@ -177,7 +177,7 @@ public abstract class MatchSettingsView : LobbyComponent
 
         MultiplayerSessionDriver.PublishHostLobbyState(
             Lobby.Opponents != null ? Lobby.Opponents.GetHumanSlotCount() : 0,
-            Lobby.OpponentSlots != null ? Lobby.OpponentSlots.Length : 0,
+            Lobby.Opponents != null ? Lobby.Opponents.SlotCount : 0,
             Lobby.Opponents != null ? Lobby.Opponents.GetBotSlotMask() : 0,
             _state.TrailLength,
             _state.MatchDurationSeconds,
