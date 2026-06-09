@@ -52,6 +52,7 @@ public abstract class Lobby : MonoBehaviour
     private MatchSettingsView _matchSettings;
     private bool _componentsEnabled;
     private bool _lobbyStateDirty = true;
+    private LobbyState _lobbyState;
 
     protected string ArenaSceneName { get; private set; } = "Neon City XL";
 
@@ -101,8 +102,10 @@ public abstract class Lobby : MonoBehaviour
         if (playerLook != null)
             playerTrailColor = playerLook.trailColor;
 
+        InitializeLobbyStateMirror();
         ConfigureComponentsForCurrentRole();
         RefreshLobby();
+        SyncLobbyStateFromCurrentSelections();
     }
 
     protected virtual void OnEnable()
@@ -390,11 +393,123 @@ public abstract class Lobby : MonoBehaviour
         gameSettings.arenaSceneName = ArenaSceneName;
 
         _matchSettings?.ApplyToGameSettings(gameSettings);
+        SyncLobbyStateFromCurrentSelections(singleplayer);
+        LobbyStateGameSettingsAdapter.CopyLobbyStateToGameSettings(_lobbyState, gameSettings);
 
         GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, botCount);
         session.isSingleplayer = singleplayer;
         GameSessionBootstrap.SetSession(session);
         return true;
+    }
+
+    private void InitializeLobbyStateMirror()
+    {
+        _lobbyState = LobbyStateGameSettingsAdapter.CreateLobbyStateFromGameSettings(gameSettings, ResolveLobbyMode());
+        _lobbyState.ArenaSceneName = string.IsNullOrWhiteSpace(ArenaSceneName)
+            ? _lobbyState.ArenaSceneName
+            : ArenaSceneName;
+        _lobbyState.SelectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
+        _lobbyState.SelectedTrailColorIndex = ResolveTrailColorIndex(_lobbyState.SelectedTrailColor);
+        _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
+        _lobbyState.IsDirty = _lobbyStateDirty;
+    }
+
+    private void SyncLobbyStateFromCurrentSelections(bool? singleplayerOverride = null)
+    {
+        if (_lobbyState == null)
+            InitializeLobbyStateMirror();
+
+        LobbyMode lobbyMode = ResolveLobbyMode(singleplayerOverride);
+        Color selectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
+
+        _lobbyState.LobbyMode = lobbyMode;
+        _lobbyState.ArenaSceneName = string.IsNullOrWhiteSpace(ArenaSceneName)
+            ? _lobbyState.ArenaSceneName
+            : ArenaSceneName;
+        _lobbyState.HumanPlayerCount = ResolveHumanPlayerCount(lobbyMode, singleplayerOverride);
+        _lobbyState.BotCount = _opponentSlots != null ? _opponentSlots.BotCount : 0;
+        _lobbyState.SelectedTrailColor = selectedTrailColor;
+        _lobbyState.SelectedTrailColorIndex = _trailColorSelection != null
+            ? _trailColorSelection.SelectedColorIndex
+            : ResolveTrailColorIndex(selectedTrailColor);
+        _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
+        _lobbyState.IsDirty = _lobbyStateDirty;
+
+        if (_matchSettings != null)
+        {
+            _lobbyState.MatchMode = _matchSettings.SelectedMatchMode;
+            _lobbyState.MatchDurationSeconds = _matchSettings.MatchDuration;
+            _lobbyState.SuddenDeath = _matchSettings.SuddenDeath;
+            _lobbyState.TrailLength = _matchSettings.TrailLength;
+            return;
+        }
+
+        if (gameSettings == null)
+            return;
+
+        _lobbyState.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(gameSettings.gameMode);
+        _lobbyState.MatchDurationSeconds = gameSettings.matchDuration;
+        _lobbyState.SuddenDeath = gameSettings.isSuddenDeath;
+        _lobbyState.TrailLength = gameSettings.trailLength;
+    }
+
+    private LobbyMode ResolveLobbyMode(bool? singleplayerOverride = null)
+    {
+        if (singleplayerOverride.HasValue && singleplayerOverride.Value)
+            return LobbyMode.Singleplayer;
+
+        if (!singleplayerOverride.HasValue && IsSingleplayerLobby)
+            return LobbyMode.Singleplayer;
+
+        MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
+        return bootstrap != null && bootstrap.IsServerStarted
+            ? LobbyMode.MultiplayerHost
+            : LobbyMode.MultiplayerClient;
+    }
+
+    private int ResolveHumanPlayerCount(LobbyMode lobbyMode, bool? singleplayerOverride)
+    {
+        if (lobbyMode == LobbyMode.Singleplayer)
+            return 1;
+
+        if (singleplayerOverride.HasValue)
+            return Mathf.Max(2, _opponentSlots != null ? _opponentSlots.GetHumanSlotCount() : 1);
+
+        if (_opponentSlots != null)
+            return Mathf.Max(0, _opponentSlots.GetHumanSlotCount());
+
+        MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
+        if (bootstrap != null)
+            return Mathf.Max(0, bootstrap.ConnectedPlayerCount);
+
+        return lobbyMode == LobbyMode.MultiplayerClient ? 1 : 0;
+    }
+
+    private int ResolveTrailColorIndex(Color color)
+    {
+        if (gameSettings == null ||
+            gameSettings.trailColorPalette == null ||
+            gameSettings.trailColorPalette.Count == 0)
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < gameSettings.trailColorPalette.Count; i++)
+        {
+            if (ApproximatelySameColor(color, gameSettings.trailColorPalette[i]))
+                return i;
+        }
+
+        return 0;
+    }
+
+    private static bool ApproximatelySameColor(Color first, Color second)
+    {
+        const float tolerance = 0.001f;
+        return Mathf.Abs(first.r - second.r) < tolerance &&
+               Mathf.Abs(first.g - second.g) < tolerance &&
+               Mathf.Abs(first.b - second.b) < tolerance &&
+               Mathf.Abs(first.a - second.a) < tolerance;
     }
 
     private void LoadConfiguredScene(string sceneName)

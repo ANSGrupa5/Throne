@@ -4396,9 +4396,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 507756699}
     m_Modifications:
+    - target: {fileID: 680000000000000011, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
       value: OpponentSlot_3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7901226055957247567, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Pivot.x

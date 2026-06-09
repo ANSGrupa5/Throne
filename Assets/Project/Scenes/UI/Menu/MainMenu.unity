@@ -2692,6 +2692,10 @@ PrefabInstance:
       propertyPath: m_fontColor.r
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8249691752426331954, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8486245784143916401, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_Name
       value: ExitButton

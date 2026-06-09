@@ -20,6 +20,7 @@ public abstract class MatchSettingsView : LobbyComponent
     public bool SuddenDeath => _suddenDeath;
     public int TrailLength => _trailLength;
     public int GameModeIndex => Lobby.GameModeDropdown != null ? Lobby.GameModeDropdown.value : 0;
+    public MatchMode SelectedMatchMode => LobbyStateGameSettingsAdapter.ToMatchMode(GameModeIndex);
 
     protected virtual bool CanEdit => false;
 
