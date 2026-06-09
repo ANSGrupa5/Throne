@@ -1,28 +1,58 @@
+using System;
 using UnityEngine;
 
+[Serializable]
 public sealed class ScooterSelectView : LobbyComponent
 {
+    [Header("Selection")]
+    [SerializeField] private int currentModel;
+
+    [Header("Vehicle Previews")]
+    [SerializeField] private GameObject[] motorPreview;
+    [SerializeField] private GameObject[] motorPlayable;
+
+    public int SelectedModelIndex => currentModel;
+
+    public void Validate(Lobby owner)
+    {
+        string ownerName = owner != null ? owner.name : nameof(Lobby);
+
+        if (motorPreview == null || motorPreview.Length == 0)
+            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no scooter preview objects assigned.", owner);
+
+        if (motorPlayable == null || motorPlayable.Length == 0)
+            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no playable scooter prefabs assigned.", owner);
+
+        if (motorPreview != null &&
+            motorPlayable != null &&
+            motorPreview.Length > 0 &&
+            motorPlayable.Length > 0 &&
+            motorPreview.Length != motorPlayable.Length)
+        {
+            Debug.LogError($"{nameof(Lobby)} on {ownerName} has mismatched scooter preview/playable counts.", owner);
+        }
+    }
+
     protected override void OnInitialize()
     {
-        if (Lobby.CurrentModel < 0)
-            Lobby.CurrentModel = 0;
+        if (currentModel < 0)
+            currentModel = 0;
 
-        SetPlayerModel(Lobby.CurrentModel);
+        SetPlayerModel(currentModel);
     }
 
     public override void Refresh()
     {
-        SetPlayerModel(Lobby.CurrentModel);
+        SetPlayerModel(currentModel);
     }
 
     public void ChangePlayerModelUp()
     {
-        GameObject[] previews = Lobby.MotorPreview;
-        if (previews == null || previews.Length == 0)
+        if (motorPreview == null || motorPreview.Length == 0)
             return;
 
-        int model = Lobby.CurrentModel + 1;
-        if (model >= previews.Length)
+        int model = currentModel + 1;
+        if (model >= motorPreview.Length)
             model = 0;
 
         SetPlayerModel(model);
@@ -30,34 +60,41 @@ public sealed class ScooterSelectView : LobbyComponent
 
     public void ChangePlayerModelDown()
     {
-        GameObject[] previews = Lobby.MotorPreview;
-        if (previews == null || previews.Length == 0)
+        if (motorPreview == null || motorPreview.Length == 0)
             return;
 
-        int model = Lobby.CurrentModel - 1;
+        int model = currentModel - 1;
         if (model < 0)
-            model = previews.Length - 1;
+            model = motorPreview.Length - 1;
 
         SetPlayerModel(model);
     }
 
     public void SetPlayerModel(int selectedMotor)
     {
-        GameObject[] previews = Lobby.MotorPreview;
-        if (previews == null || previews.Length == 0)
+        if (motorPreview == null || motorPreview.Length == 0)
             return;
 
-        int model = Mathf.Clamp(selectedMotor, 0, previews.Length - 1);
-        Lobby.CurrentModel = model;
+        int previousModel = currentModel;
+        int model = Mathf.Clamp(selectedMotor, 0, motorPreview.Length - 1);
+        currentModel = model;
 
-        for (int i = 0; i < previews.Length; i++)
+        for (int i = 0; i < motorPreview.Length; i++)
         {
-            if (previews[i] != null)
-                previews[i].SetActive(i == model);
+            if (motorPreview[i] != null)
+                motorPreview[i].SetActive(i == model);
         }
 
-        GameObject[] playable = Lobby.MotorPlayable;
-        if (Lobby.PlayerLook != null && playable != null && model >= 0 && model < playable.Length && playable[model] != null)
-            Lobby.PlayerLook.playerPrefab = playable[model];
+        if (Lobby.PlayerLook != null &&
+            motorPlayable != null &&
+            model >= 0 &&
+            model < motorPlayable.Length &&
+            motorPlayable[model] != null)
+        {
+            Lobby.PlayerLook.playerPrefab = motorPlayable[model];
+        }
+
+        if (model != previousModel)
+            Lobby.MarkLobbyStateDirty();
     }
 }

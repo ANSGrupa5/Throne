@@ -3,7 +3,7 @@ using UnityEngine;
 public class SingleplayerLobby : Lobby
 {
     [SerializeField] private SingleplayerOpponentSlotView opponents = new();
-    private readonly ScooterSelectView _scooters = new();
+    [SerializeField] private ScooterSelectView scooters = new();
     private readonly SingleplayerTrailColorSelectionView _trailColors = new();
     [SerializeField] private EditableMatchSettingsView matchSettings = new();
 
@@ -11,7 +11,7 @@ public class SingleplayerLobby : Lobby
 
     protected override void ConfigureComponentsForCurrentRole()
     {
-        UseComponents(opponents, _scooters, _trailColors, matchSettings);
+        UseComponents(opponents, scooters, _trailColors, matchSettings);
     }
 
     protected override bool CanStartMatch()

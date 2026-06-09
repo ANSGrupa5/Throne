@@ -8436,14 +8436,6 @@ MonoBehaviour:
     unavailableAlpha: 0.35
   startButton: {fileID: 1138206832}
   backButton: {fileID: 1097410976}
-  uiClickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  currentModel: 0
-  motorPreview:
-  - {fileID: 1585333280}
-  - {fileID: 1964693551}
-  motorPlayable:
-  - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
-  - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
   multiplayerArenaSceneName: Neon City XL Multiplayer
   opponents:
     botCountText: {fileID: 296322053}
@@ -8485,6 +8477,14 @@ MonoBehaviour:
       removeBotButton: {fileID: 0}
       frameImage: {fileID: 0}
       frameOutline: {fileID: 0}
+  scooters:
+    currentModel: 0
+    motorPreview:
+    - {fileID: 1585333280}
+    - {fileID: 1964693551}
+    motorPlayable:
+    - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
+    - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
   matchSettings:
     minutesText: {fileID: 1611307722}
     secondsText: {fileID: 1718153334}

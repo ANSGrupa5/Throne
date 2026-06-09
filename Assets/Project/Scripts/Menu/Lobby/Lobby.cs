@@ -17,14 +17,6 @@ public abstract class Lobby : MonoBehaviour
     [SerializeField] private Button startButton;
     [SerializeField] private Button backButton;
 
-    [Header("UI Audio")]
-    [SerializeField] private AudioClip uiClickSound;
-
-    [Header("Vehicle Previews")]
-    [SerializeField] private int currentModel;
-    [SerializeField] private GameObject[] motorPreview;
-    [SerializeField] private GameObject[] motorPlayable;
-
     [SerializeField] private string multiplayerArenaSceneName = "Neon City XL Multiplayer";
 
     private OpponentSlotView _opponentSlots;
@@ -44,13 +36,6 @@ public abstract class Lobby : MonoBehaviour
     internal BotsSettings BotsSettings => botsSettings;
     internal PlayerLook PlayerLook => playerLook;
     internal TrailColorButtonView[] TrailColorButtons => trailColorButtons;
-    internal GameObject[] MotorPreview => motorPreview;
-    internal GameObject[] MotorPlayable => motorPlayable;
-    internal int CurrentModel
-    {
-        get => currentModel;
-        set => currentModel = value;
-    }
 
     internal Color PlayerTrailColor
     {
@@ -79,6 +64,7 @@ public abstract class Lobby : MonoBehaviour
         InitializeLobbyStateMirror();
         EnsureComponentsForCurrentRole(true);
         _opponentSlots?.Validate(this);
+        _scooterSelect?.Validate(this);
         RefreshActiveComponents();
         RefreshStartButtonInteractivity();
         SyncLobbyStateFromCurrentSelections();
@@ -341,15 +327,6 @@ public abstract class Lobby : MonoBehaviour
             _lobbyState.IsDirty = false;
     }
 
-    internal void PlayUiClickSound()
-    {
-        if (!Application.isPlaying)
-            return;
-
-        ResolveUiClickSound();
-        PersistentUiAudioPlayer.PlayOneShot(uiClickSound);
-    }
-
     internal bool IsReadOnlyMultiplayerClient()
     {
         if (!MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
@@ -392,7 +369,9 @@ public abstract class Lobby : MonoBehaviour
             : ArenaSceneName;
         _lobbyState.SelectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
         _lobbyState.SelectedTrailColorIndex = ResolveTrailColorIndex(_lobbyState.SelectedTrailColor);
-        _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
+        _lobbyState.SelectedPlayerModelIndex = _scooterSelect != null
+            ? _scooterSelect.SelectedModelIndex
+            : 0;
         _lobbyState.IsDirty = true;
     }
 
@@ -415,7 +394,9 @@ public abstract class Lobby : MonoBehaviour
         _lobbyState.SelectedTrailColorIndex = _trailColorSelection != null
             ? _trailColorSelection.SelectedColorIndex
             : ResolveTrailColorIndex(selectedTrailColor);
-        _lobbyState.SelectedPlayerModelIndex = Mathf.Max(0, currentModel);
+        _lobbyState.SelectedPlayerModelIndex = _scooterSelect != null
+            ? _scooterSelect.SelectedModelIndex
+            : 0;
 
         if (_matchSettings != null)
         {
@@ -628,35 +609,6 @@ public abstract class Lobby : MonoBehaviour
         }
 
         return null;
-    }
-
-    // Temporary migration fallback until UI audio is handled by MenuSelectable/audio presets.
-    private void ResolveUiClickSound()
-    {
-        if (uiClickSound != null)
-            return;
-
-        ButtonFeedback[] localFeedback = GetComponentsInChildren<ButtonFeedback>(true);
-        for (int i = 0; i < localFeedback.Length; i++)
-        {
-            if (localFeedback[i] != null && localFeedback[i].ClickSound != null)
-            {
-                uiClickSound = localFeedback[i].ClickSound;
-                return;
-            }
-        }
-
-        ButtonFeedback[] sceneFeedback = UnityEngine.Object.FindObjectsByType<ButtonFeedback>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-        for (int i = 0; i < sceneFeedback.Length; i++)
-        {
-            if (sceneFeedback[i] != null && sceneFeedback[i].ClickSound != null)
-            {
-                uiClickSound = sceneFeedback[i].ClickSound;
-                return;
-            }
-        }
     }
 
     private bool IsMainMenuScene(string sceneName)
