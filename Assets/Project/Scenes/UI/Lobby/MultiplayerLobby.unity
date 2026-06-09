@@ -11058,6 +11058,7 @@ MonoBehaviour:
   botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
   matchRules: {fileID: 0}
+  configuredLobbyMode: 2
   playerTrailColor: {r: 0.95, g: 0.24, b: 0.24, a: 1}
   trailColorButtons:
   - button: {fileID: 1753210065}

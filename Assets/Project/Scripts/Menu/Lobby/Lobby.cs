@@ -1,13 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class Lobby : MonoBehaviour
+public class Lobby : MonoBehaviour
 {
     [Header("Default Config Assets")]
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private BotsSettings botsSettings;
     [SerializeField] private PlayerLook playerLook;
     [SerializeField] private MatchRules matchRules;
+
+    [Header("Role")]
+    [SerializeField] private LobbyMode configuredLobbyMode = LobbyMode.Singleplayer;
 
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
@@ -19,14 +22,29 @@ public abstract class Lobby : MonoBehaviour
 
     [SerializeField] private string multiplayerArenaSceneName = "Neon City XL Multiplayer";
 
+    [Header("Role Views")]
+    [SerializeField] private SingleplayerOpponentSlotView opponents = new();
+    [SerializeField] private MultiplayerHostOpponentSlotView hostOpponents = new();
+    [SerializeField] private MultiplayerClientOpponentSlotView clientOpponents = new();
+    [SerializeField] private ScooterSelectView scooters = new();
+    [SerializeField] private EditableMatchSettingsView matchSettings = new();
+    [SerializeField] private MultiplayerHostMatchSettingsView hostMatchSettings = new();
+    [SerializeField] private MultiplayerClientMatchSettingsView clientMatchSettings = new();
+
     private OpponentSlotView _opponentSlots;
     private ScooterSelectView _scooterSelect;
     private TrailColorSelectionView _trailColorSelection;
     private MatchSettingsView _matchSettings;
+    private readonly SingleplayerTrailColorSelectionView _singleplayerTrailColors = new();
+    private readonly MultiplayerTrailColorSelectionView _multiplayerTrailColors = new();
     private bool _componentsEnabled;
     private bool _componentsConfigured;
-    private LobbyMode _configuredLobbyMode;
+    private LobbyMode _activeLobbyMode;
     private LobbyState _lobbyState;
+    private IMatchStartFlow _startFlow;
+    private SingleplayerMatchStartFlow _singleplayerStartFlow;
+    private MultiplayerHostMatchStartFlow _multiplayerHostStartFlow;
+    private MultiplayerClientMatchStartFlow _multiplayerClientStartFlow;
 
     protected string ArenaSceneName { get; private set; } = "Neon City XL";
 
@@ -47,9 +65,6 @@ public abstract class Lobby : MonoBehaviour
     internal MatchSettingsView MatchSettings => _matchSettings;
     internal TrailColorSelectionView TrailColors => _trailColorSelection;
 
-    protected abstract bool IsSingleplayerLobby { get; }
-    protected abstract void ConfigureComponentsForCurrentRole();
-
     protected virtual void Awake()
     {
         ValidateSceneReferences();
@@ -66,8 +81,8 @@ public abstract class Lobby : MonoBehaviour
         _opponentSlots?.Validate(this);
         _scooterSelect?.Validate(this);
         RefreshActiveComponents();
-        RefreshStartButtonInteractivity();
         SyncLobbyStateFromCurrentSelections();
+        RefreshStartButtonInteractivity();
     }
 
     protected virtual void OnEnable()
@@ -75,6 +90,7 @@ public abstract class Lobby : MonoBehaviour
         EnsureComponentsForCurrentRole();
         EnableActiveComponents();
         RefreshActiveComponents();
+        SyncLobbyStateFromCurrentSelections();
         RefreshStartButtonInteractivity();
     }
 
@@ -144,6 +160,7 @@ public abstract class Lobby : MonoBehaviour
     {
         EnsureComponentsForCurrentRole();
         RefreshActiveComponents();
+        SyncLobbyStateFromCurrentSelections();
         RefreshStartButtonInteractivity();
     }
 
@@ -159,6 +176,7 @@ public abstract class Lobby : MonoBehaviour
     {
         EnsureComponentsForCurrentRole();
         _opponentSlots?.Refresh();
+        SyncLobbyStateFromCurrentSelections();
         RefreshStartButtonInteractivity();
     }
 
@@ -177,7 +195,7 @@ public abstract class Lobby : MonoBehaviour
         }
 
         ArenaSceneName = sceneName;
-        LoadConfiguredScene(sceneName);
+        StartMatch();
     }
 
     public void LoadScene()
@@ -187,17 +205,18 @@ public abstract class Lobby : MonoBehaviour
 
     public void StartMatch()
     {
-        string configuredSceneName = !string.IsNullOrWhiteSpace(ArenaSceneName)
-            ? ArenaSceneName
-            : gameSettings != null
-                ? gameSettings.arenaSceneName
-                : string.Empty;
+        EnsureComponentsForCurrentRole();
+        ArenaSceneName = ResolvePlayableArenaSceneName(ArenaSceneName);
+        SyncLobbyStateFromCurrentSelections();
+        ConfigureStartFlowForCurrentRole();
 
-        if (string.IsNullOrWhiteSpace(configuredSceneName) || IsNonMatchScene(configuredSceneName))
-            configuredSceneName = "Neon City XL";
+        if (_startFlow == null || !_startFlow.CanStart(_lobbyState))
+        {
+            RefreshStartButtonInteractivity();
+            return;
+        }
 
-        ArenaSceneName = configuredSceneName;
-        LoadConfiguredScene(configuredSceneName);
+        _startFlow.StartMatch(_lobbyState);
     }
 
     public void BackToMainMenu()
@@ -336,29 +355,49 @@ public abstract class Lobby : MonoBehaviour
         return bootstrap != null && bootstrap.IsClientStarted && !bootstrap.IsServerStarted;
     }
 
-    protected virtual bool CanStartMatch()
+    internal bool PrepareRuntimeSession(LobbyState state, LobbyMode runtimeMode)
     {
-        return IsSingleplayerLobby;
-    }
-
-    protected bool InitializeGame(bool singleplayer)
-    {
-        EnsureComponentsForCurrentRole();
-
-        if (gameSettings == null)
+        if (state == null || gameSettings == null)
             return false;
 
         _trailColorSelection?.ApplyCurrentSelectionToDefaults();
 
-        int botCount = _opponentSlots != null ? _opponentSlots.BotCount : 0;
-        SyncLobbyStateFromCurrentSelections(singleplayer);
+        state.LobbyMode = runtimeMode;
         // Temporary bridge: runtime session construction still reads GameSettings.
-        LobbyStateGameSettingsAdapter.CopyLobbyStateToGameSettings(_lobbyState, gameSettings);
+        LobbyStateGameSettingsAdapter.CopyLobbyStateToGameSettings(state, gameSettings);
 
-        GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, botCount);
-        session.isSingleplayer = singleplayer;
+        GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, state.BotCount);
+        session.isSingleplayer = runtimeMode == LobbyMode.Singleplayer;
         GameSessionBootstrap.SetSession(session);
         return true;
+    }
+
+    internal void PublishCurrentHostLobbyState(LobbyState state)
+    {
+        if (state == null)
+            return;
+
+        MultiplayerSessionDriver.PublishHostLobbyState(
+            state.HumanPlayerCount,
+            _opponentSlots != null ? _opponentSlots.SlotCount : state.ParticipantCount,
+            _opponentSlots != null ? _opponentSlots.GetBotSlotMask() : 0,
+            state.TrailLength,
+            state.MatchDurationSeconds,
+            LobbyStateGameSettingsAdapter.ToGameSettingsMatchMode(state.MatchMode),
+            state.SuddenDeath);
+    }
+
+    internal string ResolveSingleplayerArenaSceneName(LobbyState state)
+    {
+        return ResolvePlayableArenaSceneName(state != null ? state.ArenaSceneName : ArenaSceneName);
+    }
+
+    internal string ResolveMultiplayerArenaSceneName(LobbyState state)
+    {
+        if (!string.IsNullOrWhiteSpace(multiplayerArenaSceneName))
+            return multiplayerArenaSceneName;
+
+        return ResolvePlayableArenaSceneName(state != null ? state.ArenaSceneName : ArenaSceneName);
     }
 
     private void InitializeLobbyStateMirror()
@@ -375,20 +414,20 @@ public abstract class Lobby : MonoBehaviour
         _lobbyState.IsDirty = true;
     }
 
-    private void SyncLobbyStateFromCurrentSelections(bool? singleplayerOverride = null)
+    private void SyncLobbyStateFromCurrentSelections()
     {
         if (_lobbyState == null)
             InitializeLobbyStateMirror();
 
         bool wasDirty = _lobbyState.IsDirty;
-        LobbyMode lobbyMode = ResolveLobbyMode(singleplayerOverride);
+        LobbyMode lobbyMode = ResolveLobbyMode();
         Color selectedTrailColor = playerLook != null ? playerLook.trailColor : playerTrailColor;
 
         _lobbyState.LobbyMode = lobbyMode;
         _lobbyState.ArenaSceneName = string.IsNullOrWhiteSpace(ArenaSceneName)
             ? _lobbyState.ArenaSceneName
             : ArenaSceneName;
-        _lobbyState.HumanPlayerCount = ResolveHumanPlayerCount(lobbyMode, singleplayerOverride);
+        _lobbyState.HumanPlayerCount = ResolveHumanPlayerCount(lobbyMode);
         _lobbyState.BotCount = _opponentSlots != null ? _opponentSlots.BotCount : 0;
         _lobbyState.SelectedTrailColor = selectedTrailColor;
         _lobbyState.SelectedTrailColorIndex = _trailColorSelection != null
@@ -416,12 +455,9 @@ public abstract class Lobby : MonoBehaviour
         _lobbyState.IsDirty = wasDirty;
     }
 
-    private LobbyMode ResolveLobbyMode(bool? singleplayerOverride = null)
+    private LobbyMode ResolveLobbyMode()
     {
-        if (singleplayerOverride.HasValue && singleplayerOverride.Value)
-            return LobbyMode.Singleplayer;
-
-        if (!singleplayerOverride.HasValue && IsSingleplayerLobby)
+        if (configuredLobbyMode == LobbyMode.Singleplayer)
             return LobbyMode.Singleplayer;
 
         MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
@@ -430,22 +466,22 @@ public abstract class Lobby : MonoBehaviour
             : LobbyMode.MultiplayerClient;
     }
 
-    private int ResolveHumanPlayerCount(LobbyMode lobbyMode, bool? singleplayerOverride)
+    private int ResolveHumanPlayerCount(LobbyMode lobbyMode)
     {
-        if (lobbyMode == LobbyMode.Singleplayer)
-            return 1;
+        switch (lobbyMode)
+        {
+            case LobbyMode.Singleplayer:
+                return 1;
+            case LobbyMode.MultiplayerHost:
+            case LobbyMode.MultiplayerClient:
+                if (_opponentSlots != null)
+                    return Mathf.Max(0, _opponentSlots.GetHumanSlotCount());
 
-        if (singleplayerOverride.HasValue)
-            return Mathf.Max(2, _opponentSlots != null ? _opponentSlots.GetHumanSlotCount() : 1);
-
-        if (_opponentSlots != null)
-            return Mathf.Max(0, _opponentSlots.GetHumanSlotCount());
-
-        MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
-        if (bootstrap != null)
-            return Mathf.Max(0, bootstrap.ConnectedPlayerCount);
-
-        return lobbyMode == LobbyMode.MultiplayerClient ? 1 : 0;
+                MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
+                return bootstrap != null ? Mathf.Max(0, bootstrap.ConnectedPlayerCount) : 0;
+            default:
+                return 0;
+        }
     }
 
     private int ResolveTrailColorIndex(Color color)
@@ -475,46 +511,17 @@ public abstract class Lobby : MonoBehaviour
                Mathf.Abs(first.a - second.a) < tolerance;
     }
 
-    private void LoadConfiguredScene(string sceneName)
+    private string ResolvePlayableArenaSceneName(string sceneName)
     {
-        if (IsMainMenuScene(sceneName))
-        {
-            BackToMainMenu();
-            return;
-        }
-
-        ArenaSceneName = sceneName;
-        bool isMultiplayerLobby = !IsSingleplayerLobby;
-
-        EnsureComponentsForCurrentRole();
-        _opponentSlots?.Refresh();
-        RefreshStartButtonInteractivity();
-        if (!isMultiplayerLobby && BotCount <= 0)
-        {
-            Debug.LogWarning("Add at least one bot before starting a singleplayer match.");
-            return;
-        }
-
-        if (!InitializeGame(!isMultiplayerLobby))
-            return;
-
-        if (!isMultiplayerLobby)
-        {
-            SceneTransitionLoader.LoadScene(sceneName);
-            return;
-        }
-
-        if (MultiplayerRuntimeBootstrap.Instance == null || !MultiplayerRuntimeBootstrap.Instance.IsServerStarted)
-        {
-            Debug.LogWarning("Only the host can start a multiplayer match.");
-            return;
-        }
-
-        string networkSceneName = string.IsNullOrWhiteSpace(multiplayerArenaSceneName)
+        string configuredSceneName = !string.IsNullOrWhiteSpace(sceneName)
             ? sceneName
-            : multiplayerArenaSceneName;
+            : gameSettings != null
+                ? gameSettings.arenaSceneName
+                : string.Empty;
 
-        MultiplayerRuntimeBootstrap.Instance.LoadMultiplayerMatchScene(networkSceneName);
+        return string.IsNullOrWhiteSpace(configuredSceneName) || IsNonMatchScene(configuredSceneName)
+            ? "Neon City XL"
+            : configuredSceneName;
     }
 
     private void InitializeActiveComponents()
@@ -561,12 +568,51 @@ public abstract class Lobby : MonoBehaviour
     private void EnsureComponentsForCurrentRole(bool force = false)
     {
         LobbyMode lobbyMode = ResolveLobbyMode();
-        if (!force && _componentsConfigured && _configuredLobbyMode == lobbyMode)
+        if (!force && _componentsConfigured && _activeLobbyMode == lobbyMode)
             return;
 
-        _configuredLobbyMode = lobbyMode;
+        _activeLobbyMode = lobbyMode;
         _componentsConfigured = true;
-        ConfigureComponentsForCurrentRole();
+        ConfigureComponentsForCurrentRole(lobbyMode);
+        ConfigureStartFlow(lobbyMode);
+    }
+
+    private void ConfigureComponentsForCurrentRole(LobbyMode lobbyMode)
+    {
+        switch (lobbyMode)
+        {
+            case LobbyMode.Singleplayer:
+                UseComponents(opponents, scooters, _singleplayerTrailColors, matchSettings);
+                break;
+            case LobbyMode.MultiplayerHost:
+                UseComponents(hostOpponents, scooters, _multiplayerTrailColors, hostMatchSettings);
+                break;
+            case LobbyMode.MultiplayerClient:
+                UseComponents(clientOpponents, scooters, _multiplayerTrailColors, clientMatchSettings);
+                break;
+        }
+    }
+
+    private void ConfigureStartFlowForCurrentRole()
+    {
+        ConfigureStartFlow(ResolveLobbyMode());
+    }
+
+    private void ConfigureStartFlow(LobbyMode lobbyMode)
+    {
+        if (_singleplayerStartFlow == null)
+            _singleplayerStartFlow = new SingleplayerMatchStartFlow(this);
+        if (_multiplayerHostStartFlow == null)
+            _multiplayerHostStartFlow = new MultiplayerHostMatchStartFlow(this);
+        if (_multiplayerClientStartFlow == null)
+            _multiplayerClientStartFlow = new MultiplayerClientMatchStartFlow();
+
+        _startFlow = lobbyMode switch
+        {
+            LobbyMode.MultiplayerHost => _multiplayerHostStartFlow,
+            LobbyMode.MultiplayerClient => _multiplayerClientStartFlow,
+            _ => _singleplayerStartFlow
+        };
     }
 
     private void RefreshStartButtonInteractivity()
@@ -574,8 +620,10 @@ public abstract class Lobby : MonoBehaviour
         if (startButton == null)
             ResolveSceneButtons();
 
+        ConfigureStartFlowForCurrentRole();
+
         if (startButton != null)
-            startButton.interactable = CanStartMatch();
+            startButton.interactable = _startFlow != null && _startFlow.CanStart(_lobbyState);
     }
 
     private void ResolveSceneButtons()
