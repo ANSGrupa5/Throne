@@ -514,7 +514,7 @@ public abstract class Lobby : MonoBehaviour
         if (uiClickSound != null)
             return;
 
-        ButtonScript[] localFeedback = GetComponentsInChildren<ButtonScript>(true);
+        ButtonFeedback[] localFeedback = GetComponentsInChildren<ButtonFeedback>(true);
         for (int i = 0; i < localFeedback.Length; i++)
         {
             if (localFeedback[i] != null && localFeedback[i].ClickSound != null)
@@ -524,7 +524,7 @@ public abstract class Lobby : MonoBehaviour
             }
         }
 
-        ButtonScript[] sceneFeedback = UnityEngine.Object.FindObjectsByType<ButtonScript>(
+        ButtonFeedback[] sceneFeedback = UnityEngine.Object.FindObjectsByType<ButtonFeedback>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);
         for (int i = 0; i < sceneFeedback.Length; i++)

@@ -702,7 +702,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &151609141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -866,7 +867,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &239380276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1105,7 +1107,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &248306103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1312,7 +1315,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &279903811
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1614,7 +1618,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &380590657
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1937,7 +1942,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &452313082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3156,7 +3162,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &800846681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3320,7 +3327,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &822446638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4288,7 +4296,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1138206836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4745,7 +4754,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1208203160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5000,7 +5010,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1270754085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5164,7 +5175,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1292569679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5329,7 +5341,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1311807390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6163,7 +6176,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4512068063272706952, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4293721600
+      value: 4293721826
       objectReference: {fileID: 0}
     - target: {fileID: 6460748927959307248, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_Name
@@ -6311,7 +6324,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1511844510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6518,7 +6532,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1519492047
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6638,8 +6653,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1520584241}
   - component: {fileID: 1520584243}
-  - component: {fileID: 1520584242}
-  - component: {fileID: 1520584244}
   m_Layer: 0
   m_Name: ScooterModelSelector
   m_TagString: Untagged
@@ -6668,36 +6681,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 20}
   m_SizeDelta: {x: 286, y: 148}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1520584242
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520584240}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.05, g: 0.075, b: 0.09, a: 0.44}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6ac4691abc11b1646a3a0e62ac843f75, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1520584243
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6706,21 +6689,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1520584240}
   m_CullTransparentMesh: 1
---- !u!114 &1520584244
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520584240}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
-  m_EffectColor: {r: 0.82, g: 0.9, b: 0.96, a: 0.34}
-  m_EffectDistance: {x: 1, y: -1}
-  m_UseGraphicAlpha: 1
 --- !u!1 &1528940324
 GameObject:
   m_ObjectHideFlags: 0
@@ -7644,7 +7612,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &1753210065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8098,7 +8067,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1841471366}
   - component: {fileID: 1841471368}
-  - component: {fileID: 1841471367}
   m_Layer: 0
   m_Name: LobbyContentPanel
   m_TagString: Untagged
@@ -8126,36 +8094,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1841471367
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1841471365}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0.946594, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: eda0f07fb2723d2469acfcb3cdb0ebee, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1841471368
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8654,7 +8592,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1
 --- !u!114 &2074357527
 MonoBehaviour:
   m_ObjectHideFlags: 0

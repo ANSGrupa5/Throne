@@ -59,7 +59,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4293721856
-  m_fontColor: {r: 0, g: 1, b: 0.9254902, a: 1}
+  m_fontColor: {r: 0.8862745, g: 0.90588236, b: 0.9137255, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -94,11 +94,11 @@ MonoBehaviour:
     rgba: 4294967295
   m_fontSize: 24
   m_fontSizeBase: 24
-  m_fontWeight: 400
+  m_fontWeight: 700
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -195,8 +195,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0.944005, a: 1}
-  m_RaycastTarget: 1
+  m_Color: {r: 0.8862745, g: 0.90588236, b: 0.9137255, a: 1}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -204,7 +204,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: b4ca14d19b3875148ba53e2c6bc2e730, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -273,8 +273,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 2100000, guid: f36c8d01c9111ec43b7da4f60cdd5683, type: 2}
-  m_Color: {r: 0, g: 0.9960785, b: 0.92549026, a: 1}
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.654902, g: 0.69411767, b: 0.7176471, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -312,13 +312,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0.9960785, b: 0.92549026, a: 1}
-    m_HighlightedColor: {r: 0, g: 0.54509807, b: 0.9254902, a: 1}
-    m_PressedColor: {r: 0, g: 0.54509807, b: 0.9254902, a: 1}
-    m_SelectedColor: {r: 0, g: 0.54509807, b: 0.9254902, a: 1}
-    m_DisabledColor: {r: 0, g: 0.9960785, b: 0.92549026, a: 0.5}
+    m_NormalColor: {r: 0.654902, g: 0.69411767, b: 0.7176471, a: 1}
+    m_HighlightedColor: {r: 0.8235294, g: 0.8627451, b: 0.8745098, a: 1}
+    m_PressedColor: {r: 0.43529412, g: 0.49411765, b: 0.5176471, a: 1}
+    m_SelectedColor: {r: 0.8235294, g: 0.8627451, b: 0.8745098, a: 1}
+    m_DisabledColor: {r: 0.654902, g: 0.69411767, b: 0.7176471, a: 0.5}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.33
+    m_FadeDuration: 0.18
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -349,4 +349,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
   hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
   clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  hoverVolume: 0.55
+  clickVolume: 1

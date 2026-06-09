@@ -50,7 +50,7 @@ public class SettingsManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         resolutions = Screen.resolutions;
-        resolutionDropdown.ClearOptions();
+        BindSceneReferences();
 
         var options = new System.Collections.Generic.List<string>();
         int currentResolutionIndex = 0;
@@ -64,9 +64,13 @@ public class SettingsManager : MonoBehaviour
                 currentResolutionIndex = i;
         }
 
-        resolutionDropdown.AddOptions(options);
-        resolutionDropdown.value = currentResolutionIndex;
-        resolutionDropdown.RefreshShownValue();
+        if (resolutionDropdown != null)
+        {
+            resolutionDropdown.ClearOptions();
+            resolutionDropdown.AddOptions(options);
+            resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
+            resolutionDropdown.RefreshShownValue();
+        }
 
         LoadSettings();
         InitializeMenuMusic();
@@ -123,6 +127,9 @@ public class SettingsManager : MonoBehaviour
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        BindSceneReferences();
+        LoadSettings();
+
         if (FindFirstObjectByType<MatchInitializer>(FindObjectsInactive.Include) == null)
         {
             PlayMenuMusic();
@@ -156,20 +163,25 @@ public class SettingsManager : MonoBehaviour
 
     public void StartRebind(int k)
     {
+        BindSceneReferences();
+
         switch (k)
         {
             case 0:
-                TurnLeftButtonText.text = "...";
+                if (TurnLeftButtonText != null)
+                    TurnLeftButtonText.text = "...";
                 waitingForKey = true;
                 keybind = 0;
                 break;
             case 1:
-                TurnRightButtonText.text = "...";
+                if (TurnRightButtonText != null)
+                    TurnRightButtonText.text = "...";
                 waitingForKey = true;
                 keybind = 1;
                 break;
             case 2:
-                CameraButtonText.text = "...";
+                if (CameraButtonText != null)
+                    CameraButtonText.text = "...";
                 waitingForKey = true;
                 keybind = 2;
                 break;
@@ -198,64 +210,154 @@ public class SettingsManager : MonoBehaviour
         {
             case 0:
                 PlayerPrefs.SetInt("TurnLeft", (int)key);
-                TurnLeftButtonText.text = key.ToString();
+                if (TurnLeftButtonText != null)
+                    TurnLeftButtonText.text = key.ToString();
                 break;
             case 1:
                 PlayerPrefs.SetInt("TurnRight", (int)key);
-                TurnRightButtonText.text = key.ToString();
+                if (TurnRightButtonText != null)
+                    TurnRightButtonText.text = key.ToString();
                 break;
             case 2:
                 PlayerPrefs.SetInt("Camera", (int)key);
-                CameraButtonText.text = key.ToString();
+                if (CameraButtonText != null)
+                    CameraButtonText.text = key.ToString();
                 break;
         }
 
         PlayerPrefs.Save();
-        InputManager.Instance.LoadKeybinds();
+        if (InputManager.Instance != null)
+            InputManager.Instance.LoadKeybinds();
     }
 
     //Ustawienia gracza
     private void LoadSettings()
     {
-        AudioListener.volume = PlayerPrefs.GetFloat("MainVolume", 1f);
-        MainVolumeSlider.value = PlayerPrefs.GetFloat("MainVolume", 1f);
+        BindSceneReferences();
 
-        menu.SetSFXVolume(PlayerPrefs.GetFloat("SFXVolume", 1f));
-        SFXVolumeSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
+        float mainVolume = PlayerPrefs.GetFloat("MainVolume", 1f);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+        bool fullscreen = PlayerPrefs.GetInt("Fullscreen", 0) == 1;
 
-        if (PlayerPrefs.GetInt("Fullscreen", 0) == 1)
-        {
-            menu.FullScreen(true);
-            FullscreenToggle.isOn = true;
-        }
-        else
-        {
-            menu.FullScreen(false);
-            FullscreenToggle.isOn = false;
-        }
+        AudioListener.volume = mainVolume;
+        if (MainVolumeSlider != null)
+            MainVolumeSlider.SetValueWithoutNotify(mainVolume);
+
+        if (SFXVolumeSlider != null)
+            SFXVolumeSlider.SetValueWithoutNotify(sfxVolume);
+
+        Screen.fullScreenMode = fullscreen ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
+        if (FullscreenToggle != null)
+            FullscreenToggle.SetIsOnWithoutNotify(fullscreen);
 
         RefreshRate refresh = new RefreshRate();
         refresh.numerator = (uint)PlayerPrefs.GetInt("ResolutionRefreshRate", 60);
         refresh.denominator = 1;
         Screen.SetResolution(PlayerPrefs.GetInt("ResolutionWidth", 800), PlayerPrefs.GetInt("ResolutionHeight", 600), Screen.fullScreenMode, refresh);
 
-        resolutionDropdown.value = PlayerPrefs.GetInt("ResolutionIndex",0);
+        if (resolutionDropdown != null && resolutionDropdown.options.Count > 0)
+            resolutionDropdown.SetValueWithoutNotify(Mathf.Clamp(PlayerPrefs.GetInt("ResolutionIndex", 0), 0, resolutionDropdown.options.Count - 1));
         
         tempKey = (KeyCode)PlayerPrefs.GetInt("TurnLeft", (int)KeyCode.A);
-        TurnLeftButtonText.text = tempKey.ToString();
+        if (TurnLeftButtonText != null)
+            TurnLeftButtonText.text = tempKey.ToString();
 
         tempKey = (KeyCode)PlayerPrefs.GetInt("TurnRight", (int)KeyCode.D);
-        TurnRightButtonText.text = tempKey.ToString();
+        if (TurnRightButtonText != null)
+            TurnRightButtonText.text = tempKey.ToString();
 
         tempKey = (KeyCode)PlayerPrefs.GetInt("Camera", (int)KeyCode.R);
-        CameraButtonText.text = tempKey.ToString();
+        if (CameraButtonText != null)
+            CameraButtonText.text = tempKey.ToString();
     }
 
     public void SetResolution(int index)
     {
+        if (resolutions == null || resolutions.Length == 0)
+            resolutions = Screen.resolutions;
+
+        if (resolutions == null || resolutions.Length == 0)
+            return;
+
+        index = Mathf.Clamp(index, 0, resolutions.Length - 1);
         Resolution res = resolutions[index];
         Screen.SetResolution(res.width, res.height, Screen.fullScreenMode, res.refreshRateRatio);
         SaveResolution(res.width, res.height, (int)res.refreshRateRatio.value, index);
+    }
+
+    private void BindSceneReferences()
+    {
+        if (menu == null)
+            menu = FindFirstObjectByType<Menu>(FindObjectsInactive.Include);
+
+        if (MainVolumeSlider == null)
+            MainVolumeSlider = FindComponentByName<Slider>("Slider", "SoundScreen");
+
+        if (SFXVolumeSlider == null)
+            SFXVolumeSlider = FindComponentByName<Slider>("Slider", "SoundScreen", MainVolumeSlider);
+
+        if (FullscreenToggle == null)
+            FullscreenToggle = FindComponentByName<Toggle>("FullscreenToggle", "GraphicsScreen");
+
+        if (resolutionDropdown == null)
+            resolutionDropdown = FindFirstObjectByType<TMP_Dropdown>(FindObjectsInactive.Include);
+
+        TurnLeftButtonText ??= FindKeybindButtonLabel("Keybind_TurnLeft");
+        TurnRightButtonText ??= FindKeybindButtonLabel("Keybind_TurnRight");
+        CameraButtonText ??= FindKeybindButtonLabel("Keybind_Camera");
+    }
+
+    private static TextMeshProUGUI FindKeybindButtonLabel(string keybindObjectName)
+    {
+        Transform keybind = FindTransformByName(keybindObjectName);
+        if (keybind == null)
+            return null;
+
+        Button button = keybind.GetComponentInChildren<Button>(true);
+        return button != null ? button.GetComponentInChildren<TextMeshProUGUI>(true) : null;
+    }
+
+    private static T FindComponentByName<T>(string objectName, string parentName, T exclude = null) where T : Component
+    {
+        T[] components = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < components.Length; i++)
+        {
+            T component = components[i];
+            if (component == null || component == exclude || component.gameObject.name != objectName)
+                continue;
+
+            if (string.IsNullOrEmpty(parentName) || HasParentNamed(component.transform, parentName))
+                return component;
+        }
+
+        return null;
+    }
+
+    private static Transform FindTransformByName(string objectName)
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform transform = transforms[i];
+            if (transform != null && transform.name == objectName)
+                return transform;
+        }
+
+        return null;
+    }
+
+    private static bool HasParentNamed(Transform transform, string parentName)
+    {
+        Transform current = transform;
+        while (current != null)
+        {
+            if (current.name == parentName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     public void SaveMainVolume(float value)
