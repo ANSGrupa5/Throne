@@ -43,6 +43,8 @@ public abstract class Lobby : MonoBehaviour
     private TrailColorSelectionView _trailColorSelection;
     private MatchSettingsView _matchSettings;
     private bool _componentsEnabled;
+    private bool _componentsConfigured;
+    private LobbyMode _configuredLobbyMode;
     private bool _lobbyStateDirty = true;
     private LobbyState _lobbyState;
 
@@ -90,16 +92,18 @@ public abstract class Lobby : MonoBehaviour
             playerTrailColor = playerLook.trailColor;
 
         InitializeLobbyStateMirror();
-        ConfigureComponentsForCurrentRole();
-        RefreshLobby();
+        EnsureComponentsForCurrentRole(true);
+        RefreshActiveComponents();
+        RefreshStartButtonInteractivity();
         SyncLobbyStateFromCurrentSelections();
     }
 
     protected virtual void OnEnable()
     {
-        ConfigureComponentsForCurrentRole();
+        EnsureComponentsForCurrentRole();
         EnableActiveComponents();
-        RefreshLobby();
+        RefreshActiveComponents();
+        RefreshStartButtonInteractivity();
     }
 
     protected virtual void OnDisable()
@@ -109,12 +113,11 @@ public abstract class Lobby : MonoBehaviour
 
     protected virtual void Update()
     {
-        ConfigureComponentsForCurrentRole();
+        EnsureComponentsForCurrentRole();
         _opponentSlots?.Tick();
         _scooterSelect?.Tick();
         _trailColorSelection?.Tick();
         _matchSettings?.Tick();
-        RefreshStartButtonInteractivity();
     }
 
     protected void UseComponents(
@@ -135,7 +138,9 @@ public abstract class Lobby : MonoBehaviour
         if (reenable)
             DisableActiveComponents();
 
-        if (_matchSettings != null)
+        bool matchSettingsChanged = _matchSettings != matchSettings;
+
+        if (matchSettingsChanged && _matchSettings != null)
             _matchSettings.Changed -= HandleMatchSettingsChanged;
 
         _opponentSlots = opponentSlots;
@@ -143,7 +148,7 @@ public abstract class Lobby : MonoBehaviour
         _trailColorSelection = trailColorSelection;
         _matchSettings = matchSettings;
 
-        if (_matchSettings != null)
+        if (matchSettingsChanged && _matchSettings != null)
             _matchSettings.Changed += HandleMatchSettingsChanged;
 
         InitializeActiveComponents();
@@ -157,7 +162,7 @@ public abstract class Lobby : MonoBehaviour
 
     public void RefreshLobby()
     {
-        ConfigureComponentsForCurrentRole();
+        EnsureComponentsForCurrentRole();
         RefreshActiveComponents();
         RefreshStartButtonInteractivity();
     }
@@ -172,7 +177,9 @@ public abstract class Lobby : MonoBehaviour
 
     public void RefreshSlots()
     {
-        RefreshLobby();
+        EnsureComponentsForCurrentRole();
+        _opponentSlots?.Refresh();
+        RefreshStartButtonInteractivity();
     }
 
     public void LoadScene(string sceneName)
@@ -232,31 +239,26 @@ public abstract class Lobby : MonoBehaviour
 
     public void AddBot()
     {
-        ConfigureComponentsForCurrentRole();
         _opponentSlots?.AddBot();
     }
 
     public void RemoveBot()
     {
-        ConfigureComponentsForCurrentRole();
         _opponentSlots?.RemoveBot();
     }
 
     public void SetBotSlot(int slotIndex, bool occupied)
     {
-        ConfigureComponentsForCurrentRole();
         _opponentSlots?.SetBotSlot(slotIndex, occupied);
     }
 
     public void SetPlayerTrailColor(Color color)
     {
-        ConfigureComponentsForCurrentRole();
         _trailColorSelection?.SetPlayerTrailColor(color);
     }
 
     public void SetPlayerTrailColorFromPaletteIndex(int index)
     {
-        ConfigureComponentsForCurrentRole();
         _trailColorSelection?.SetTrailColorIndex(index);
     }
 
@@ -267,61 +269,51 @@ public abstract class Lobby : MonoBehaviour
 
     public void ToggleSuddenDeath()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.ToggleSuddenDeath();
     }
 
     public void ShowGameTime()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.ShowGameTime();
     }
 
     public void IncreaseMin()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.IncreaseMin();
     }
 
     public void DecreaseMin()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.DecreaseMin();
     }
 
     public void IncreaseSec()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.IncreaseSec();
     }
 
     public void DecreaseSec()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.DecreaseSec();
     }
 
     public void ChangeTrailLength()
     {
-        ConfigureComponentsForCurrentRole();
         _matchSettings?.ChangeTrailLength();
     }
 
     public void ChangePlayerModelUp()
     {
-        ConfigureComponentsForCurrentRole();
         _scooterSelect?.ChangePlayerModelUp();
     }
 
     public void ChangePlayerModelDown()
     {
-        ConfigureComponentsForCurrentRole();
         _scooterSelect?.ChangePlayerModelDown();
     }
 
     public void SetPlayerModel(int selectedMotor)
     {
-        ConfigureComponentsForCurrentRole();
         _scooterSelect?.SetPlayerModel(selectedMotor);
     }
 
@@ -334,11 +326,16 @@ public abstract class Lobby : MonoBehaviour
         Debug.Log("Trail color: " + (_trailColorSelection != null ? _trailColorSelection.SelectedColorIndex : 0));
     }
 
-    internal void MarkLobbyStateDirty()
+    internal void MarkLobbyStateDirty(bool syncCurrentSelections = true)
     {
         _lobbyStateDirty = true;
         if (_lobbyState != null)
             _lobbyState.IsDirty = true;
+
+        if (syncCurrentSelections)
+            SyncLobbyStateFromCurrentSelections();
+
+        RefreshStartButtonInteractivity();
     }
 
     internal bool IsLobbyStateDirty => _lobbyState != null ? _lobbyState.IsDirty : _lobbyStateDirty;
@@ -375,8 +372,7 @@ public abstract class Lobby : MonoBehaviour
 
     protected bool InitializeGame(bool singleplayer)
     {
-        ConfigureComponentsForCurrentRole();
-        RefreshLobby();
+        EnsureComponentsForCurrentRole();
 
         if (gameSettings == null)
             return false;
@@ -515,7 +511,9 @@ public abstract class Lobby : MonoBehaviour
         ArenaSceneName = sceneName;
         bool isMultiplayerLobby = !IsSingleplayerLobby;
 
-        RefreshLobby();
+        EnsureComponentsForCurrentRole();
+        _opponentSlots?.Refresh();
+        RefreshStartButtonInteractivity();
         if (!isMultiplayerLobby && BotCount <= 0)
         {
             Debug.LogWarning("Add at least one bot before starting a singleplayer match.");
@@ -558,8 +556,7 @@ public abstract class Lobby : MonoBehaviour
 
     private void HandleMatchSettingsChanged()
     {
-        MarkLobbyStateDirty();
-        RefreshStartButtonInteractivity();
+        MarkLobbyStateDirty(false);
     }
 
     private void EnableActiveComponents()
@@ -585,6 +582,17 @@ public abstract class Lobby : MonoBehaviour
         _scooterSelect?.OnDisable();
         _opponentSlots?.OnDisable();
         _componentsEnabled = false;
+    }
+
+    private void EnsureComponentsForCurrentRole(bool force = false)
+    {
+        LobbyMode lobbyMode = ResolveLobbyMode();
+        if (!force && _componentsConfigured && _configuredLobbyMode == lobbyMode)
+            return;
+
+        _configuredLobbyMode = lobbyMode;
+        _componentsConfigured = true;
+        ConfigureComponentsForCurrentRole();
     }
 
     private void RefreshStartButtonInteractivity()
