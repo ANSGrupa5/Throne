@@ -9,6 +9,7 @@ public abstract class Lobby : MonoBehaviour
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private BotsSettings botsSettings;
     [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private MatchRules matchRules;
 
     [Header("Bots")]
     [SerializeField] private TMP_Text botCountText;
@@ -23,21 +24,12 @@ public abstract class Lobby : MonoBehaviour
     [FormerlySerializedAs("lobbySlots")]
     [SerializeField] private OpponentSlotEntryView[] opponentSlots;
 
-    [Header("Settings UI")]
-    [SerializeField] private TMP_Text minutes;
-    [SerializeField] private TMP_Text seconds;
-    [SerializeField] private TMP_Dropdown dropdown;
-    [SerializeField] private Toggle suddenDeathToggle;
-
     [Header("Scene Buttons")]
     [SerializeField] private Button startButton;
     [SerializeField] private Button backButton;
 
     [Header("UI Audio")]
     [SerializeField] private AudioClip uiClickSound;
-
-    [Header("Trail Length")]
-    [SerializeField] private TMP_Text trailLengthText;
 
     [Header("Vehicle Previews")]
     [SerializeField] private int currentModel;
@@ -65,11 +57,6 @@ public abstract class Lobby : MonoBehaviour
     internal OpponentSlotEntryView[] OpponentSlots => opponentSlots;
     internal TMP_Text OpponentHeading => opponentHeading;
     internal TMP_Text BotCountText => botCountText;
-    internal TMP_Text MinutesText => minutes;
-    internal TMP_Text SecondsText => seconds;
-    internal TMP_Dropdown GameModeDropdown => dropdown;
-    internal Toggle SuddenDeathToggle => suddenDeathToggle;
-    internal TMP_Text TrailLengthText => trailLengthText;
     internal GameObject[] MotorPreview => motorPreview;
     internal GameObject[] MotorPlayable => motorPlayable;
     internal int CurrentModel
@@ -148,10 +135,16 @@ public abstract class Lobby : MonoBehaviour
         if (reenable)
             DisableActiveComponents();
 
+        if (_matchSettings != null)
+            _matchSettings.Changed -= HandleMatchSettingsChanged;
+
         _opponentSlots = opponentSlots;
         _scooterSelect = scooterSelect;
         _trailColorSelection = trailColorSelection;
         _matchSettings = matchSettings;
+
+        if (_matchSettings != null)
+            _matchSettings.Changed += HandleMatchSettingsChanged;
 
         InitializeActiveComponents();
 
@@ -344,13 +337,17 @@ public abstract class Lobby : MonoBehaviour
     internal void MarkLobbyStateDirty()
     {
         _lobbyStateDirty = true;
+        if (_lobbyState != null)
+            _lobbyState.IsDirty = true;
     }
 
-    internal bool IsLobbyStateDirty => _lobbyStateDirty;
+    internal bool IsLobbyStateDirty => _lobbyState != null ? _lobbyState.IsDirty : _lobbyStateDirty;
 
     internal void ClearLobbyStateDirty()
     {
         _lobbyStateDirty = false;
+        if (_lobbyState != null)
+            _lobbyState.IsDirty = false;
     }
 
     internal void PlayUiClickSound()
@@ -386,14 +383,9 @@ public abstract class Lobby : MonoBehaviour
 
         _trailColorSelection?.ApplyCurrentSelectionToDefaults();
 
-        int humanSlots = singleplayer ? 1 : Mathf.Max(2, _opponentSlots != null ? _opponentSlots.GetHumanSlotCount() : 1);
         int botCount = _opponentSlots != null ? _opponentSlots.BotCount : 0;
-        gameSettings.maxPlayers = humanSlots + botCount;
-        gameSettings.IsSingleplayer = singleplayer;
-        gameSettings.arenaSceneName = ArenaSceneName;
-
-        _matchSettings?.ApplyToGameSettings(gameSettings);
         SyncLobbyStateFromCurrentSelections(singleplayer);
+        // Temporary bridge: runtime session construction still reads GameSettings.
         LobbyStateGameSettingsAdapter.CopyLobbyStateToGameSettings(_lobbyState, gameSettings);
 
         GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, botCount);
@@ -557,7 +549,17 @@ public abstract class Lobby : MonoBehaviour
         _opponentSlots?.Initialize(this);
         _scooterSelect?.Initialize(this);
         _trailColorSelection?.Initialize(this);
-        _matchSettings?.Initialize(this);
+        if (_matchSettings != null)
+        {
+            _matchSettings.Initialize(_lobbyState, matchRules, _matchSettings.WantsEditAccess);
+            _matchSettings.Initialize(this);
+        }
+    }
+
+    private void HandleMatchSettingsChanged()
+    {
+        MarkLobbyStateDirty();
+        RefreshStartButtonInteractivity();
     }
 
     private void EnableActiveComponents()

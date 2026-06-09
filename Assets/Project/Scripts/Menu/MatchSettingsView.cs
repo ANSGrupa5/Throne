@@ -1,34 +1,66 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[Serializable]
 public abstract class MatchSettingsView : LobbyComponent
 {
     private const int TimeStepSeconds = 5;
+    private const float FallbackMinMatchDurationSeconds = 10f;
+    private const float FallbackMaxMatchDurationSeconds = 600f;
+    private const int FallbackMinTrailLength = 0;
+    private const int FallbackMaxTrailLength = 3;
 
+    [Header("Time")]
+    [SerializeField] private TMP_Text minutesText;
+    [SerializeField] private TMP_Text secondsText;
+    [SerializeField] private Button minDownButton;
+    [SerializeField] private Button minUpButton;
+    [SerializeField] private Button secDownButton;
+    [SerializeField] private Button secUpButton;
+
+    [Header("Mode")]
+    [SerializeField] private TMP_Dropdown gameModeDropdown;
+    [SerializeField] private Toggle suddenDeathToggle;
+
+    [Header("Trail Length")]
+    [SerializeField] private TMP_Text trailLengthText;
+    [SerializeField] private Button trailLengthButton;
+
+    private LobbyState _state;
+    private MatchRules _rules;
     private bool _settingsEventsBound;
-    private Button[] _settingButtons;
+    private bool _canEdit;
 
-    private int _minutes = 1;
-    private int _seconds;
-    private float _matchDuration = 60f;
-    private string _gameMode = string.Empty;
-    private bool _suddenDeath;
-    private int _trailLength = 1;
+    public event Action Changed;
 
-    public float MatchDuration => _matchDuration;
-    public bool SuddenDeath => _suddenDeath;
-    public int TrailLength => _trailLength;
-    public int GameModeIndex => Lobby.GameModeDropdown != null ? Lobby.GameModeDropdown.value : 0;
-    public MatchMode SelectedMatchMode => LobbyStateGameSettingsAdapter.ToMatchMode(GameModeIndex);
+    public float MatchDuration => _state != null ? _state.MatchDurationSeconds : FallbackMinMatchDurationSeconds;
+    public bool SuddenDeath => _state != null && _state.SuddenDeath;
+    public int TrailLength => _state != null ? _state.TrailLength : FallbackMinTrailLength;
+    // Assumes dropdown option index matches the serialized MatchMode enum value.
+    public int GameModeIndex => (int)SelectedMatchMode;
+    public MatchMode SelectedMatchMode => _state != null ? _state.MatchMode : MatchMode.KingOfTheHill;
 
-    protected virtual bool CanEdit => false;
+    internal bool WantsEditAccess => WantsEditAccessByDefault;
 
-    protected override void OnInitialize()
+    protected bool CanEdit => _canEdit;
+    protected virtual bool WantsEditAccessByDefault => false;
+
+    public void Initialize(LobbyState state, MatchRules rules, bool canEdit)
     {
-        LoadFromGameSettings();
-        ShowGameTime();
-        ShowTrailLength();
+        bool rebind = _settingsEventsBound;
+        if (rebind)
+            UnbindSettingsEvents();
+
+        _state = state;
+        _rules = rules;
+        _canEdit = canEdit;
+        NormalizeState();
+        Refresh();
+
+        if (rebind)
+            BindSettingsEvents();
     }
 
     public override void OnEnable()
@@ -43,9 +75,15 @@ public abstract class MatchSettingsView : LobbyComponent
 
     public override void Refresh()
     {
+        Render();
+    }
+
+    private void Render()
+    {
         RefreshInteractivity();
         ShowGameTime();
         ShowTrailLength();
+        ShowModeSettings();
     }
 
     public void IncreaseMin()
@@ -53,7 +91,7 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        SetMatchTime(_minutes + 1, _seconds);
+        SetMatchTime(CurrentMinutes + 1, CurrentSeconds);
     }
 
     public void DecreaseMin()
@@ -61,7 +99,7 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        SetMatchTime(_minutes - 1, _seconds);
+        SetMatchTime(CurrentMinutes - 1, CurrentSeconds);
     }
 
     public void IncreaseSec()
@@ -69,7 +107,7 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        SetMatchTime(_minutes, _seconds + TimeStepSeconds);
+        SetMatchTime(CurrentMinutes, CurrentSeconds + TimeStepSeconds);
     }
 
     public void DecreaseSec()
@@ -77,21 +115,23 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        SetMatchTime(_minutes, _seconds - TimeStepSeconds);
+        SetMatchTime(CurrentMinutes, CurrentSeconds - TimeStepSeconds);
     }
 
     public void ChangeTrailLength()
     {
-        if (Lobby.GameSettings == null || !CanEdit)
+        if (_state == null || !CanEdit)
             return;
 
-        _trailLength++;
-        if (_trailLength > Lobby.GameSettings.GetMaxTrailLength())
-            _trailLength = Lobby.GameSettings.GetMinTrailLength();
+        int minTrailLength = MinTrailLength;
+        int maxTrailLength = MaxTrailLength;
+        int nextTrailLength = _state.TrailLength + 1;
+        if (nextTrailLength > maxTrailLength)
+            nextTrailLength = minTrailLength;
 
-        ApplyToGameSettings(Lobby.GameSettings);
+        _state.TrailLength = ClampTrailLength(nextTrailLength);
         ShowTrailLength();
-        Lobby.MarkLobbyStateDirty();
+        NotifyChanged();
     }
 
     public void ToggleSuddenDeath()
@@ -99,68 +139,52 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        _suddenDeath = Lobby.SuddenDeathToggle != null ? Lobby.SuddenDeathToggle.isOn : !_suddenDeath;
-        ApplyToGameSettings(Lobby.GameSettings);
-        Lobby.MarkLobbyStateDirty();
+        SetSuddenDeath(suddenDeathToggle != null ? suddenDeathToggle.isOn : !SuddenDeath);
     }
 
     public void ShowGameTime()
     {
-        if (Lobby.MinutesText != null)
-            Lobby.MinutesText.text = _minutes.ToString("00");
-        if (Lobby.SecondsText != null)
-            Lobby.SecondsText.text = _seconds.ToString("00");
-    }
-
-    public virtual void ApplyToGameSettings(GameSettings gameSettings)
-    {
-        if (gameSettings == null)
-            return;
-
-        ReadSettingsFromUi();
-        WriteCurrentSettings(gameSettings);
+        int totalSeconds = Mathf.RoundToInt(MatchDuration);
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        if (minutesText != null)
+            minutesText.text = minutes.ToString("00");
+        if (secondsText != null)
+            secondsText.text = seconds.ToString("00");
     }
 
     protected void ApplySyncedLobbySettings(MultiplayerSessionDriver.LobbyStateSnapshot snapshot)
     {
-        SetDisplayedMatchDuration(snapshot.MatchDuration);
-        ShowGameTime();
+        if (_state == null)
+            return;
 
-        _trailLength = ClampTrailLength(snapshot.TrailLength);
-        ShowTrailLength();
+        _state.MatchDurationSeconds = ClampMatchDuration(snapshot.MatchDuration);
+        _state.TrailLength = ClampTrailLength(snapshot.TrailLength);
+        _state.SuddenDeath = snapshot.SuddenDeath;
+        _state.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(snapshot.GameModeIndex);
+        _state.IsDirty = false;
 
-        _suddenDeath = snapshot.SuddenDeath;
-        if (Lobby.SuddenDeathToggle != null)
-            Lobby.SuddenDeathToggle.SetIsOnWithoutNotify(_suddenDeath);
-
-        TMP_Dropdown dropdown = Lobby.GameModeDropdown;
-        if (dropdown != null && dropdown.options.Count > 0)
-        {
-            dropdown.SetValueWithoutNotify(Mathf.Clamp(snapshot.GameModeIndex, 0, dropdown.options.Count - 1));
-            _gameMode = dropdown.options[dropdown.value].text;
-        }
-
-        WriteCurrentSettings(Lobby.GameSettings);
+        Render();
     }
 
     protected void PublishHostLobbyState()
     {
-        if (!Lobby.IsLobbyStateDirty)
+        if (_state == null || !_state.IsDirty)
             return;
 
         if (MultiplayerSessionDriver.Instance == null)
             return;
 
-        ApplyToGameSettings(Lobby.GameSettings);
-
         MultiplayerSessionDriver.PublishHostLobbyState(
             Lobby.Opponents != null ? Lobby.Opponents.GetHumanSlotCount() : 0,
             Lobby.OpponentSlots != null ? Lobby.OpponentSlots.Length : 0,
             Lobby.Opponents != null ? Lobby.Opponents.GetBotSlotMask() : 0,
-            _trailLength,
-            _matchDuration,
+            _state.TrailLength,
+            _state.MatchDurationSeconds,
             GameModeIndex,
-            Lobby.SuddenDeathToggle != null ? Lobby.SuddenDeathToggle.isOn : _suddenDeath);
+            _state.SuddenDeath);
+
+        _state.IsDirty = false;
         Lobby.ClearLobbyStateDirty();
     }
 
@@ -168,23 +192,25 @@ public abstract class MatchSettingsView : LobbyComponent
     {
         bool canEdit = CanEdit;
 
-        if (Lobby.GameModeDropdown != null)
-            Lobby.GameModeDropdown.interactable = canEdit;
-        if (Lobby.SuddenDeathToggle != null)
-            Lobby.SuddenDeathToggle.interactable = canEdit;
+        if (gameModeDropdown != null)
+            gameModeDropdown.interactable = canEdit;
+        if (suddenDeathToggle != null)
+            suddenDeathToggle.interactable = canEdit;
 
-        Button[] settingButtons = GetSettingButtons();
-        for (int i = 0; i < settingButtons.Length; i++)
-        {
-            if (settingButtons[i] != null)
-                settingButtons[i].interactable = canEdit;
-        }
+        SetButtonInteractivity(minDownButton, canEdit);
+        SetButtonInteractivity(minUpButton, canEdit);
+        SetButtonInteractivity(secDownButton, canEdit);
+        SetButtonInteractivity(secUpButton, canEdit);
+        SetButtonInteractivity(trailLengthButton, canEdit);
     }
 
     private void SetMatchTime(int newMin, int newSec)
     {
-        int minTotalSeconds = Mathf.RoundToInt(GameSettings.MinMatchDuration);
-        int maxTotalSeconds = Mathf.RoundToInt(GameSettings.MaxMatchDuration);
+        if (_state == null)
+            return;
+
+        int minTotalSeconds = Mathf.RoundToInt(MinMatchDurationSeconds);
+        int maxTotalSeconds = Mathf.RoundToInt(MaxMatchDurationSeconds);
         int totalSeconds = newMin * 60 + newSec;
 
         if (totalSeconds > maxTotalSeconds)
@@ -192,37 +218,32 @@ public abstract class MatchSettingsView : LobbyComponent
         else if (totalSeconds < minTotalSeconds)
             totalSeconds = maxTotalSeconds;
 
-        _minutes = totalSeconds / 60;
-        _seconds = totalSeconds % 60;
-        UpdateTimeInSeconds();
-        ApplyToGameSettings(Lobby.GameSettings);
+        _state.MatchDurationSeconds = ClampMatchDuration(totalSeconds);
         ShowGameTime();
-        Lobby.MarkLobbyStateDirty();
-    }
-
-    private void UpdateTimeInSeconds()
-    {
-        _matchDuration = _minutes * 60f + _seconds;
+        NotifyChanged();
     }
 
     private void ShowTrailLength()
     {
-        if (Lobby.TrailLengthText == null)
+        if (trailLengthText == null)
             return;
 
-        switch (_trailLength)
+        switch (TrailLength)
         {
             case 0:
-                Lobby.TrailLengthText.text = "Short";
+                trailLengthText.text = "Short";
                 break;
             case 1:
-                Lobby.TrailLengthText.text = "Medium";
+                trailLengthText.text = "Medium";
                 break;
             case 2:
-                Lobby.TrailLengthText.text = "Long";
+                trailLengthText.text = "Long";
                 break;
             case 3:
-                Lobby.TrailLengthText.text = "Permanent";
+                trailLengthText.text = "Permanent";
+                break;
+            default:
+                trailLengthText.text = TrailLength.ToString();
                 break;
         }
     }
@@ -232,10 +253,20 @@ public abstract class MatchSettingsView : LobbyComponent
         if (_settingsEventsBound)
             return;
 
-        if (Lobby.GameModeDropdown != null)
-            Lobby.GameModeDropdown.onValueChanged.AddListener(HandleGameModeChanged);
-        if (Lobby.SuddenDeathToggle != null)
-            Lobby.SuddenDeathToggle.onValueChanged.AddListener(HandleSuddenDeathChanged);
+        if (minDownButton != null)
+            minDownButton.onClick.AddListener(DecreaseMin);
+        if (minUpButton != null)
+            minUpButton.onClick.AddListener(IncreaseMin);
+        if (secDownButton != null)
+            secDownButton.onClick.AddListener(DecreaseSec);
+        if (secUpButton != null)
+            secUpButton.onClick.AddListener(IncreaseSec);
+        if (trailLengthButton != null)
+            trailLengthButton.onClick.AddListener(ChangeTrailLength);
+        if (gameModeDropdown != null)
+            gameModeDropdown.onValueChanged.AddListener(HandleGameModeChanged);
+        if (suddenDeathToggle != null)
+            suddenDeathToggle.onValueChanged.AddListener(HandleSuddenDeathChanged);
 
         _settingsEventsBound = true;
     }
@@ -245,10 +276,20 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!_settingsEventsBound)
             return;
 
-        if (Lobby.GameModeDropdown != null)
-            Lobby.GameModeDropdown.onValueChanged.RemoveListener(HandleGameModeChanged);
-        if (Lobby.SuddenDeathToggle != null)
-            Lobby.SuddenDeathToggle.onValueChanged.RemoveListener(HandleSuddenDeathChanged);
+        if (minDownButton != null)
+            minDownButton.onClick.RemoveListener(DecreaseMin);
+        if (minUpButton != null)
+            minUpButton.onClick.RemoveListener(IncreaseMin);
+        if (secDownButton != null)
+            secDownButton.onClick.RemoveListener(DecreaseSec);
+        if (secUpButton != null)
+            secUpButton.onClick.RemoveListener(IncreaseSec);
+        if (trailLengthButton != null)
+            trailLengthButton.onClick.RemoveListener(ChangeTrailLength);
+        if (gameModeDropdown != null)
+            gameModeDropdown.onValueChanged.RemoveListener(HandleGameModeChanged);
+        if (suddenDeathToggle != null)
+            suddenDeathToggle.onValueChanged.RemoveListener(HandleSuddenDeathChanged);
 
         _settingsEventsBound = false;
     }
@@ -258,10 +299,11 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        ReadSettingsFromUi();
-        ApplyToGameSettings(Lobby.GameSettings);
-        Lobby.PlayUiClickSound();
-        Lobby.MarkLobbyStateDirty();
+        if (_state == null)
+            return;
+
+        _state.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(gameModeDropdown != null ? gameModeDropdown.value : 0);
+        NotifyChanged();
     }
 
     private void HandleSuddenDeathChanged(bool value)
@@ -269,138 +311,100 @@ public abstract class MatchSettingsView : LobbyComponent
         if (!CanEdit)
             return;
 
-        _suddenDeath = value;
-        ApplyToGameSettings(Lobby.GameSettings);
-        Lobby.MarkLobbyStateDirty();
+        SetSuddenDeath(value);
     }
 
-    private void ReadSettingsFromUi()
+    private void SetSuddenDeath(bool value)
     {
-        TMP_Dropdown dropdown = Lobby.GameModeDropdown;
-        _gameMode = dropdown != null && dropdown.options.Count > dropdown.value
-            ? dropdown.options[dropdown.value].text
-            : string.Empty;
-        _suddenDeath = Lobby.SuddenDeathToggle != null && Lobby.SuddenDeathToggle.isOn;
-    }
-
-    private void LoadFromGameSettings()
-    {
-        GameSettings gameSettings = Lobby.GameSettings;
-        if (gameSettings == null)
-        {
-            SetDisplayedMatchDuration(GameSettings.MinMatchDuration);
-            _trailLength = 1;
-            ReadSettingsFromUi();
-            return;
-        }
-
-        SetDisplayedMatchDuration(gameSettings.matchDuration);
-        _trailLength = ClampTrailLength(gameSettings.trailLength);
-        _suddenDeath = gameSettings.isSuddenDeath;
-
-        if (Lobby.SuddenDeathToggle != null)
-            Lobby.SuddenDeathToggle.SetIsOnWithoutNotify(_suddenDeath);
-
-        TMP_Dropdown dropdown = Lobby.GameModeDropdown;
-        if (dropdown != null && dropdown.options.Count > 0)
-        {
-            dropdown.SetValueWithoutNotify(Mathf.Clamp(gameSettings.gameMode, 0, dropdown.options.Count - 1));
-            _gameMode = dropdown.options[dropdown.value].text;
-        }
-        else
-        {
-            _gameMode = string.Empty;
-        }
-
-        WriteCurrentSettings(gameSettings);
-    }
-
-    private void SetDisplayedMatchDuration(float duration)
-    {
-        int totalSeconds = Mathf.RoundToInt(Mathf.Clamp(
-            duration,
-            GameSettings.MinMatchDuration,
-            GameSettings.MaxMatchDuration));
-
-        _minutes = totalSeconds / 60;
-        _seconds = totalSeconds % 60;
-        _matchDuration = totalSeconds;
-    }
-
-    private void WriteCurrentSettings(GameSettings gameSettings)
-    {
-        if (gameSettings == null)
+        if (_state == null)
             return;
 
-        gameSettings.matchDuration = Mathf.Clamp(
-            _matchDuration,
-            GameSettings.MinMatchDuration,
-            GameSettings.MaxMatchDuration);
-        gameSettings.isSuddenDeath = _suddenDeath;
-        gameSettings.trailLength = ClampTrailLength(_trailLength);
-        gameSettings.gameMode = ResolveGameModeIndex();
+        _state.SuddenDeath = value;
+        if (suddenDeathToggle != null)
+            suddenDeathToggle.SetIsOnWithoutNotify(value);
+        NotifyChanged();
+    }
+
+    private void NormalizeState()
+    {
+        if (_state == null)
+            return;
+
+        _state.MatchDurationSeconds = ClampMatchDuration(_state.MatchDurationSeconds);
+        _state.TrailLength = ClampTrailLength(_state.TrailLength);
+    }
+
+    private float ClampMatchDuration(float duration)
+    {
+        return _rules != null
+            ? _rules.ClampMatchDuration(duration)
+            : Mathf.Clamp(duration, FallbackMinMatchDurationSeconds, FallbackMaxMatchDurationSeconds);
     }
 
     private int ClampTrailLength(int trailLength)
     {
-        GameSettings gameSettings = Lobby.GameSettings;
-        if (gameSettings == null)
-            return Mathf.Clamp(trailLength, 0, 3);
-
-        return Mathf.Clamp(
-            trailLength,
-            gameSettings.GetMinTrailLength(),
-            gameSettings.GetMaxTrailLength());
+        return _rules != null
+            ? _rules.ClampTrailLength(trailLength)
+            : Mathf.Clamp(trailLength, FallbackMinTrailLength, FallbackMaxTrailLength);
     }
 
-    private int ResolveGameModeIndex()
+    private float MinMatchDurationSeconds => _rules != null ? _rules.MinMatchDurationSeconds : FallbackMinMatchDurationSeconds;
+    private float MaxMatchDurationSeconds => _rules != null ? _rules.MaxMatchDurationSeconds : FallbackMaxMatchDurationSeconds;
+    private int MinTrailLength => _rules != null ? _rules.MinTrailLength : FallbackMinTrailLength;
+    private int MaxTrailLength => _rules != null ? _rules.MaxTrailLength : FallbackMaxTrailLength;
+
+    private void ShowModeSettings()
     {
-        switch (_gameMode)
+        if (suddenDeathToggle != null)
+            suddenDeathToggle.SetIsOnWithoutNotify(SuddenDeath);
+
+        if (gameModeDropdown == null || gameModeDropdown.options.Count <= 0)
+            return;
+
+        int value = Mathf.Clamp(GameModeIndex, 0, gameModeDropdown.options.Count - 1);
+        gameModeDropdown.SetValueWithoutNotify(value);
+    }
+
+    private void SetButtonInteractivity(Button button, bool canEdit)
+    {
+        if (button != null)
+            button.interactable = canEdit;
+    }
+
+    private void NotifyChanged()
+    {
+        if (_state != null)
+            _state.IsDirty = true;
+
+        Changed?.Invoke();
+    }
+
+    private int CurrentMinutes
+    {
+        get
         {
-            case "Deathmatch":
-                return 1;
-            case "Battle Royale":
-                return 0;
-            default:
-                return GameModeIndex;
+            int totalSeconds = Mathf.RoundToInt(MatchDuration);
+            return totalSeconds / 60;
         }
     }
 
-    private Button[] GetSettingButtons()
+    private int CurrentSeconds
     {
-        if (_settingButtons != null)
-            return _settingButtons;
-
-        Button[] buttons = Lobby.GetComponentsInChildren<Button>(true);
-        System.Collections.Generic.List<Button> matches = new();
-        for (int i = 0; i < buttons.Length; i++)
+        get
         {
-            Button button = buttons[i];
-            if (button == null)
-                continue;
-
-            switch (button.name)
-            {
-                case "MinDownButton":
-                case "MinUpButton":
-                case "SecDownButton":
-                case "SecUpButton":
-                case "TrailLengthButton":
-                    matches.Add(button);
-                    break;
-            }
+            int totalSeconds = Mathf.RoundToInt(MatchDuration);
+            return totalSeconds % 60;
         }
-
-        _settingButtons = matches.ToArray();
-        return _settingButtons;
     }
 }
 
+[Serializable]
 public class EditableMatchSettingsView : MatchSettingsView
 {
-    protected override bool CanEdit => true;
+    protected override bool WantsEditAccessByDefault => true;
 }
 
+[Serializable]
 public sealed class MultiplayerHostMatchSettingsView : EditableMatchSettingsView
 {
     public override void Tick()
@@ -409,6 +413,7 @@ public sealed class MultiplayerHostMatchSettingsView : EditableMatchSettingsView
     }
 }
 
+[Serializable]
 public sealed class MultiplayerClientMatchSettingsView : MatchSettingsView
 {
     public override void OnEnable()

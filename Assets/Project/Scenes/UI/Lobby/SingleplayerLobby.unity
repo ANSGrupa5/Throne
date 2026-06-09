@@ -912,19 +912,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 239380277}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: DecreaseMin
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &239380277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1663,19 +1651,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 380590658}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: ChangeTrailLength
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &380590658
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5067,19 +5043,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1270754086}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: IncreaseSec
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1270754086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5232,19 +5196,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1292569680}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: IncreaseMin
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1292569680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6589,19 +6541,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1519492048}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: DecreaseSec
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1519492048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8443,6 +8383,7 @@ MonoBehaviour:
   gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
   botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
+  matchRules: {fileID: 0}
   botCountText: {fileID: 296322053}
   playerTrailColor: {r: 0.95, g: 0.24, b: 0.24, a: 1}
   trailColorButtons:
@@ -8532,14 +8473,9 @@ MonoBehaviour:
     removeBotButton: {fileID: 0}
     frameImage: {fileID: 0}
     frameOutline: {fileID: 0}
-  minutes: {fileID: 1611307722}
-  seconds: {fileID: 1718153334}
-  dropdown: {fileID: 404455512992828665}
-  suddenDeathToggle: {fileID: 2074357527}
   startButton: {fileID: 1138206832}
   backButton: {fileID: 1097410976}
   uiClickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  trailLengthText: {fileID: 80418285}
   currentModel: 0
   motorPreview:
   - {fileID: 1585333280}
@@ -8548,6 +8484,17 @@ MonoBehaviour:
   - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
   - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
   multiplayerArenaSceneName: Neon City XL Multiplayer
+  matchSettings:
+    minutesText: {fileID: 1611307722}
+    secondsText: {fileID: 1718153334}
+    minDownButton: {fileID: 239380276}
+    minUpButton: {fileID: 1292569679}
+    secDownButton: {fileID: 1519492047}
+    secUpButton: {fileID: 1270754085}
+    gameModeDropdown: {fileID: 404455512992828665}
+    suddenDeathToggle: {fileID: 2074357527}
+    trailLengthText: {fileID: 80418285}
+    trailLengthButton: {fileID: 380590657}
 --- !u!1 &2074357522
 GameObject:
   m_ObjectHideFlags: 0
@@ -8652,19 +8599,7 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Lobby, Assembly-CSharp
-        m_MethodName: ToggleSuddenDeath
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 1
 --- !u!114 &2074357528
 MonoBehaviour:
