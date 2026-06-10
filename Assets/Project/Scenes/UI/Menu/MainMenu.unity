@@ -1430,6 +1430,30 @@ PrefabInstance:
     m_TransformParent: {fileID: 9013654475027833909}
     m_Modifications:
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_SelectedColor.b
+      value: 0.7176471
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_SelectedColor.g
+      value: 0.8117647
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_SelectedColor.r
+      value: 0.34117648
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.b
+      value: 0.7171769
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.g
+      value: 0.8113208
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.r
+      value: 0.34060165
+      objectReference: {fileID: 0}
+    - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}

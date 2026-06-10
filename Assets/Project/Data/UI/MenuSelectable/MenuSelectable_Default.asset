@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b0facb420c3ba142b7b3cc0350308e3, type: 3}
   m_Name: MenuSelectable_Default
   m_EditorClassIdentifier: 
-  NormalColor: {r: 0, g: 0.996, b: 0.925, a: 1}
-  HighlightedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
-  PressedColor: {r: 0, g: 0.64, b: 0.72, a: 1}
-  SelectedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
+  NormalColor: {r: 0.11764706, g: 0.8784314, b: 0.80784315, a: 1}
+  HighlightedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
+  PressedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
+  SelectedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
   DisabledColor: {r: 0, g: 0.996, b: 0.925, a: 0.5}
   ColorMultiplier: 1
   FadeDuration: 0.08
