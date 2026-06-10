@@ -17,5 +17,5 @@ MonoBehaviour:
   PressedColor: {r: 0, g: 0.12, b: 0.14, a: 1}
   SelectedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
   DisabledColor: {r: 0.02, g: 0.08, b: 0.1, a: 0.35}
-  ColorMultiplier: 1.2
+  ColorMultiplier: 1
   FadeDuration: 0.08

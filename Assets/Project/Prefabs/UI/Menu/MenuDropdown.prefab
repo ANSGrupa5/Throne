@@ -1198,7 +1198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.045, g: 0.06, b: 0.075, a: 0.28}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.28}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1241,7 +1241,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.12, b: 0.14, a: 1}
     m_SelectedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
     m_DisabledColor: {r: 0.02, g: 0.08, b: 0.1, a: 0.35}
-    m_ColorMultiplier: 1.2
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -1325,5 +1325,5 @@ MonoBehaviour:
   dropdown: {fileID: 2460619916232987591}
   openSound: {fileID: 8300000, guid: d8964835a8da64244ba12d4eb02aaf00, type: 3}
   selectSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  openVolume: 1
+  openVolume: 1.35
   selectVolume: 1

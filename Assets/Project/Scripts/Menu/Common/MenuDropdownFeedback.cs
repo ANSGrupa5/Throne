@@ -10,7 +10,7 @@ public sealed class MenuDropdownFeedback : MonoBehaviour, IPointerDownHandler, I
     [SerializeField] private TMP_Dropdown dropdown;
     [SerializeField] private AudioClip openSound;
     [SerializeField] private AudioClip selectSound;
-    [Range(0f, 1f)] [SerializeField] private float openVolume = 1f;
+    [Range(0f, 2f)] [SerializeField] private float openVolume = 1f;
     [Range(0f, 1f)] [SerializeField] private float selectVolume = 1f;
 
     private int _lastOpenFrame = -1;

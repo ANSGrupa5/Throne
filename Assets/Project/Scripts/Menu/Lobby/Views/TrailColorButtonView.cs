@@ -11,7 +11,8 @@ public sealed class TrailColorButtonView
     [SerializeField] private CanvasGroup availabilityGroup;
     [SerializeField] private Color selectionFrameFill = new(0f, 0.996f, 0.925f, 1.0f);
     [SerializeField] private Color selectionFrameOutline = new(0f, 0.996f, 0.925f, 1.0f);
-    [SerializeField, Range(0f, 1f)] private float availableAlpha = 0.88f;
+    [SerializeField, Range(0f, 1f)] private float availableAlpha = 0.75f;
+    [SerializeField, Range(0f, 1f)] private float selectedAlpha = 0.95f;
     [SerializeField, Range(0f, 1f)] private float unavailableAlpha = 0.35f;
 
     public Button Button => button;
@@ -51,7 +52,7 @@ public sealed class TrailColorButtonView
         if (button != null)
             button.interactable = canInteract && !unavailable;
 
-        float alpha = unavailable ? unavailableAlpha : availableAlpha;
+        float alpha = unavailable ? unavailableAlpha : selected ? selectedAlpha : availableAlpha;
         if (availabilityGroup != null)
             availabilityGroup.alpha = alpha;
 

@@ -68,7 +68,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.12, b: 0.14, a: 1}
     m_SelectedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
     m_DisabledColor: {r: 0.02, g: 0.08, b: 0.1, a: 0.35}
-    m_ColorMultiplier: 1.2
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -109,6 +109,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 6385978195507135268}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &337839390236620045

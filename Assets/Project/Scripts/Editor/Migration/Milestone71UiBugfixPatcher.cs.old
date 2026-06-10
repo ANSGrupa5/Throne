@@ -1,0 +1,158 @@
+        MatchRules rules,
+        Transform rootTransform)
+    {
+        Transform previewRoot = rootTransform.Find("ScooterPreviewRoot");
+        if (previewRoot == null)
+        {
+            GameObject previewRootObject = new("ScooterPreviewRoot");
+            previewRoot = previewRootObject.transform;
+            previewRoot.SetParent(rootTransform, false);
+        }
+
+        previewRoot.localPosition = new Vector3(33f, 2.3f, -895f);
+        previewRoot.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        previewRoot.localScale = Vector3.one;
+        if (previewRoot.GetComponent<RotatePreview>() == null)
+            previewRoot.gameObject.AddComponent<RotatePreview>();
+
+        SerializedObject serialized = new(lobby);
+        serialized.FindProperty("matchDefaults").objectReferenceValue = defaults;
+        serialized.FindProperty("matchRules").objectReferenceValue = rules;
+
+        SerializedProperty scooters = serialized.FindProperty("scooters");
+        scooters.FindPropertyRelative("previewRoot").objectReferenceValue = previewRoot;
+
+        SerializedProperty motorPreview = scooters.FindPropertyRelative("motorPreview");
+        motorPreview.arraySize = 2;
+        motorPreview.GetArrayElementAtIndex(0).objectReferenceValue =
+            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Project/Prefabs/Vehicles/motorPreview.prefab");
+        motorPreview.GetArrayElementAtIndex(1).objectReferenceValue =
+            AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Project/Prefabs/Vehicles/motor2Preview.prefab");
+
+        SerializedProperty motorPlayable = scooters.FindPropertyRelative("motorPlayable");
+        if (motorPlayable.arraySize < 2)
+            motorPlayable.arraySize = 2;
+        if (motorPlayable.GetArrayElementAtIndex(0).objectReferenceValue == null)
+            motorPlayable.GetArrayElementAtIndex(0).objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Project/Prefabs/Vehicles/motorFINAL2_WORKING.prefab");
+        if (motorPlayable.GetArrayElementAtIndex(1).objectReferenceValue == null)
+            motorPlayable.GetArrayElementAtIndex(1).objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Project/Prefabs/Vehicles/motor22.prefab");
+
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(lobby);
+    }
+
+    private static void PatchDirectionalLight(GameObject root)
+    {
+        foreach (Light light in root.GetComponentsInChildren<Light>(true))
+        {
+            if (light.type != LightType.Directional)
+                continue;
+
+            light.color = new Color(1f, 0.96f, 0.86f, 1f);
+            light.intensity = Mathf.Max(light.intensity, 1.6f);
+        }
+    }
+
+    private static void PatchDropdowns(GameObject root)
+    {
+        AudioClip openSound = AssetDatabase.LoadAssetAtPath<AudioClip>(MenuDropdownSoundPath);
+        AudioClip clickSound = AssetDatabase.LoadAssetAtPath<AudioClip>(MenuClickSoundPath);
+
+        foreach (TMP_Dropdown dropdown in root.GetComponentsInChildren<TMP_Dropdown>(true))
+            PatchDropdown(dropdown, openSound, clickSound);
+    }
+
+    private static void PatchMenuDropdownPrefab()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(MenuDropdownPrefabPath);
+        try
+        {
+            PatchDropdowns(root);
+            PrefabUtility.SaveAsPrefabAsset(root, MenuDropdownPrefabPath);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    private static void PatchDropdown(TMP_Dropdown dropdown, AudioClip openSound, AudioClip clickSound)
+    {
+        MenuDropdownFeedback feedback = dropdown.GetComponent<MenuDropdownFeedback>();
+        if (feedback == null)
+            feedback = dropdown.gameObject.AddComponent<MenuDropdownFeedback>();
+
+        SerializedObject serializedFeedback = new(feedback);
+        serializedFeedback.FindProperty("dropdown").objectReferenceValue = dropdown;
+        serializedFeedback.FindProperty("openSound").objectReferenceValue = openSound;
+        serializedFeedback.FindProperty("selectSound").objectReferenceValue = clickSound;
+        serializedFeedback.FindProperty("openVolume").floatValue = 1f;
+        serializedFeedback.FindProperty("selectVolume").floatValue = 1f;
+        serializedFeedback.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(feedback);
+
+        MenuSelectable selectableFeedback = dropdown.GetComponent<MenuSelectable>();
+        if (selectableFeedback != null)
+        {
+            SerializedObject serializedSelectable = new(selectableFeedback);
+            serializedSelectable.FindProperty("playClickSound").boolValue = false;
+            serializedSelectable.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(selectableFeedback);
+        }
+    }
+
+    private static void PatchMenuBackButton()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(MenuBackButtonPrefabPath);
+        try
+        {
+            MenuSelectable selectable = root.GetComponent<MenuSelectable>();
+            if (selectable != null)
+            {
+                SerializedObject serialized = new(selectable);
+                serialized.FindProperty("useColorTint").boolValue = false;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(selectable);
+            }
+
+            Selectable unitySelectable = root.GetComponent<Selectable>();
+            if (unitySelectable != null)
+                unitySelectable.transition = Selectable.Transition.None;
+
+            PrefabUtility.SaveAsPrefabAsset(root, MenuBackButtonPrefabPath);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    private static void PatchTrailColorButtonAlpha(LobbyController lobby)
+    {
+        SerializedObject serialized = new(lobby);
+        SerializedProperty trailColorButtons = serialized.FindProperty("trailColorButtons");
+        for (int i = 0; i < trailColorButtons.arraySize; i++)
+            trailColorButtons.GetArrayElementAtIndex(i).FindPropertyRelative("availableAlpha").floatValue = TrailColorAlpha;
+
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(lobby);
+    }
+
+    private static T LoadOrCreate<T>(string path) where T : ScriptableObject
+    {
+        T asset = AssetDatabase.LoadAssetAtPath<T>(path);
+        if (asset != null)
+            return asset;
+
+        asset = ScriptableObject.CreateInstance<T>();
+        AssetDatabase.CreateAsset(asset, path);
+        return asset;
+    }
+
+    private static void SetColor(SerializedProperty colors, int index, Color color)
+    {
+        colors.GetArrayElementAtIndex(index).colorValue = color;
+    }
+}

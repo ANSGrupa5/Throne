@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.006, b: 0.01, a: 0.94}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -99,12 +99,12 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 1}
+    m_NormalColor: {r: 0, g: 0.996, b: 0.925, a: 1}
     m_HighlightedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
-    m_PressedColor: {r: 0, g: 0.72156864, b: 0.78039217, a: 1}
+    m_PressedColor: {r: 0, g: 0.64, b: 0.72, a: 1}
     m_SelectedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
-    m_DisabledColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 0.5}
-    m_ColorMultiplier: 1.58
+    m_DisabledColor: {r: 0, g: 0.996, b: 0.925, a: 0.5}
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -153,5 +153,6 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 7379267564863421007}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1

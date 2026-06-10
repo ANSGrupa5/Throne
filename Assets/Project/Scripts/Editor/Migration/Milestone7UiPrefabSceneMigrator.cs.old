@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TMPro;
+using UnityEditor;
+using UnityEditor.Events;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public static class Milestone7UiPrefabSceneMigrator
+{
+    private const string MainMenuScenePath = "Assets/Project/Scenes/UI/Menu/MainMenu.unity";
+    private const string MultiplayerConnectionScenePath = "Assets/Project/Scenes/UI/Menu/MultiplayerConnection.unity";
+    private const string GameOverScenePath = "Assets/Project/Scenes/UI/Menu/GameOver.unity";
+    private const string SourceMultiplayerLobbyScenePath = "Assets/Project/Scenes/UI/Lobby/MultiplayerLobby.unity";
+    private const string NewLobbyScenePath = "Assets/Project/Scenes/UI/Lobby/LobbyScene.unity";
+
+    private const string OldMenuButtonPrefabPath = "Assets/Project/Prefabs/UI/Menu/Button.prefab";
+    private const string NewMenuButtonPrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuButton.prefab";
+    private const string OldBackButtonPrefabPath = "Assets/Project/Prefabs/UI/Menu/BackButton.prefab";
+    private const string NewBackButtonPrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuBackButton.prefab";
+    private const string OpponentSlotPrefabPath = "Assets/Project/Prefabs/UI/Lobby/OpponentSlot.prefab";
+
+    private const string MenuTogglePrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuToggle.prefab";
+    private const string MenuSliderPrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuSlider.prefab";
+    private const string MenuDropdownPrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuDropdown.prefab";
+    private const string MenuSelectorButtonPrefabPath = "Assets/Project/Prefabs/UI/Menu/MenuSelectorButton.prefab";
+    private const string TrailColorButtonPrefabPath = "Assets/Project/Prefabs/UI/Lobby/TrailColorButton.prefab";
+
+    private const string LobbyRootPrefabPath = "Assets/Project/Prefabs/UI/Lobby/LobbyRoot.prefab";
+    private const string MatchSettingsPanelPrefabPath = "Assets/Project/Prefabs/UI/Lobby/Panels/MatchSettingsPanel.prefab";
+    private const string OpponentSlotsPanelPrefabPath = "Assets/Project/Prefabs/UI/Lobby/Panels/OpponentSlotsPanel.prefab";
+    private const string TrailColorSelectionPanelPrefabPath = "Assets/Project/Prefabs/UI/Lobby/Panels/TrailColorSelectionPanel.prefab";
+    private const string ScooterSelectionPanelPrefabPath = "Assets/Project/Prefabs/UI/Lobby/Panels/ScooterSelectionPanel.prefab";
+
+    private const string DefaultVisualPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuSelectable_Default.asset";
+    private const string DarkerVisualPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuSelectable_Darker.asset";
+    private const string DangerVisualPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuSelectable_Danger.asset";
+    private const string TransparentVisualPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuSelectable_Transparent.asset";
+    private const string DisabledSlotVisualPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuSelectable_DisabledSlot.asset";
+    private const string DefaultAudioPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuAudio_Default.asset";
+    private const string SilentAudioPresetPath = "Assets/Project/Data/UI/MenuSelectable/MenuAudio_Silent.asset";
+
+    private static MenuSelectableVisualPreset _defaultVisual;
+    private static MenuSelectableVisualPreset _darkerVisual;
+    private static MenuSelectableVisualPreset _dangerVisual;
+    private static MenuSelectableVisualPreset _transparentVisual;
+    private static MenuSelectableVisualPreset _disabledSlotVisual;
+    private static MenuSelectableAudioPreset _defaultAudio;
+    private static MenuSelectableAudioPreset _silentAudio;
+
+    [MenuItem("Throne/Tools/Migrations/Run Milestone 7 UI Cleanup")]
+    public static void Run()
+    {
+        LoadPresets();
+        EnsureFolders();
+        RenamePrefab(OldMenuButtonPrefabPath, NewMenuButtonPrefabPath);
+        RenamePrefab(OldBackButtonPrefabPath, NewBackButtonPrefabPath);
+
+        ConfigureExistingPrefabs();
+        CreateControlTemplatePrefabs();
+        CreateSharedLobbySceneAndPrefab();
+        NormalizeUiScene(MainMenuScenePath);
+        NormalizeUiScene(MultiplayerConnectionScenePath);
+        NormalizeUiScene(GameOverScenePath);
+        UpdateBuildSettings();
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private static void LoadPresets()
+    {
+        _defaultVisual = LoadAsset<MenuSelectableVisualPreset>(DefaultVisualPresetPath);
+        _darkerVisual = LoadAsset<MenuSelectableVisualPreset>(DarkerVisualPresetPath);
+        _dangerVisual = LoadAsset<MenuSelectableVisualPreset>(DangerVisualPresetPath);
+        _transparentVisual = LoadAsset<MenuSelectableVisualPreset>(TransparentVisualPresetPath);
+        _disabledSlotVisual = LoadAsset<MenuSelectableVisualPreset>(DisabledSlotVisualPresetPath);
+        _defaultAudio = LoadAsset<MenuSelectableAudioPreset>(DefaultAudioPresetPath);
+        _silentAudio = LoadAsset<MenuSelectableAudioPreset>(SilentAudioPresetPath);
+    }
+
+    private static T LoadAsset<T>(string path) where T : UnityEngine.Object
+    {
+        T asset = AssetDatabase.LoadAssetAtPath<T>(path);
+        if (asset == null)
+            throw new InvalidOperationException($"Missing required asset at {path}");
+        return asset;
+    }
+
+    private static void EnsureFolders()
+    {
+        EnsureFolder("Assets/Project/Prefabs/UI");
+        EnsureFolder("Assets/Project/Prefabs/UI/Menu");
+        EnsureFolder("Assets/Project/Prefabs/UI/Lobby");
+        EnsureFolder("Assets/Project/Prefabs/UI/Lobby/Panels");
+    }

@@ -317,7 +317,7 @@ MonoBehaviour:
     m_PressedColor: {r: 0, g: 0.12, b: 0.14, a: 1}
     m_SelectedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
     m_DisabledColor: {r: 0.02, g: 0.08, b: 0.1, a: 0.35}
-    m_ColorMultiplier: 1.2
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}

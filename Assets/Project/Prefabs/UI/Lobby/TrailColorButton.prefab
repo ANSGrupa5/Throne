@@ -245,5 +245,6 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4564100268737824145}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
