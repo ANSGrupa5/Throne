@@ -7,6 +7,7 @@ public class Lobby : MonoBehaviour
     [SerializeField] private GameSettings gameSettings;
     [SerializeField] private BotsSettings botsSettings;
     [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private MatchDefaults matchDefaults;
     [SerializeField] private MatchRules matchRules;
 
     [Header("Role")]
@@ -42,6 +43,7 @@ public class Lobby : MonoBehaviour
     private LobbyMode _activeLobbyMode;
     private LobbyState _lobbyState;
     private IMatchStartFlow _startFlow;
+    private readonly MatchSessionFactory _matchSessionFactory = new();
     private SingleplayerMatchStartFlow _singleplayerStartFlow;
     private MultiplayerHostMatchStartFlow _multiplayerHostStartFlow;
     private MultiplayerClientMatchStartFlow _multiplayerClientStartFlow;
@@ -363,36 +365,56 @@ public class Lobby : MonoBehaviour
 
     internal bool PrepareRuntimeSession(LobbyState state, LobbyMode runtimeMode)
     {
-        if (state == null || gameSettings == null)
+        if (state == null)
             return false;
 
         _trailColorSelection?.ApplyCurrentSelectionToDefaults();
 
         state.LobbyMode = runtimeMode;
-        // Temporary bridge: runtime session construction still reads GameSettings.
-        LobbyStateGameSettingsAdapter.CopyLobbyStateToGameSettings(state, gameSettings);
-
-        GameSessionRuntime session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, state.BotCount);
+        GameSessionRuntime session = _matchSessionFactory.Create(
+            state,
+            matchDefaults,
+            gameSettings,
+            botsSettings,
+            playerLook);
         session.isSingleplayer = runtimeMode == LobbyMode.Singleplayer;
         GameSessionBootstrap.SetSession(session);
         return true;
     }
 
-    internal void PublishCurrentHostLobbyState(LobbyState state)
+    internal bool PublishCurrentHostLobbyState(LobbyState state)
     {
         if (state == null)
-            return;
+            return false;
 
-        MultiplayerSessionDriver.PublishHostLobbyState(
-            state.HumanPlayerCount,
+        if (ReferenceEquals(state, _lobbyState))
+            SyncLobbyStateFromCurrentSelections();
+
+        LobbyStateSnapshot snapshot = LobbyStateSnapshot.FromLobbyState(
+            state,
             _opponentSlots != null ? _opponentSlots.SlotCount : state.ParticipantCount,
-            _opponentSlots != null ? _opponentSlots.GetBotSlotMask() : 0,
-            state.TrailLength,
-            state.MatchDurationSeconds,
-            LobbyStateGameSettingsAdapter.ToGameSettingsMatchMode(state.MatchMode),
-            state.SuddenDeath);
+            _opponentSlots != null ? _opponentSlots.GetBotSlotMask() : 0);
+
+        if (!MultiplayerSessionDriver.PublishHostLobbyState(snapshot))
+            return false;
 
         ClearLobbyStateDirty();
+        return true;
+    }
+
+    internal void ApplySyncedLobbyStateSnapshot(LobbyStateSnapshot snapshot)
+    {
+        if (_lobbyState == null)
+            InitializeLobbyStateMirror();
+
+        _lobbyState.LobbyMode = ResolveLobbyMode();
+        _lobbyState.HumanPlayerCount = snapshot.HumanPlayers;
+        _lobbyState.BotCount = snapshot.BotCount;
+        _lobbyState.TrailLength = snapshot.TrailLength;
+        _lobbyState.MatchDurationSeconds = snapshot.MatchDurationSeconds;
+        _lobbyState.MatchMode = snapshot.MatchMode;
+        _lobbyState.SuddenDeath = snapshot.SuddenDeath;
+        _lobbyState.IsDirty = false;
     }
 
     internal string ResolveSingleplayerArenaSceneName(LobbyState state)

@@ -8,33 +8,6 @@ using UnityEngine;
 
 public sealed class MultiplayerSessionDriver : NetworkBehaviour
 {
-    public readonly struct LobbyStateSnapshot
-    {
-        public readonly int HumanPlayers;
-        public readonly int SlotCount;
-        public readonly int BotSlotMask;
-        public readonly int TrailLength;
-        public readonly float MatchDuration;
-        public readonly int GameModeIndex;
-        public readonly bool SuddenDeath;
-
-        public LobbyStateSnapshot(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
-        {
-            HumanPlayers = humanPlayers;
-            SlotCount = slotCount;
-            BotSlotMask = botSlotMask;
-            TrailLength = trailLength;
-            MatchDuration = matchDuration;
-            GameModeIndex = gameModeIndex;
-            SuddenDeath = suddenDeath;
-        }
-
-        public bool IsBotSlotOccupied(int slotIndex)
-        {
-            return slotIndex >= 0 && slotIndex < 31 && (BotSlotMask & (1 << slotIndex)) != 0;
-        }
-    }
-
     public struct MatchResultSnapshot
     {
         public string OwnerId;
@@ -97,21 +70,33 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         return _hasLobbyStateSnapshot;
     }
 
-    public static void PublishHostLobbyState(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
+    public static bool PublishHostLobbyState(LobbyStateSnapshot snapshot)
     {
         if (Instance == null || !Instance.IsServerStarted)
-            return;
+            return false;
 
-        slotCount = Mathf.Clamp(slotCount, 0, 31);
-        int validSlotMask = slotCount <= 0 ? 0 : (1 << slotCount) - 1;
         Instance.RpcSyncLobbyState(
-            Mathf.Clamp(humanPlayers, 0, slotCount),
+            snapshot.HumanPlayers,
+            snapshot.SlotCount,
+            snapshot.BotSlotMask,
+            snapshot.TrailLength,
+            snapshot.MatchDurationSeconds,
+            snapshot.MatchModeIndex,
+            snapshot.SuddenDeath);
+
+        return true;
+    }
+
+    public static bool PublishHostLobbyState(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
+    {
+        return PublishHostLobbyState(LobbyStateSnapshot.FromNetworkValues(
+            humanPlayers,
             slotCount,
-            botSlotMask & validSlotMask,
+            botSlotMask,
             trailLength,
-            Mathf.Clamp(matchDuration, GameSettings.MinMatchDuration, GameSettings.MaxMatchDuration),
-            Mathf.Max(0, gameModeIndex),
-            suddenDeath);
+            matchDuration,
+            gameModeIndex,
+            suddenDeath));
     }
 
     public static void RequestLocalTrailColor(int colorIndex, int paletteColorCount)
@@ -242,7 +227,14 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     [ObserversRpc(RunLocally = true, BufferLast = true)]
     private void RpcSyncLobbyState(int humanPlayers, int slotCount, int botSlotMask, int trailLength, float matchDuration, int gameModeIndex, bool suddenDeath)
     {
-        _lobbyStateSnapshot = new LobbyStateSnapshot(humanPlayers, slotCount, botSlotMask, trailLength, matchDuration, gameModeIndex, suddenDeath);
+        _lobbyStateSnapshot = LobbyStateSnapshot.FromNetworkValues(
+            humanPlayers,
+            slotCount,
+            botSlotMask,
+            trailLength,
+            matchDuration,
+            gameModeIndex,
+            suddenDeath);
         _hasLobbyStateSnapshot = true;
         LobbyStateChanged?.Invoke();
     }

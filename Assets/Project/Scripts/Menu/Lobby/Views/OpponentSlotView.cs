@@ -445,7 +445,7 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
 
     public override int GetHumanSlotCount()
     {
-        if (MultiplayerSessionDriver.TryGetLobbyState(out MultiplayerSessionDriver.LobbyStateSnapshot snapshot))
+        if (MultiplayerSessionDriver.TryGetLobbyState(out LobbyStateSnapshot snapshot))
             return snapshot.HumanPlayers;
 
         MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
@@ -454,7 +454,7 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
 
     public override int GetBotSlotMask()
     {
-        if (MultiplayerSessionDriver.TryGetLobbyState(out MultiplayerSessionDriver.LobbyStateSnapshot snapshot))
+        if (MultiplayerSessionDriver.TryGetLobbyState(out LobbyStateSnapshot snapshot))
             return snapshot.BotSlotMask;
 
         return 0;
@@ -470,12 +470,13 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
         if (slots == null)
             return;
 
-        if (!MultiplayerSessionDriver.TryGetLobbyState(out MultiplayerSessionDriver.LobbyStateSnapshot snapshot))
+        if (!MultiplayerSessionDriver.TryGetLobbyState(out LobbyStateSnapshot snapshot))
         {
             ApplySlotViews(GetHumanSlotCount(), false);
             return;
         }
 
+        Lobby?.ApplySyncedLobbyStateSnapshot(snapshot);
         BotCount = CountBots(snapshot);
         RefreshBotCountUI();
 
@@ -500,7 +501,7 @@ public sealed class MultiplayerClientOpponentSlotView : OpponentSlotView
         Refresh();
     }
 
-    private int CountBots(MultiplayerSessionDriver.LobbyStateSnapshot snapshot)
+    private int CountBots(LobbyStateSnapshot snapshot)
     {
         int count = 0;
         int limit = Mathf.Min(snapshot.SlotCount, HasSlots ? SlotCount : snapshot.SlotCount);

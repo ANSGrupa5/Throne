@@ -153,15 +153,16 @@ public abstract class MatchSettingsView : LobbyComponent
             secondsText.text = seconds.ToString("00");
     }
 
-    protected void ApplySyncedLobbySettings(MultiplayerSessionDriver.LobbyStateSnapshot snapshot)
+    protected void ApplySyncedLobbySettings(LobbyStateSnapshot snapshot)
     {
         if (_state == null)
             return;
 
-        _state.MatchDurationSeconds = ClampMatchDuration(snapshot.MatchDuration);
+        Lobby?.ApplySyncedLobbyStateSnapshot(snapshot);
+        _state.MatchDurationSeconds = ClampMatchDuration(snapshot.MatchDurationSeconds);
         _state.TrailLength = ClampTrailLength(snapshot.TrailLength);
         _state.SuddenDeath = snapshot.SuddenDeath;
-        _state.MatchMode = LobbyStateGameSettingsAdapter.ToMatchMode(snapshot.GameModeIndex);
+        _state.MatchMode = snapshot.MatchMode;
         _state.IsDirty = false;
 
         Render();
@@ -172,20 +173,8 @@ public abstract class MatchSettingsView : LobbyComponent
         if (_state == null || !_state.IsDirty)
             return;
 
-        if (MultiplayerSessionDriver.Instance == null)
-            return;
-
-        MultiplayerSessionDriver.PublishHostLobbyState(
-            Lobby.Opponents != null ? Lobby.Opponents.GetHumanSlotCount() : 0,
-            Lobby.Opponents != null ? Lobby.Opponents.SlotCount : 0,
-            Lobby.Opponents != null ? Lobby.Opponents.GetBotSlotMask() : 0,
-            _state.TrailLength,
-            _state.MatchDurationSeconds,
-            GameModeIndex,
-            _state.SuddenDeath);
-
-        _state.IsDirty = false;
-        Lobby.ClearLobbyStateDirty();
+        if (Lobby != null && Lobby.PublishCurrentHostLobbyState(_state))
+            _state.IsDirty = false;
     }
 
     protected void RefreshInteractivity()
@@ -442,7 +431,7 @@ public sealed class MultiplayerClientMatchSettingsView : MatchSettingsView
 
     private void ApplySnapshotIfAvailable()
     {
-        if (MultiplayerSessionDriver.TryGetLobbyState(out MultiplayerSessionDriver.LobbyStateSnapshot snapshot))
+        if (MultiplayerSessionDriver.TryGetLobbyState(out LobbyStateSnapshot snapshot))
             ApplySyncedLobbySettings(snapshot);
     }
 }

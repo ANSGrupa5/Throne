@@ -26,7 +26,8 @@ public sealed class MultiplayerHostMatchStartFlow : IMatchStartFlow
             return;
         }
 
-        _lobby.PublishCurrentHostLobbyState(state);
+        if (!_lobby.PublishCurrentHostLobbyState(state))
+            return;
 
         if (!_lobby.PrepareRuntimeSession(state, LobbyMode.MultiplayerHost))
             return;
