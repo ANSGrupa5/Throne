@@ -1169,7 +1169,7 @@ MonoBehaviour:
   winnerColor: {r: 1, g: 0.86, b: 0.25, a: 1}
   fallbackTextColor: {r: 1, g: 1, b: 1, a: 1}
   mainMenuSceneName: MainMenu
-  lobbySceneName: SingleplayerLobby
+  lobbySceneName: LobbyScene
 --- !u!1 &1811784707
 GameObject:
   m_ObjectHideFlags: 0

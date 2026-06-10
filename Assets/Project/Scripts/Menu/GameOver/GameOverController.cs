@@ -17,7 +17,7 @@ public class GameOverController : MonoBehaviour
 
     [Header("Scenes")]
     [SerializeField] private string mainMenuSceneName = "MainMenu";
-    [SerializeField] private string lobbySceneName = "SingleplayerLobby";
+    [SerializeField] private string lobbySceneName = LobbyLaunchContext.SharedLobbySceneName;
 
     private readonly List<GameOverResultRow> _generatedRows = new();
     private bool _hasAppliedWinLossStats;
@@ -50,6 +50,7 @@ public class GameOverController : MonoBehaviour
 
     public void ReturnToLobby()
     {
+        LobbyLaunchContext.RequestSingleplayer();
         LoadScene(lobbySceneName);
     }
 

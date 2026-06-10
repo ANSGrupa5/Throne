@@ -70,8 +70,7 @@ public class GameSettings : ScriptableObject
             {
                 case "GameOver":
                 case "MainMenu":
-                case "SingleplayerLobby":
-                case "MultiplayerLobby":
+                case "LobbyScene":
                 case "TestEnvironment":
                     Debug.LogWarning($"[GameSettings] Scene '{arenaSceneName}' is not an arena scene. Please choose a valid arena from Build Settings.");
                     return;

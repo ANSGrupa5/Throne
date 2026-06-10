@@ -69,8 +69,8 @@ public class LobbyController : MonoBehaviour
 
     protected virtual void Awake()
     {
+        configuredLobbyMode = LobbyLaunchContext.ResolveMode(configuredLobbyMode);
         ValidateSceneReferences();
-        ResolveSceneButtons();
 
         if (gameSettings != null)
             ArenaSceneName = gameSettings.arenaSceneName;
@@ -100,14 +100,6 @@ public class LobbyController : MonoBehaviour
     {
         DisableActiveComponents();
     }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (startButton == null || backButton == null)
-            ResolveSceneButtons();
-    }
-#endif
 
     protected virtual void Update()
     {
@@ -648,46 +640,10 @@ public class LobbyController : MonoBehaviour
 
     private void RefreshStartButtonInteractivity()
     {
-        if (startButton == null)
-            ResolveSceneButtons();
-
         ConfigureStartFlowForCurrentRole();
 
         if (startButton != null)
             startButton.interactable = _startFlow != null && _startFlow.CanStart(_lobbyState);
-    }
-
-    private void ResolveSceneButtons()
-    {
-        if (startButton == null)
-            startButton = FindNamedButton("PlayButton");
-        if (backButton == null)
-            backButton = FindNamedButton("BackButton");
-    }
-
-    // Temporary migration fallback for old or missing serialized scene button references.
-    private Button FindNamedButton(string objectName)
-    {
-        Transform match = FindDeepChild(transform.root, objectName);
-        return match != null ? match.GetComponent<Button>() : null;
-    }
-
-    private static Transform FindDeepChild(Transform parent, string childName)
-    {
-        if (parent == null)
-            return null;
-
-        if (parent.name == childName)
-            return parent;
-
-        for (int i = 0; i < parent.childCount; i++)
-        {
-            Transform match = FindDeepChild(parent.GetChild(i), childName);
-            if (match != null)
-                return match;
-        }
-
-        return null;
     }
 
     private bool IsMainMenuScene(string sceneName)
@@ -722,6 +678,11 @@ public class LobbyController : MonoBehaviour
             for (int i = 0; i < trailColorButtons.Length; i++)
                 trailColorButtons[i]?.Validate(this, i);
         }
+
+        if (startButton == null)
+            Debug.LogError($"{nameof(LobbyController)} on {name} has no start button assigned.", this);
+        if (backButton == null)
+            Debug.LogError($"{nameof(LobbyController)} on {name} has no back button assigned.", this);
     }
 }
 

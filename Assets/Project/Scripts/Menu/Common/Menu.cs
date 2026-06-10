@@ -60,7 +60,19 @@ public class Menu : MonoBehaviour
 
     public void LoadScene(string sceneName)
     {
+        if (LobbyLaunchContext.IsSharedLobbySceneName(sceneName))
+        {
+            LoadSingleplayer();
+            return;
+        }
+
         SceneTransitionLoader.LoadScene(sceneName);
+    }
+
+    public void LoadSingleplayer()
+    {
+        LobbyLaunchContext.RequestSingleplayer();
+        SceneTransitionLoader.LoadScene(LobbyLaunchContext.SharedLobbySceneName);
     }
 
     public void ShowScreen(int screenNumber)

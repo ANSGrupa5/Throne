@@ -35,7 +35,7 @@ public class MultiplayerConnectionMenu : MonoBehaviour
 
     [Header("Join")]
     [SerializeField] private string defaultJoinAddress = "127.0.0.1";
-    [SerializeField] private string lobbySceneName = "MultiplayerLobby";
+    [SerializeField] private string lobbySceneName = LobbyLaunchContext.SharedLobbySceneName;
 
     private bool _subscribedToBootstrap;
     private bool _buttonsBound;
@@ -70,6 +70,7 @@ public class MultiplayerConnectionMenu : MonoBehaviour
 
     public void HostGame()
     {
+        LobbyLaunchContext.RequestMultiplayer();
         ShowLobbyView();
 
         MultiplayerRuntimeBootstrap.Instance?.HostGame();
@@ -98,6 +99,7 @@ public class MultiplayerConnectionMenu : MonoBehaviour
 
         if (started)
         {
+            LobbyLaunchContext.RequestMultiplayer();
             SetStatus("Looking for host");
             return;
         }
@@ -317,9 +319,11 @@ public class MultiplayerConnectionMenu : MonoBehaviour
         if (matchLobby != null || string.IsNullOrWhiteSpace(lobbySceneName))
             return;
 
-        if (SceneManager.GetActiveScene().name == lobbySceneName)
+        string activeSceneName = SceneManager.GetActiveScene().name;
+        if (string.Equals(activeSceneName, lobbySceneName, System.StringComparison.OrdinalIgnoreCase))
             return;
 
+        LobbyLaunchContext.RequestMultiplayer();
         SceneTransitionLoader.LoadScene(lobbySceneName);
     }
 

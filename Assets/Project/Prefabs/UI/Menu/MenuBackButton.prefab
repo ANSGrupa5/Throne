@@ -224,9 +224,9 @@ GameObject:
   - component: {fileID: 6483546411849164864}
   - component: {fileID: 8397920769503461148}
   - component: {fileID: 1597283681149243046}
-  - component: {fileID: 3592184990594254991}
+  - component: {fileID: 3354344418954496721}
   m_Layer: 0
-  m_Name: BackButton
+  m_Name: MenuBackButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -312,13 +312,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.654902, g: 0.69411767, b: 0.7176471, a: 1}
-    m_HighlightedColor: {r: 0.8235294, g: 0.8627451, b: 0.8745098, a: 1}
-    m_PressedColor: {r: 0.43529412, g: 0.49411765, b: 0.5176471, a: 1}
-    m_SelectedColor: {r: 0.8235294, g: 0.8627451, b: 0.8745098, a: 1}
-    m_DisabledColor: {r: 0.654902, g: 0.69411767, b: 0.7176471, a: 0.5}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.18
+    m_NormalColor: {r: 0.02, g: 0.08, b: 0.1, a: 1}
+    m_HighlightedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
+    m_PressedColor: {r: 0, g: 0.12, b: 0.14, a: 1}
+    m_SelectedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
+    m_DisabledColor: {r: 0.02, g: 0.08, b: 0.1, a: 0.35}
+    m_ColorMultiplier: 1.2
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -335,7 +335,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3592184990594254991
+--- !u!114 &3354344418954496721
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -344,10 +344,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 6460748927959307248}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d78a3799c656c8c4cbcba153b4c552c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 4d76d76ef9a1f014d977540c835100a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
-  hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
-  clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverVolume: 0.55
-  clickVolume: 1
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSelectable
+  selectable: {fileID: 1597283681149243046}
+  targetGraphicOverride: {fileID: 8397920769503461148}
+  visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
+  audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  playHoverSound: 1
+  playClickSound: 1

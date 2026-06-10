@@ -1001,6 +1001,7 @@ GameObject:
   - component: {fileID: 502390844}
   - component: {fileID: 502390843}
   - component: {fileID: 502390845}
+  - component: {fileID: 502390846}
   m_Layer: 0
   m_Name: AddressInput
   m_TagString: Untagged
@@ -1088,13 +1089,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_NormalColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 1}
+    m_HighlightedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
+    m_PressedColor: {r: 0, g: 0.72156864, b: 0.78039217, a: 1}
+    m_SelectedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
+    m_DisabledColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 0.5}
+    m_ColorMultiplier: 1.58
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -1168,6 +1169,24 @@ MonoBehaviour:
   isAlert: 0
   m_InputValidator: {fileID: 0}
   m_ShouldActivateOnSelect: 1
+--- !u!114 &502390846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 502390841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d76d76ef9a1f014d977540c835100a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSelectable
+  selectable: {fileID: 502390845}
+  targetGraphicOverride: {fileID: 502390843}
+  visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
+  audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  playHoverSound: 1
+  playClickSound: 1
 --- !u!1 &564408043
 GameObject:
   m_ObjectHideFlags: 0
@@ -1868,6 +1887,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4766233853460825320, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: visualPreset
+      value: 
+      objectReference: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
     - target: {fileID: 6282543024743161407, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_text
       value: BACK
@@ -2370,7 +2393,7 @@ MonoBehaviour:
   backJoinButton: {fileID: 1384633559}
   popupOkButton: {fileID: 247702258}
   defaultJoinAddress: 127.0.0.1
-  lobbySceneName: MultiplayerLobby
+  lobbySceneName: LobbyScene
   matchLobby: {fileID: 0}
 --- !u!114 &2024601038
 MonoBehaviour:

@@ -17,6 +17,7 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 {
     private const string MainMenuSceneName = "MainMenu";
+    private const string SharedLobbySceneName = LobbyLaunchContext.SharedLobbySceneName;
     private const string MultiplayerScenePrefix = "Multiplayer";
     private const string MultiplayerArenaScenePrefix = "multi ";
     private const string MultiplayerArenaSceneSuffix = " Multiplayer";
@@ -49,10 +50,17 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     public static bool IsMultiplayerScene(Scene scene)
     {
+        bool isSharedLobbySceneWithActiveNetwork =
+            scene.IsValid() &&
+            string.Equals(scene.name, SharedLobbySceneName, System.StringComparison.OrdinalIgnoreCase) &&
+            _instance != null &&
+            (_instance.IsServerStarted || _instance.IsClientStarted);
+
         return scene.IsValid() &&
             (scene.name.StartsWith(MultiplayerScenePrefix, System.StringComparison.OrdinalIgnoreCase) ||
              scene.name.StartsWith(MultiplayerArenaScenePrefix, System.StringComparison.OrdinalIgnoreCase) ||
-             scene.name.EndsWith(MultiplayerArenaSceneSuffix, System.StringComparison.OrdinalIgnoreCase));
+             scene.name.EndsWith(MultiplayerArenaSceneSuffix, System.StringComparison.OrdinalIgnoreCase) ||
+             isSharedLobbySceneWithActiveNetwork);
     }
 
     public static bool IsActiveMultiplayerScene()

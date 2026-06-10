@@ -241,7 +241,7 @@ GameObject:
   - component: {fileID: 7901226055957247567}
   - component: {fileID: 680000000000000021}
   - component: {fileID: 4876494984994295684}
-  - component: {fileID: 4609238922023650052}
+  - component: {fileID: 3924346573564415393}
   m_Layer: 0
   m_Name: AddBotButton
   m_TagString: Untagged
@@ -342,13 +342,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.003921569, g: 0.7686275, b: 0.7176471, a: 1}
-    m_HighlightedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.33
+    m_NormalColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 1}
+    m_HighlightedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
+    m_PressedColor: {r: 0, g: 0.72156864, b: 0.78039217, a: 1}
+    m_SelectedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
+    m_DisabledColor: {r: 0, g: 0.99607843, b: 0.93333334, a: 0.5}
+    m_ColorMultiplier: 1.58
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -365,7 +365,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &4609238922023650052
+--- !u!114 &3924346573564415393
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -374,12 +374,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 3323732949672924586}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d78a3799c656c8c4cbcba153b4c552c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 4d76d76ef9a1f014d977540c835100a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
-  hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
-  clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSelectable
+  selectable: {fileID: 4876494984994295684}
+  targetGraphicOverride: {fileID: 7901226055957247567}
+  visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
+  audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  playHoverSound: 1
+  playClickSound: 1
 --- !u!1 &4551024992333675794
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +435,7 @@ GameObject:
   - component: {fileID: 4073404706809674653}
   - component: {fileID: 680000000000000022}
   - component: {fileID: 642019904559650212}
-  - component: {fileID: 2275616498840333136}
+  - component: {fileID: 5486090087711803314}
   m_Layer: 0
   m_Name: RemoveBotButton
   m_TagString: Untagged
@@ -533,13 +536,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0.006, b: 0.01, a: 0.7882353}
-    m_HighlightedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_PressedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_SelectedColor: {r: 0, g: 0.22, b: 0.21, a: 0.96}
-    m_DisabledColor: {r: 0, g: 0.006, b: 0.01, a: 0.47}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.33
+    m_NormalColor: {r: 0.95, g: 0.18, b: 0.22, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
+    m_PressedColor: {r: 0.62, g: 0.05, b: 0.08, a: 1}
+    m_SelectedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
+    m_DisabledColor: {r: 0.95, g: 0.18, b: 0.22, a: 0.35}
+    m_ColorMultiplier: 1.25
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -556,7 +559,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2275616498840333136
+--- !u!114 &5486090087711803314
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -565,9 +568,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8839404583108024502}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d78a3799c656c8c4cbcba153b4c552c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 4d76d76ef9a1f014d977540c835100a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonScript
-  hoverSound: {fileID: 8300000, guid: 9515afd4eca55db4187c08e63c31da10, type: 3}
-  clickSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
-  hoverCooldownSeconds: 0.7
+  m_EditorClassIdentifier: Assembly-CSharp::MenuSelectable
+  selectable: {fileID: 642019904559650212}
+  targetGraphicOverride: {fileID: 4073404706809674653}
+  visualPreset: {fileID: 11400000, guid: c9a02154199b4140a73fee70e3351bdb, type: 2}
+  audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  playHoverSound: 1
+  playClickSound: 1
