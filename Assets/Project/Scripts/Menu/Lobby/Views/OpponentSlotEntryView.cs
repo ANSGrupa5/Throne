@@ -103,16 +103,16 @@ public sealed class OpponentSlotEntryView
 
         if (root == null)
         {
-            Debug.LogError($"{nameof(Lobby)} is missing opponent slot root at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing opponent slot root at index {index}.", owner);
             return;
         }
 
         if (statusText == null)
-            Debug.LogError($"{nameof(Lobby)} is missing opponent slot status text at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing opponent slot status text at index {index}.", owner);
         if (addBotButton == null)
-            Debug.LogError($"{nameof(Lobby)} is missing opponent slot add button at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing opponent slot add button at index {index}.", owner);
         if (removeBotButton == null)
-            Debug.LogError($"{nameof(Lobby)} is missing opponent slot remove button at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing opponent slot remove button at index {index}.", owner);
     }
 
     private void UpdateFrame(bool occupied)

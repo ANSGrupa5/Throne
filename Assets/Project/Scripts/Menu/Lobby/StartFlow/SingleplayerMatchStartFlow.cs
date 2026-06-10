@@ -2,9 +2,9 @@ using UnityEngine;
 
 public sealed class SingleplayerMatchStartFlow : IMatchStartFlow
 {
-    private readonly Lobby _lobby;
+    private readonly LobbyController _lobby;
 
-    public SingleplayerMatchStartFlow(Lobby lobby)
+    public SingleplayerMatchStartFlow(LobbyController lobby)
     {
         _lobby = lobby;
     }

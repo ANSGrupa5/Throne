@@ -13,6 +13,9 @@ public class PowerUpSpawner : MonoBehaviour
     }
 
     [Header("Spawning Settings")]
+    [SerializeField] private PowerUpSpawnSettings spawnSettings;
+
+    [Header("Legacy Spawning Settings")]
     public List<PowerUpPrefabEntry> powerUpPrefabs;
     public Transform[] spawnPoints;
     
@@ -22,7 +25,20 @@ public class PowerUpSpawner : MonoBehaviour
     [SerializeField] private int maxPowerUpsOnMap = 3;
 
     private float _nextSpawnTime;
-    private List<GameObject> _activePowerUps = new List<GameObject>();
+    private readonly List<GameObject> _activePowerUps = new List<GameObject>();
+    private readonly List<WeightedPrefab> _weightedPrefabs = new List<WeightedPrefab>();
+
+    private readonly struct WeightedPrefab
+    {
+        public readonly GameObject Prefab;
+        public readonly float CumulativeWeight;
+
+        public WeightedPrefab(GameObject prefab, float cumulativeWeight)
+        {
+            Prefab = prefab;
+            CumulativeWeight = cumulativeWeight;
+        }
+    }
 
     private void Start()
     {
@@ -32,7 +48,7 @@ public class PowerUpSpawner : MonoBehaviour
             return;
         }
 
-        _nextSpawnTime = Time.time + initialSpawnDelay;
+        _nextSpawnTime = Time.time + GetInitialSpawnDelay();
     }
 
     private void Update()
@@ -40,7 +56,11 @@ public class PowerUpSpawner : MonoBehaviour
         // Oczyszczanie zebranych/zniszczonych powerupów z listy
         _activePowerUps.RemoveAll(item => item == null);
 
-        if (Time.time >= _nextSpawnTime && _activePowerUps.Count < maxPowerUpsOnMap)
+        int maxPowerUps = GetMaxPowerUpsOnMap();
+        if (maxPowerUps <= 0)
+            return;
+
+        if (Time.time >= _nextSpawnTime && _activePowerUps.Count < maxPowerUps)
         {
             SpawnRandomPowerUp();
             ScheduleNextSpawn();
@@ -49,14 +69,17 @@ public class PowerUpSpawner : MonoBehaviour
 
     private void SpawnRandomPowerUp()
     {
-        if (powerUpPrefabs == null || powerUpPrefabs.Count == 0 || spawnPoints == null || spawnPoints.Length == 0)
+        if (spawnPoints == null || spawnPoints.Length == 0)
             return;
 
         List<Transform> availableSpawnPoints = new List<Transform>();
         foreach (Transform sp in spawnPoints)
         {
+            if (sp == null)
+                continue;
+
             bool isOccupied = false;
-            foreach(GameObject activePU in _activePowerUps)
+            foreach (GameObject activePU in _activePowerUps)
             {
                 if (activePU != null && Vector3.Distance(activePU.transform.position, sp.position) < 1f)
                 {
@@ -73,35 +96,120 @@ public class PowerUpSpawner : MonoBehaviour
 
         Transform spawnPoint = availableSpawnPoints[Random.Range(0, availableSpawnPoints.Count)];
 
-        GameObject prefabToSpawn = GetRandomPrefabByWeight();
-        if (prefabToSpawn != null)
-        {
-            GameObject spawnedPU = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
-            _activePowerUps.Add(spawnedPU);
-        }
+        if (!TryGetRandomPrefabByWeight(out GameObject prefabToSpawn))
+            return;
+
+        GameObject spawnedPU = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
+        _activePowerUps.Add(spawnedPU);
     }
 
-    private GameObject GetRandomPrefabByWeight()
+    private bool TryGetRandomPrefabByWeight(out GameObject prefab)
     {
-        float totalWeight = 0;
-        foreach (var entry in powerUpPrefabs)
-            totalWeight += entry.weight;
+        prefab = null;
+        _weightedPrefabs.Clear();
 
-        float randomValue = Random.Range(0, totalWeight);
-        float currentWeight = 0;
+        if (!TryCollectSettingsPrefabs(out float totalWeight))
+            TryCollectLegacyPrefabs(out totalWeight);
 
-        foreach (var entry in powerUpPrefabs)
+        if (totalWeight <= 0f || _weightedPrefabs.Count == 0)
+            return false;
+
+        float randomValue = Random.Range(0f, totalWeight);
+
+        foreach (WeightedPrefab entry in _weightedPrefabs)
         {
-            currentWeight += entry.weight;
-            if (randomValue <= currentWeight)
-                return entry.prefab;
+            if (randomValue <= entry.CumulativeWeight)
+            {
+                prefab = entry.Prefab;
+                return prefab != null;
+            }
         }
 
-        return powerUpPrefabs[0].prefab;
+        prefab = _weightedPrefabs[_weightedPrefabs.Count - 1].Prefab;
+        return prefab != null;
     }
 
     private void ScheduleNextSpawn()
     {
-        _nextSpawnTime = Time.time + Random.Range(minSpawnInterval, maxSpawnInterval);
+        float minInterval = GetMinSpawnInterval();
+        float maxInterval = Mathf.Max(minInterval, GetMaxSpawnInterval());
+        _nextSpawnTime = Time.time + Random.Range(minInterval, maxInterval);
+    }
+
+    private bool TryCollectSettingsPrefabs(out float totalWeight)
+    {
+        totalWeight = 0f;
+        if (spawnSettings == null || spawnSettings.PowerUpPrefabs == null)
+            return false;
+
+        foreach (PowerUpSpawnSettings.PowerUpPrefabEntry entry in spawnSettings.PowerUpPrefabs)
+        {
+            if (entry == null)
+                continue;
+
+            AddWeightedPrefab(entry.prefab, entry.weight, ref totalWeight);
+        }
+
+        return totalWeight > 0f;
+    }
+
+    private bool TryCollectLegacyPrefabs(out float totalWeight)
+    {
+        totalWeight = 0f;
+        if (powerUpPrefabs == null)
+            return false;
+
+        foreach (PowerUpPrefabEntry entry in powerUpPrefabs)
+        {
+            if (entry == null)
+                continue;
+
+            AddWeightedPrefab(entry.prefab, entry.weight, ref totalWeight);
+        }
+
+        return totalWeight > 0f;
+    }
+
+    private void AddWeightedPrefab(GameObject prefab, float weight, ref float totalWeight)
+    {
+        if (prefab == null || weight <= 0f)
+            return;
+
+        totalWeight += weight;
+        _weightedPrefabs.Add(new WeightedPrefab(prefab, totalWeight));
+    }
+
+    private bool HasValidSpawnSettings()
+    {
+        if (spawnSettings == null || spawnSettings.PowerUpPrefabs == null)
+            return false;
+
+        foreach (PowerUpSpawnSettings.PowerUpPrefabEntry entry in spawnSettings.PowerUpPrefabs)
+        {
+            if (entry != null && entry.prefab != null && entry.weight > 0f)
+                return true;
+        }
+
+        return false;
+    }
+
+    private float GetInitialSpawnDelay()
+    {
+        return HasValidSpawnSettings() ? spawnSettings.InitialSpawnDelay : Mathf.Max(0f, initialSpawnDelay);
+    }
+
+    private float GetMinSpawnInterval()
+    {
+        return HasValidSpawnSettings() ? spawnSettings.MinSpawnInterval : Mathf.Max(0f, minSpawnInterval);
+    }
+
+    private float GetMaxSpawnInterval()
+    {
+        return HasValidSpawnSettings() ? spawnSettings.MaxSpawnInterval : Mathf.Max(GetMinSpawnInterval(), maxSpawnInterval);
+    }
+
+    private int GetMaxPowerUpsOnMap()
+    {
+        return HasValidSpawnSettings() ? spawnSettings.MaxPowerUpsOnMap : Mathf.Max(0, maxPowerUpsOnMap);
     }
 }

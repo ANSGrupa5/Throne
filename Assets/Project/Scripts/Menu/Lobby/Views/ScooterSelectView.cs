@@ -13,15 +13,15 @@ public sealed class ScooterSelectView : LobbyComponent
 
     public int SelectedModelIndex => currentModel;
 
-    public void Validate(Lobby owner)
+    public void Validate(LobbyController owner)
     {
-        string ownerName = owner != null ? owner.name : nameof(Lobby);
+        string ownerName = owner != null ? owner.name : nameof(LobbyController);
 
         if (motorPreview == null || motorPreview.Length == 0)
-            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no scooter preview objects assigned.", owner);
+            Debug.LogError($"{nameof(LobbyController)} on {ownerName} has no scooter preview objects assigned.", owner);
 
         if (motorPlayable == null || motorPlayable.Length == 0)
-            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no playable scooter prefabs assigned.", owner);
+            Debug.LogError($"{nameof(LobbyController)} on {ownerName} has no playable scooter prefabs assigned.", owner);
 
         if (motorPreview != null &&
             motorPlayable != null &&
@@ -29,7 +29,7 @@ public sealed class ScooterSelectView : LobbyComponent
             motorPlayable.Length > 0 &&
             motorPreview.Length != motorPlayable.Length)
         {
-            Debug.LogError($"{nameof(Lobby)} on {ownerName} has mismatched scooter preview/playable counts.", owner);
+            Debug.LogError($"{nameof(LobbyController)} on {ownerName} has mismatched scooter preview/playable counts.", owner);
         }
     }
 

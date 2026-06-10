@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class SettingsManager : MonoBehaviour
+public class MainMenuSettingsController : MonoBehaviour
 {
-    public static SettingsManager Instance;
+    public static MainMenuSettingsController Instance;
 
     //Settings
     [SerializeField] private Slider MainVolumeSlider;

@@ -413,7 +413,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SettingsManager, Assembly-CSharp
+      value: MainMenuSettingsController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
@@ -735,7 +735,7 @@ GameObject:
   - component: {fileID: 225957491}
   - component: {fileID: 225957490}
   m_Layer: 0
-  m_Name: StatsManager
+  m_Name: PlayerProfileStats
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -752,7 +752,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5e93ea2b348fe04d9779f860252c36e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StatsManager
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerProfileStats
   OppsElimText: {fileID: 662606028571548226}
   TimesElimText: {fileID: 1679618703424584150}
   PowerUpsPickedUpText: {fileID: 7183945987317292367}
@@ -2208,7 +2208,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SettingsManager, Assembly-CSharp
+      value: MainMenuSettingsController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -2444,7 +2444,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SettingsManager, Assembly-CSharp
+      value: MainMenuSettingsController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 35729084170114722, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
@@ -2906,7 +2906,7 @@ GameObject:
   - component: {fileID: 1940053573}
   - component: {fileID: 1940053572}
   m_Layer: 0
-  m_Name: SettingsManager
+  m_Name: MainMenuSettingsController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2923,7 +2923,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4971ee5eed56bdc4aac1ae656da81452, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuSettingsController
   MainVolumeSlider: {fileID: 8722953640947173498}
   SFXVolumeSlider: {fileID: 1866570996930478697}
   FullscreenToggle: {fileID: 3968954179799748492}
@@ -8736,7 +8736,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1940053572}
-        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: MainMenuSettingsController, Assembly-CSharp
         m_MethodName: SetResolution
         m_Mode: 0
         m_Arguments:

@@ -2968,7 +2968,7 @@ GameObject:
   m_Component:
   - component: {fileID: 598961697}
   m_Layer: 0
-  m_Name: MultiplayerLobbyObject
+  m_Name: MultiplayerLobbyController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3636,7 +3636,7 @@ GameObject:
   - component: {fileID: 732768193}
   - component: {fileID: 732768192}
   m_Layer: 0
-  m_Name: SuddenDeathTglBackground
+  m_Name: SuddenDeathToggleBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8737,7 +8737,7 @@ GameObject:
   - component: {fileID: 1539375730}
   - component: {fileID: 1539375729}
   m_Layer: 0
-  m_Name: SuddenDeathTglText
+  m_Name: SuddenDeathToggleText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11051,9 +11051,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2052947073}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c24163af96cb9140b69ba7698622070, type: 3}
+  m_Script: {fileID: 11500000, guid: 4cba22bc75b736749a03ad71acd6bb60, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MultiplayerLobby
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyController
   gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
   botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
@@ -11235,7 +11235,7 @@ GameObject:
   - component: {fileID: 2074357524}
   - component: {fileID: 2074357530}
   m_Layer: 0
-  m_Name: SuddenDeathTgl
+  m_Name: SuddenDeathToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

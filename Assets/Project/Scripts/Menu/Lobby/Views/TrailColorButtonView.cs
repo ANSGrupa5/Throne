@@ -67,8 +67,8 @@ public sealed class TrailColorButtonView
     public void Validate(UnityEngine.Object owner, int index)
     {
         if (button == null)
-            Debug.LogError($"{nameof(Lobby)} is missing trail color button reference at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing trail color button reference at index {index}.", owner);
         if (selectionFrame == null)
-            Debug.LogError($"{nameof(Lobby)} is missing trail color selection frame at index {index}.", owner);
+            Debug.LogError($"{nameof(LobbyController)} is missing trail color selection frame at index {index}.", owner);
     }
 }

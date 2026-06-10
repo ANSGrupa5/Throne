@@ -39,7 +39,7 @@ public class MultiplayerConnectionMenu : MonoBehaviour
 
     private bool _subscribedToBootstrap;
     private bool _buttonsBound;
-    [SerializeField] private Lobby matchLobby;
+    [SerializeField] private LobbyController matchLobby;
 
     private void Awake()
     {

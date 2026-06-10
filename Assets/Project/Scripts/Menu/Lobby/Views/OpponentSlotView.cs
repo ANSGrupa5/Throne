@@ -27,16 +27,16 @@ public abstract class OpponentSlotView : LobbyComponent
     protected virtual bool CanEditBots => false;
     protected OpponentSlotEntryView[] Slots => opponentSlots;
 
-    public void Validate(Lobby owner)
+    public void Validate(LobbyController owner)
     {
-        string ownerName = owner != null ? owner.name : nameof(Lobby);
+        string ownerName = owner != null ? owner.name : nameof(LobbyController);
 
         if (opponentHeading == null)
-            Debug.LogError($"{nameof(Lobby)} on {ownerName} is missing scene reference '{nameof(opponentHeading)}'.", owner);
+            Debug.LogError($"{nameof(LobbyController)} on {ownerName} is missing scene reference '{nameof(opponentHeading)}'.", owner);
 
         if (opponentSlots == null || opponentSlots.Length == 0)
         {
-            Debug.LogError($"{nameof(Lobby)} on {ownerName} has no opponent slots assigned.", owner);
+            Debug.LogError($"{nameof(LobbyController)} on {ownerName} has no opponent slots assigned.", owner);
             return;
         }
 

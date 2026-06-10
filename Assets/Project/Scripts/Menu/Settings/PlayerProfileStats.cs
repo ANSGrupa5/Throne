@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class StatsManager : MonoBehaviour
+public class PlayerProfileStats : MonoBehaviour
 {
-    public static StatsManager Instance;
+    public static PlayerProfileStats Instance;
 
     [SerializeField] private TextMeshProUGUI OppsElimText;
     [SerializeField] private TextMeshProUGUI TimesElimText;

@@ -4251,6 +4251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce7a04020017db04aace2a88221da1c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerUpSpawner
+  spawnSettings: {fileID: 11400000, guid: ad6e87eb7c45474fb8e3567729e7489d, type: 2}
   powerUpPrefabs:
   - prefab: {fileID: 3619608186191917022, guid: 749c499a403b6f94cbb876b05c3a3522, type: 3}
     weight: 33
@@ -5649,7 +5650,7 @@ GameObject:
   - component: {fileID: 33868926449268104}
   - component: {fileID: 23676360935508294}
   m_Layer: 0
-  m_Name: rampa
+  m_Name: Ramp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8903,7 +8904,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5708273803275693883}
   m_Layer: 0
-  m_Name: Spawnpoints
+  m_Name: SpawnPoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

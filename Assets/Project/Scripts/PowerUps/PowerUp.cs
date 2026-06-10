@@ -3,9 +3,9 @@ using UnityEngine;
 
 public enum PowerUpType
 {
-    SpeedUp,
-    SlowDownOthers,
-    Invincibility
+    SpeedOverclock = 0,
+    EnemySignalJam = 1,
+    CollisionShield = 2
 }
 
 public class PowerUp : MonoBehaviour
@@ -44,10 +44,10 @@ public class PowerUp : MonoBehaviour
 
         collected = true;
 
-        if (StatsManager.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
+        if (PlayerProfileStats.Instance != null && PlayerProfileStats.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
         {
             Debug.Log("POWER UP PICKED UP. Power Ups picked up before: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
-            StatsManager.Instance.IncPowerUpsPickedUp();
+            PlayerProfileStats.Instance.IncPowerUpsPickedUp();
             Debug.Log("Power Ups picked up after update: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
         }
 
@@ -62,14 +62,14 @@ public class PowerUp : MonoBehaviour
 
         switch (powerUpType)
         {
-            case PowerUpType.SpeedUp:
+            case PowerUpType.SpeedOverclock:
                 if (collectorController != null)
                 {
                     collectorController.ApplySpeedModifier(speedMultiplier, speedDuration);
                 }
                 break;
 
-            case PowerUpType.SlowDownOthers:
+            case PowerUpType.EnemySignalJam:
                 VehicleController[] allControllers = FindObjectsByType<VehicleController>(FindObjectsSortMode.None);
                 foreach (var controller in allControllers)
                 {
@@ -85,7 +85,7 @@ public class PowerUp : MonoBehaviour
                 }
                 break;
 
-            case PowerUpType.Invincibility:
+            case PowerUpType.CollisionShield:
                 collectorLife.GrantInvulnerability(invincibilityDuration);
                 break;
         }

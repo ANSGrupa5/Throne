@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1f75f6db1214c17a84e52d3be50b84d, type: 3}
+  m_Name: PowerUpSpawnSettings_Multiplayer
+  m_EditorClassIdentifier: 
+  powerUpPrefabs:
+  - prefab: {fileID: 3619608186191917022, guid: 749c499a403b6f94cbb876b05c3a3522, type: 3}
+    weight: 33
+  - prefab: {fileID: 7981350766114444539, guid: 90e90dc9b44bd5e488bcf0c93cd0942a, type: 3}
+    weight: 33
+  - prefab: {fileID: 4572615756618189160, guid: cd8b265de7eadc840a45b900d7595c78, type: 3}
+    weight: 33
+  initialSpawnDelay: 15
+  minSpawnInterval: 15
+  maxSpawnInterval: 30
+  maxPowerUpsOnMap: 3

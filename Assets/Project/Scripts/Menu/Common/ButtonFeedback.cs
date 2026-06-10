@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
+[Obsolete("Use MenuSelectable instead.")]
 [DisallowMultipleComponent]
 [AddComponentMenu("Throne/UI/Button Feedback")]
 public sealed class ButtonFeedback : MonoBehaviour, IPointerEnterHandler, ISelectHandler, IPointerDownHandler, ISubmitHandler

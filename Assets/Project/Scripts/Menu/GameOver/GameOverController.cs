@@ -62,9 +62,9 @@ public class GameOverController : MonoBehaviour
             .ThenBy(result => result.displayName)
             .ToList();
 
-        if (!_hasAppliedWinLossStats && StatsManager.Instance != null)
+        if (!_hasAppliedWinLossStats && PlayerProfileStats.Instance != null)
         {
-            StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+            PlayerProfileStats.Instance.CheckIfPlayerWon(orderedResults);
             _hasAppliedWinLossStats = true;
         }
 

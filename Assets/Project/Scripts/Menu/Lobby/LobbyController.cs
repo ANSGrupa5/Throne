@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Lobby : MonoBehaviour
+public class LobbyController : MonoBehaviour
 {
     [Header("Default Config Assets")]
     [SerializeField] private GameSettings gameSettings;
@@ -716,7 +716,7 @@ public class Lobby : MonoBehaviour
     private void ValidateSceneReferences()
     {
         if (trailColorButtons == null || trailColorButtons.Length == 0)
-            Debug.LogError($"{nameof(Lobby)} on {name} has no trail color buttons assigned.", this);
+            Debug.LogError($"{nameof(LobbyController)} on {name} has no trail color buttons assigned.", this);
         else
         {
             for (int i = 0; i < trailColorButtons.Length; i++)
@@ -729,9 +729,9 @@ public abstract class LobbyComponent
 {
     private bool _initialized;
 
-    protected Lobby Lobby { get; private set; }
+    protected LobbyController Lobby { get; private set; }
 
-    public void Initialize(Lobby lobby)
+    public void Initialize(LobbyController lobby)
     {
         Lobby = lobby;
         if (_initialized)

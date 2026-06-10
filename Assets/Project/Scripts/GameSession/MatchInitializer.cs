@@ -361,8 +361,8 @@ public class MatchInitializer : MonoBehaviour
         if (spawnedPlayer == null)
             return;
 
-        if (StatsManager.Instance != null)
-            StatsManager.Instance.SetPlayer(spawnedPlayer, displayName);
+        if (PlayerProfileStats.Instance != null)
+            PlayerProfileStats.Instance.SetPlayer(spawnedPlayer, displayName);
 
         if (DistanceTracker.Instance != null)
             DistanceTracker.Instance.SetTarget(spawnedPlayer.transform);

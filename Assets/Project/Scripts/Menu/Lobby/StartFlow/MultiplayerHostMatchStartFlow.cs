@@ -2,9 +2,9 @@ using UnityEngine;
 
 public sealed class MultiplayerHostMatchStartFlow : IMatchStartFlow
 {
-    private readonly Lobby _lobby;
+    private readonly LobbyController _lobby;
 
-    public MultiplayerHostMatchStartFlow(Lobby lobby)
+    public MultiplayerHostMatchStartFlow(LobbyController lobby)
     {
         _lobby = lobby;
     }

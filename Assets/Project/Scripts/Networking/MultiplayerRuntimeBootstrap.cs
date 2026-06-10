@@ -110,6 +110,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             return false;
 
         _joinAddress = string.IsNullOrWhiteSpace(address) ? "127.0.0.1" : address.Trim();
+        MultiplayerSessionDriver.ClearTrailColorSelections();
+        MultiplayerSessionDriver.ClearLobbyState();
         bool started = StartClient();
         if (started)
         {

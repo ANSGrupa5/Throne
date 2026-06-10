@@ -92,12 +92,12 @@ public class Menu : MonoBehaviour
     public void SetVolume(float value)
     {
         AudioListener.volume = value;
-        SettingsManager.Instance.SaveMainVolume(value);
+        MainMenuSettingsController.Instance.SaveMainVolume(value);
     }
 
     public void SetSFXVolume(float value)
     {
-        SettingsManager.Instance.SaveSFXVolume(value);
+        MainMenuSettingsController.Instance.SaveSFXVolume(value);
     }
 
     public void ShowGraphicsSettings()
@@ -109,7 +109,7 @@ public class Menu : MonoBehaviour
     public void FullScreen(bool value)
     {
         Screen.fullScreenMode = value ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
-        SettingsManager.Instance.SaveFullscreen(value);
+        MainMenuSettingsController.Instance.SaveFullscreen(value);
     }
 
     public void ShowKeybindsSettings()
@@ -119,7 +119,7 @@ public class Menu : MonoBehaviour
 
     public void ShowStatisticsScreen()
     {
-        StatsManager.Instance.LoadStats();
+        PlayerProfileStats.Instance.LoadStats();
         ShowScreen((int)ScreenType.Statistics);
     }
 
