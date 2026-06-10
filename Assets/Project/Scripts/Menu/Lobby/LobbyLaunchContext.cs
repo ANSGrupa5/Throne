@@ -22,6 +22,17 @@ public static class LobbyLaunchContext
         return _hasRequestedMode ? _requestedMode : fallbackMode;
     }
 
+    public static LobbyMode ConsumeMode(LobbyMode fallbackMode)
+    {
+        if (!_hasRequestedMode)
+            return fallbackMode;
+
+        LobbyMode mode = _requestedMode;
+        _requestedMode = LobbyMode.Singleplayer;
+        _hasRequestedMode = false;
+        return mode;
+    }
+
     public static bool IsSharedLobbySceneName(string sceneName)
     {
         return string.Equals(sceneName?.Trim(), SharedLobbySceneName, System.StringComparison.OrdinalIgnoreCase);

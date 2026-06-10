@@ -1146,6 +1146,7 @@ GameObject:
   - component: {fileID: 2460619916232987591}
   - component: {fileID: 6662125557608091350}
   - component: {fileID: 2587010162619811865}
+  - component: {fileID: 4719346844831820656}
   m_Layer: 0
   m_Name: MenuDropdown
   m_TagString: Untagged
@@ -1306,5 +1307,23 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4503620943732345977}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
-  playClickSound: 1
+  playClickSound: 0
+--- !u!114 &4719346844831820656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8859418555755074441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84ae76b9a0204314db29b3d8259e5c71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuDropdownFeedback
+  dropdown: {fileID: 2460619916232987591}
+  openSound: {fileID: 8300000, guid: d8964835a8da64244ba12d4eb02aaf00, type: 3}
+  selectSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
+  openVolume: 1
+  selectVolume: 1

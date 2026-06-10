@@ -332,6 +332,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 451627779716230621}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &539916469726748348
@@ -611,6 +612,7 @@ Transform:
   - {fileID: 745513776996342734}
   - {fileID: 3496715084573011514}
   - {fileID: 280013993281909690}
+  - {fileID: 7144436583287470725}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &763318037149014099
@@ -878,6 +880,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 3833747533446998569}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &980716580847582131
@@ -1046,6 +1049,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 3011908840439792193}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &1027618972426102133
@@ -1915,6 +1919,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 6051604259174115627}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &2236693202869435361
@@ -2114,6 +2119,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 1519507610662965539}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &2401473940682746080
@@ -2540,6 +2546,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 1077195225655484464}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &2932131667901840154
@@ -3399,6 +3406,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4917025118479495704}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &3304661592634233069
@@ -3528,10 +3536,10 @@ MonoBehaviour:
   gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
   botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
   playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
-  matchDefaults: {fileID: 0}
-  matchRules: {fileID: 0}
+  matchDefaults: {fileID: 11400000, guid: 77e2a65ba82999e4e96b1f7fe331cd64, type: 2}
+  matchRules: {fileID: 11400000, guid: eca9d67325728484988968ef2ad132a9, type: 2}
   configuredLobbyMode: 0
-  playerTrailColor: {r: 0.95, g: 0.24, b: 0.24, a: 1}
+  playerTrailColor: {r: 0.95, g: 0.24, b: 0.24, a: 0.88}
   trailColorButtons:
   - button: {fileID: 1953479703787729195}
     colorImage: {fileID: 7543165685911874550}
@@ -3539,7 +3547,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   - button: {fileID: 4937921102952122486}
     colorImage: {fileID: 4414335811248326604}
@@ -3547,7 +3555,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   - button: {fileID: 6907826195071339175}
     colorImage: {fileID: 3546781225629282472}
@@ -3555,7 +3563,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   - button: {fileID: 5534620691398961978}
     colorImage: {fileID: 4276457027213011228}
@@ -3563,7 +3571,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   - button: {fileID: 5038019037765550495}
     colorImage: {fileID: 8777317999063955822}
@@ -3571,7 +3579,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   - button: {fileID: 508074698511046044}
     colorImage: {fileID: 5303935543314441247}
@@ -3579,7 +3587,7 @@ MonoBehaviour:
     availabilityGroup: {fileID: 0}
     selectionFrameFill: {r: 0, g: 0.996, b: 0.925, a: 0.12}
     selectionFrameOutline: {r: 0, g: 0.996, b: 0.925, a: 0.5882353}
-    availableAlpha: 1
+    availableAlpha: 0.88
     unavailableAlpha: 0.35
   startButton: {fileID: 5953552119922005090}
   backButton: {fileID: 714832091914610030}
@@ -3706,9 +3714,10 @@ MonoBehaviour:
       frameOutline: {fileID: 0}
   scooters:
     currentModel: 0
+    previewRoot: {fileID: 7144436583287470725}
     motorPreview:
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 5732138123526451052, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
+    - {fileID: 8930347279310823856, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
     motorPlayable:
     - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
     - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
@@ -4035,6 +4044,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 822091660519590448}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &3832794004279519398
@@ -4870,6 +4880,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 6858371374092347322}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &4243645600824239110
@@ -5038,6 +5049,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4666935804695706708}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &4461524071906483074
@@ -5377,6 +5389,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 2473216297477338202}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &4722577195831934899
@@ -5545,6 +5558,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 6831752665468457765}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &4752625248415363518
@@ -5712,6 +5726,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 808439773788767428}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &4872527162649011428
@@ -6035,6 +6050,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4369611613627582853}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &5157391853621968448
@@ -6310,6 +6326,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 7963343543683897913}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &5348347232898273237
@@ -7974,6 +7991,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 8544459531526801112}
   visualPreset: {fileID: 11400000, guid: ef1ea9f787b2487ba6e86c2f846f7942, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &7196187060977049515
@@ -8156,7 +8174,7 @@ MonoBehaviour:
   m_text: THRONE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -8901,7 +8919,7 @@ MonoBehaviour:
   m_text: MULTIPLAYER
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -9272,6 +9290,52 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &8499036964951067402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7144436583287470725}
+  - component: {fileID: 6565530149784074320}
+  m_Layer: 0
+  m_Name: ScooterPreviewRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7144436583287470725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8499036964951067402}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 33, y: 2.3, z: -895}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9139664686183674654}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6565530149784074320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8499036964951067402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 687d4262a957d394db6ad0a71f3bd5fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotatePreview
+  speed: 25
+  rotateAxis: 1
 --- !u!1 &8769473863494890794
 GameObject:
   m_ObjectHideFlags: 0
@@ -9438,6 +9502,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 8079874350391702869}
   visualPreset: {fileID: 11400000, guid: 98b0b30b4e324871bcfa09629db9d171, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &8797167628950357201
@@ -9454,6 +9519,7 @@ GameObject:
   - component: {fileID: 1063285046615647573}
   - component: {fileID: 7388307467529027058}
   - component: {fileID: 3408447728290270615}
+  - component: {fileID: 8650567110037959813}
   m_Layer: 0
   m_Name: GameModeSelector
   m_TagString: Untagged
@@ -9614,8 +9680,26 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 442830963041211930}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
-  playClickSound: 1
+  playClickSound: 0
+--- !u!114 &8650567110037959813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8797167628950357201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84ae76b9a0204314db29b3d8259e5c71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuDropdownFeedback
+  dropdown: {fileID: 1063285046615647573}
+  openSound: {fileID: 8300000, guid: d8964835a8da64244ba12d4eb02aaf00, type: 3}
+  selectSound: {fileID: 8300000, guid: dcce23d3a65f22d419bee9b7a16c3b5a, type: 3}
+  openVolume: 1
+  selectVolume: 1
 --- !u!1 &8886896632061298600
 GameObject:
   m_ObjectHideFlags: 0
@@ -9846,7 +9930,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 0.96, b: 0.86, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30

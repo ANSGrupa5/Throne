@@ -1215,6 +1215,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4766233853460825320, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: useColorTint
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6282543024743161407, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_text
       value: Singleplayer
@@ -2738,6 +2742,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3570974808553278454, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4766233853460825320, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
+      propertyPath: useColorTint
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4766233853460825320, guid: c78fef7fab53ae54ea260a2b730a0d11, type: 3}
@@ -8803,6 +8811,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 4364720612464428185}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!224 &7684134396111612402
@@ -9194,6 +9203,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 394500389272129220}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!1 &8269534431663646912
@@ -9506,6 +9516,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 157260284711750}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!114 &8669671110902524647
@@ -9810,6 +9821,7 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 8075556101334553032}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 1
   playHoverSound: 1
   playClickSound: 1
 --- !u!224 &8732792395856705792

@@ -15,4 +15,4 @@ MonoBehaviour:
   playerPrefab: {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
   displayName: Player
   ownerId: player_1
-  trailColor: {r: 0.95, g: 0.24, b: 0.24, a: 1}
+  trailColor: {r: 0.95, g: 0.24, b: 0.24, a: 0.88}

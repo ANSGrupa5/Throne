@@ -11,6 +11,7 @@ public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelec
     [SerializeField] private Graphic targetGraphicOverride;
     [SerializeField] private MenuSelectableVisualPreset visualPreset;
     [SerializeField] private MenuSelectableAudioPreset audioPreset;
+    [SerializeField] private bool useColorTint = true;
     [SerializeField] private bool playHoverSound = true;
     [SerializeField] private bool playClickSound = true;
 
@@ -78,6 +79,12 @@ public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelec
 
         if (targetGraphicOverride != null)
             selectable.targetGraphic = targetGraphicOverride;
+
+        if (!useColorTint)
+        {
+            selectable.transition = Selectable.Transition.None;
+            return;
+        }
 
         if (visualPreset == null)
             return;

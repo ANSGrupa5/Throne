@@ -50,8 +50,21 @@ public class GameOverController : MonoBehaviour
 
     public void ReturnToLobby()
     {
-        LobbyLaunchContext.RequestSingleplayer();
+        if (ShouldReturnToMultiplayerLobby())
+            LobbyLaunchContext.RequestMultiplayer();
+        else
+            LobbyLaunchContext.RequestSingleplayer();
+
         LoadScene(lobbySceneName);
+    }
+
+    private bool ShouldReturnToMultiplayerLobby()
+    {
+        if (GameSessionBootstrap.CurrentSession != null)
+            return !GameSessionBootstrap.CurrentSession.isSingleplayer;
+
+        MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
+        return bootstrap != null && (bootstrap.IsServerStarted || bootstrap.IsClientStarted);
     }
 
     private void ApplyResults()

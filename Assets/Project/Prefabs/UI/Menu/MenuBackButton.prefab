@@ -310,7 +310,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 0.02, g: 0.08, b: 0.1, a: 1}
     m_HighlightedColor: {r: 0.04, g: 0.2, b: 0.22, a: 1}
@@ -351,5 +351,6 @@ MonoBehaviour:
   targetGraphicOverride: {fileID: 8397920769503461148}
   visualPreset: {fileID: 11400000, guid: 91dafe93bf2c40c288424fff5a753eac, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
+  useColorTint: 0
   playHoverSound: 1
   playClickSound: 1

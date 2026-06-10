@@ -9,19 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ba22453fb14f154693c6b26f6b560dd, type: 3}
-  m_Name: GameSettings
-  m_EditorClassIdentifier: Assembly-CSharp::GameSettings
-  maxPlayers: 4
-  gameMode: 0
-  arenaSceneName: Neon City XL
-  matchDuration: 120
-  respawnTime: 3
-  isSuddenDeath: 1
-  suddenDeathTime: 30
-  vehicleSpeed: 30
-  trailLength: 1
-  trailColorPalette:
+  m_Script: {fileID: 11500000, guid: 9b3e9cfd3af949f09bcfc38e4fe8a274, type: 3}
+  m_Name: TrailColorPalette
+  m_EditorClassIdentifier: Assembly-CSharp::TrailColorPalette
+  colors:
   - {r: 0.95, g: 0.24, b: 0.24, a: 0.88}
   - {r: 0.25, g: 0.55, b: 0.98, a: 0.88}
   - {r: 0.28, g: 0.82, b: 0.42, a: 0.88}

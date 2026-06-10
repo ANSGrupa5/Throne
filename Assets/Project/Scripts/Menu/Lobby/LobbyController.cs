@@ -69,7 +69,7 @@ public class LobbyController : MonoBehaviour
 
     protected virtual void Awake()
     {
-        configuredLobbyMode = LobbyLaunchContext.ResolveMode(configuredLobbyMode);
+        configuredLobbyMode = LobbyLaunchContext.ConsumeMode(configuredLobbyMode);
         ValidateSceneReferences();
 
         if (gameSettings != null)
@@ -82,7 +82,6 @@ public class LobbyController : MonoBehaviour
         EnsureComponentsForCurrentRole(true);
         _opponentSlots?.Validate(this);
         _scooterSelect?.Validate(this);
-        RefreshActiveComponents();
         SyncLobbyStateFromCurrentSelections();
         RefreshStartButtonInteractivity();
     }

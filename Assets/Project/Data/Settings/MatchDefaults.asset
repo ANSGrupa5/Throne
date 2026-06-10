@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b62671d05dbb40588b11cea8455db8bc, type: 3}
+  m_Name: MatchDefaults
+  m_EditorClassIdentifier: Assembly-CSharp::MatchDefaults
+  DefaultArenaSceneName: Neon City XL
+  DefaultMatchMode: 0
+  DefaultMatchDurationSeconds: 120
+  DefaultSuddenDeath: 1
+  DefaultTrailLength: 1
+  DefaultRespawnTime: 3
+  DefaultVehicleSpeed: 30
+  trailColorPalette: {fileID: 11400000, guid: 77487b3208ba046448482ffb2a38d214, type: 2}
