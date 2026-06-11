@@ -21,7 +21,7 @@ public class MainMenuSettingsController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI TurnRightButtonText;
     [SerializeField] private TextMeshProUGUI CameraButtonText;
 
-    [SerializeField] private Menu menu;
+    [SerializeField] private MainMenuController menu;
 
     Resolution[] resolutions;
     [SerializeField] private TMP_Dropdown resolutionDropdown;
@@ -288,16 +288,16 @@ public class MainMenuSettingsController : MonoBehaviour
     private void BindSceneReferences()
     {
         if (menu == null)
-            menu = FindFirstObjectByType<Menu>(FindObjectsInactive.Include);
+            menu = FindFirstObjectByType<MainMenuController>(FindObjectsInactive.Include);
 
         if (MainVolumeSlider == null)
-            MainVolumeSlider = FindComponentByName<Slider>("Slider", "SoundScreen");
+            MainVolumeSlider = FindComponentByName<Slider>("Slider", "SoundSettingsScreen");
 
         if (SFXVolumeSlider == null)
-            SFXVolumeSlider = FindComponentByName<Slider>("Slider", "SoundScreen", MainVolumeSlider);
+            SFXVolumeSlider = FindComponentByName<Slider>("Slider", "SoundSettingsScreen", MainVolumeSlider);
 
         if (FullscreenToggle == null)
-            FullscreenToggle = FindComponentByName<Toggle>("FullscreenToggle", "GraphicsScreen");
+            FullscreenToggle = FindComponentByName<Toggle>("FullscreenToggle", "GraphicsSettingsScreen");
 
         if (resolutionDropdown == null)
             resolutionDropdown = FindFirstObjectByType<TMP_Dropdown>(FindObjectsInactive.Include);

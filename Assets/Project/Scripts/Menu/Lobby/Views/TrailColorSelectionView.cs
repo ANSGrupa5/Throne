@@ -88,6 +88,7 @@ public abstract class TrailColorSelectionView : LobbyComponent
 
     protected virtual void OnSelectedColorChanged()
     {
+        Lobby.MarkLobbyStateDirty();
     }
 
     private void InitializeButtons()
@@ -171,6 +172,7 @@ public sealed class MultiplayerTrailColorSelectionView : TrailColorSelectionView
 
     protected override void OnSelectedColorChanged()
     {
+        base.OnSelectedColorChanged();
         PublishSelection();
     }
 

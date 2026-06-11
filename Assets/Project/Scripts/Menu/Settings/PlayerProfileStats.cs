@@ -13,8 +13,10 @@ public class PlayerProfileStats : MonoBehaviour
     [SerializeField] private TextMeshProUGUI WinsText;
     [SerializeField] private TextMeshProUGUI LossesText;
     [SerializeField] private TextMeshProUGUI DistDrivenText;
+    [SerializeField] private TextMeshProUGUI MatchesCountText;
+    [SerializeField] private TextMeshProUGUI WinPercentageText;
 
-    private GameObject StatisticsScreen;
+    private GameObject statsScreen;
     private GameObject player = null;
     private string playerName = null;
 
@@ -105,7 +107,7 @@ public class PlayerProfileStats : MonoBehaviour
     public void LoadStats()
     {
         LoadStatValues();
-        TryBindStatisticsScreen();
+        TryBindStatsScreen();
         RefreshStatsUi();
     }
 
@@ -133,24 +135,32 @@ public class PlayerProfileStats : MonoBehaviour
             LossesText.text = Losses.ToString();
         if (DistDrivenText != null)
             DistDrivenText.text = $"{DistDriven:F2} km";
+
+        int matches = Wins + Losses;
+        if (MatchesCountText != null)
+            MatchesCountText.text = matches.ToString();
+        if (WinPercentageText != null)
+            WinPercentageText.text = matches > 0 ? $"{(Wins * 100f / matches):0}%" : "0%";
     }
 
-    private void TryBindStatisticsScreen()
+    private void TryBindStatsScreen()
     {
         if (HasStatsTextReferences())
             return;
 
-        if (StatisticsScreen == null)
-            StatisticsScreen = FindStatisticsScreen();
-        if (StatisticsScreen == null)
+        if (statsScreen == null)
+            statsScreen = FindStatsScreen();
+        if (statsScreen == null)
             return;
 
-        BindTextIfMissing(ref OppsElimText, "StatsRowLeft/Stat_Opps_Elim/Value");
-        BindTextIfMissing(ref TimesElimText, "StatsRowLeft/Stat_Times_Elim/Value");
-        BindTextIfMissing(ref PowerUpsPickedUpText, "StatsRowLeft/Stat_Total_Pow/Value");
-        BindTextIfMissing(ref WinsText, "StatsRowRight/Stat_Wins/Value");
-        BindTextIfMissing(ref LossesText, "StatsRowRight/Stat_Losses/Value");
-        BindTextIfMissing(ref DistDrivenText, "StatsRowRight/Stat_Dist_Driven/Value");
+        BindTextIfMissing(ref OppsElimText, "StatsPanel/StatsGrid/StatOppsElimCard/StatOppsElimValueText", "StatOppsElimValueText");
+        BindTextIfMissing(ref TimesElimText, "StatsPanel/StatsGrid/StatTimesElimCard/StatTimesElimValueText", "StatTimesElimValueText");
+        BindTextIfMissing(ref PowerUpsPickedUpText, "StatsPanel/StatsGrid/StatTotalPowerUpsCard/StatTotalPowValueText", "StatTotalPowValueText");
+        BindTextIfMissing(ref WinsText, "StatsPanel/StatsGrid/StatWinsCard/StatWinsValueText", "StatWinsValueText");
+        BindTextIfMissing(ref LossesText, "StatsPanel/StatsGrid/StatLossesCard/StatLossesValueText", "StatLossesValueText");
+        BindTextIfMissing(ref DistDrivenText, "StatsPanel/StatsGrid/StatDistanceDrivenCard/StatDistDrivenValueText", "StatDistDrivenValueText");
+        BindTextIfMissing(ref MatchesCountText, "StatsPanel/SummaryRow/MatchesCountCard/MatchesCountValueText", "MatchesCountValueText");
+        BindTextIfMissing(ref WinPercentageText, "StatsPanel/SummaryRow/WinsPercentageCard/WinsPercentageValueText", "WinsPercentageValueText");
     }
 
     private bool HasStatsTextReferences()
@@ -160,30 +170,61 @@ public class PlayerProfileStats : MonoBehaviour
                PowerUpsPickedUpText != null &&
                WinsText != null &&
                LossesText != null &&
-               DistDrivenText != null;
+               DistDrivenText != null &&
+               MatchesCountText != null &&
+               WinPercentageText != null;
     }
 
-    private GameObject FindStatisticsScreen()
+    private GameObject FindStatsScreen()
     {
         Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < transforms.Length; i++)
         {
             Transform current = transforms[i];
-            if (current != null && current.name == "StatisticsScreen")
+            if (current != null && current.name == "PlayerStatsScreen")
                 return current.gameObject;
         }
 
         return null;
     }
 
-    private void BindTextIfMissing(ref TextMeshProUGUI target, string path)
+    private void BindTextIfMissing(ref TextMeshProUGUI target, params string[] pathsOrNames)
     {
-        if (target != null || StatisticsScreen == null)
+        if (target != null || statsScreen == null)
             return;
 
-        Transform child = StatisticsScreen.transform.Find(path);
-        if (child != null)
+        for (int i = 0; i < pathsOrNames.Length; i++)
+        {
+            Transform child = statsScreen.transform.Find(pathsOrNames[i]);
+            if (child == null)
+                child = FindChildByName(statsScreen.transform, pathsOrNames[i]);
+
+            if (child == null)
+                continue;
+
             target = child.GetComponent<TextMeshProUGUI>();
+            if (target != null)
+                return;
+        }
+    }
+
+    private static Transform FindChildByName(Transform root, string name)
+    {
+        if (root == null)
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == name)
+                return child;
+
+            Transform nested = FindChildByName(child, name);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 
     void SaveStats()

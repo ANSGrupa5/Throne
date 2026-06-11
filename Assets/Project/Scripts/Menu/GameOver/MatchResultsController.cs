@@ -4,12 +4,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameOverController : MonoBehaviour
+public class MatchResultsController : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TMP_Text fallbackResultsText;
     [SerializeField] private Transform resultsRoot;
-    [SerializeField] private GameOverResultRow resultRowPrefab;
+    [SerializeField] private MatchResultRow resultRowPrefab;
 
     [Header("Styling")]
     [SerializeField] private Color winnerColor = new Color(1f, 0.86f, 0.25f, 1f);
@@ -19,7 +19,7 @@ public class GameOverController : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
     [SerializeField] private string lobbySceneName = LobbyLaunchContext.SharedLobbySceneName;
 
-    private readonly List<GameOverResultRow> _generatedRows = new();
+    private readonly List<MatchResultRow> _generatedRows = new();
     private bool _hasAppliedWinLossStats;
 
     private void Awake()
@@ -134,8 +134,7 @@ public class GameOverController : MonoBehaviour
 
         int rowIndex = 0;
 
-        // Wstawiamy nagłówek (Header)
-        GameOverResultRow headerRow = CreateGeneratedRow();
+        MatchResultRow headerRow = CreateGeneratedRow();
         PositionRow(headerRow.transform as RectTransform, rowIndex);
         headerRow.BindHeader();
         rowIndex++;
@@ -146,16 +145,16 @@ public class GameOverController : MonoBehaviour
             if (result == null)
                 continue;
 
-            GameOverResultRow row = CreateGeneratedRow();
+            MatchResultRow row = CreateGeneratedRow();
             PositionRow(row.transform as RectTransform, rowIndex);
-            row.Bind(i + 1, result, i == 0 ? winnerColor : Color.white);
+            row.Bind(i + 1, result, i == 0 ? winnerColor : Color.white, i % 2 == 1);
             rowIndex++;
         }
     }
 
-    private GameOverResultRow CreateGeneratedRow()
+    private MatchResultRow CreateGeneratedRow()
     {
-        GameOverResultRow row = Instantiate(resultRowPrefab, resultsRoot);
+        MatchResultRow row = Instantiate(resultRowPrefab, resultsRoot);
         row.gameObject.SetActive(true);
         _generatedRows.Add(row);
         return row;
@@ -165,7 +164,7 @@ public class GameOverController : MonoBehaviour
     {
         for (int i = _generatedRows.Count - 1; i >= 0; i--)
         {
-            GameOverResultRow row = _generatedRows[i];
+            MatchResultRow row = _generatedRows[i];
             if (row != null)
                 Destroy(row.gameObject);
         }
@@ -176,7 +175,7 @@ public class GameOverController : MonoBehaviour
     private void PositionRow(RectTransform rect, int index)
     {
         if (rect == null) return;
-        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -30f - (50f * index));
+        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -36f - (66f * index));
     }
 
     private string TranslateReason(string reason)

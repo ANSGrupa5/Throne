@@ -9,8 +9,14 @@ public sealed class ScooterSelectView : LobbyComponent
 
     [Header("Vehicle Previews")]
     [SerializeField] private Transform previewRoot;
+    [SerializeField] private ScooterPreviewEntry[] previewEntries;
     [SerializeField] private GameObject[] motorPreview;
     [SerializeField] private GameObject[] motorPlayable;
+
+    [Header("Dirty scene preview override")]
+    [SerializeField] private GameObject scooterPreviewModelA;
+    [SerializeField] private GameObject scooterPreviewModelB;
+    [SerializeField] private bool useScenePreviewOverride = true;
 
     private GameObject _activePreview;
     private int _activePreviewModel = -1;
@@ -24,7 +30,8 @@ public sealed class ScooterSelectView : LobbyComponent
         if (previewRoot == null)
             Debug.LogWarning($"{nameof(LobbyController)} on {ownerName} has no scooter preview root assigned.", owner);
 
-        if ((motorPreview == null || motorPreview.Length == 0) &&
+        if ((previewEntries == null || previewEntries.Length == 0) &&
+            (motorPreview == null || motorPreview.Length == 0) &&
             (motorPlayable == null || motorPlayable.Length == 0))
         {
             Debug.LogError($"{nameof(LobbyController)} on {ownerName} has no scooter preview or playable prefabs assigned.", owner);
@@ -109,13 +116,17 @@ public sealed class ScooterSelectView : LobbyComponent
 
     private int GetModelOptionCount()
     {
+        int entryCount = previewEntries != null ? previewEntries.Length : 0;
         int previewCount = motorPreview != null ? motorPreview.Length : 0;
         int playableCount = motorPlayable != null ? motorPlayable.Length : 0;
-        return Mathf.Max(previewCount, playableCount);
+        return Mathf.Max(entryCount, previewCount, playableCount);
     }
 
     private void RefreshPreviewInstance(int model)
     {
+        if (TryRefreshScenePreviewOverride())
+            return;
+
         if (previewRoot == null)
             return;
 
@@ -124,20 +135,50 @@ public sealed class ScooterSelectView : LobbyComponent
 
         ClearPreviewInstance();
 
-        GameObject previewPrefab = ResolvePreviewPrefab(model);
+        ScooterPreviewEntry entry = ResolvePreviewEntry(model);
+        GameObject previewPrefab = ResolvePreviewPrefab(model, entry);
         if (previewPrefab == null)
             return;
 
         _activePreview = UnityEngine.Object.Instantiate(previewPrefab, previewRoot);
         _activePreview.name = previewPrefab.name;
-        _activePreview.transform.localPosition = Vector3.zero;
-        _activePreview.transform.localRotation = Quaternion.identity;
-        _activePreview.transform.localScale = Vector3.one;
+        _activePreview.transform.localPosition = entry != null ? entry.LocalPosition : Vector3.zero;
+        _activePreview.transform.localRotation = Quaternion.Euler(entry != null ? entry.LocalEulerAngles : Vector3.zero);
+        _activePreview.transform.localScale = entry != null ? entry.LocalScale : Vector3.one;
         _activePreviewModel = model;
     }
 
-    private GameObject ResolvePreviewPrefab(int model)
+    private bool TryRefreshScenePreviewOverride()
     {
+        if (!useScenePreviewOverride)
+            return false;
+
+        if (scooterPreviewModelA == null || scooterPreviewModelB == null)
+            return false;
+
+        int selectedIndex = Mathf.Clamp(currentModel, 0, 1);
+        scooterPreviewModelA.SetActive(selectedIndex == 0);
+        scooterPreviewModelB.SetActive(selectedIndex == 1);
+        return true;
+    }
+
+    private ScooterPreviewEntry ResolvePreviewEntry(int model)
+    {
+        if (previewEntries != null &&
+            model >= 0 &&
+            model < previewEntries.Length)
+        {
+            return previewEntries[model];
+        }
+
+        return null;
+    }
+
+    private GameObject ResolvePreviewPrefab(int model, ScooterPreviewEntry entry)
+    {
+        if (entry != null && entry.PreviewPrefab != null)
+            return entry.PreviewPrefab;
+
         if (motorPreview != null &&
             model >= 0 &&
             model < motorPreview.Length &&
@@ -165,4 +206,18 @@ public sealed class ScooterSelectView : LobbyComponent
         _activePreview = null;
         _activePreviewModel = -1;
     }
+}
+
+[Serializable]
+public sealed class ScooterPreviewEntry
+{
+    [SerializeField] private GameObject previewPrefab;
+    [SerializeField] private Vector3 localPosition;
+    [SerializeField] private Vector3 localEulerAngles;
+    [SerializeField] private Vector3 localScale = Vector3.one;
+
+    public GameObject PreviewPrefab => previewPrefab;
+    public Vector3 LocalPosition => localPosition;
+    public Vector3 LocalEulerAngles => localEulerAngles;
+    public Vector3 LocalScale => localScale == Vector3.zero ? Vector3.one : localScale;
 }

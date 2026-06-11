@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b0facb420c3ba142b7b3cc0350308e3, type: 3}
   m_Name: MenuSelectable_DisabledSlot
   m_EditorClassIdentifier: 
-  NormalColor: {r: 0.012, g: 0.018, b: 0.03, a: 0.82}
-  HighlightedColor: {r: 0.03, g: 0.14, b: 0.16, a: 0.9}
-  PressedColor: {r: 0.01, g: 0.08, b: 0.09, a: 0.9}
-  SelectedColor: {r: 0.03, g: 0.14, b: 0.16, a: 0.9}
-  DisabledColor: {r: 0.012, g: 0.018, b: 0.03, a: 0.35}
+  NormalColor: {r: 0.02, g: 0.04, b: 0.045, a: 0.62}
+  HighlightedColor: {r: 0.06, g: 0.11, b: 0.12, a: 0.72}
+  PressedColor: {r: 0.03, g: 0.07, b: 0.08, a: 0.72}
+  SelectedColor: {r: 0.06, g: 0.11, b: 0.12, a: 0.72}
+  DisabledColor: {r: 0.012, g: 0.018, b: 0.02, a: 0.48}
   ColorMultiplier: 1
   FadeDuration: 0.08

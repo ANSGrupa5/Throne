@@ -47,6 +47,42 @@ public abstract class MatchSettingsView : LobbyComponent
     protected bool CanEdit => _canEdit;
     protected virtual bool WantsEditAccessByDefault => false;
 
+    public void BindReferences(MatchSettingsPanelBinding binding)
+    {
+        if (binding == null)
+            return;
+
+        binding.ResolveReferences();
+
+        bool rebind = _settingsEventsBound;
+        if (rebind)
+            UnbindSettingsEvents();
+
+        if (binding.MinutesText != null)
+            minutesText = binding.MinutesText;
+        if (binding.SecondsText != null)
+            secondsText = binding.SecondsText;
+        if (binding.MinDownButton != null)
+            minDownButton = binding.MinDownButton;
+        if (binding.MinUpButton != null)
+            minUpButton = binding.MinUpButton;
+        if (binding.SecDownButton != null)
+            secDownButton = binding.SecDownButton;
+        if (binding.SecUpButton != null)
+            secUpButton = binding.SecUpButton;
+        if (binding.GameModeDropdown != null)
+            gameModeDropdown = binding.GameModeDropdown;
+        if (binding.SuddenDeathToggle != null)
+            suddenDeathToggle = binding.SuddenDeathToggle;
+        if (binding.TrailLengthText != null)
+            trailLengthText = binding.TrailLengthText;
+        if (binding.TrailLengthButton != null)
+            trailLengthButton = binding.TrailLengthButton;
+
+        if (rebind)
+            BindSettingsEvents();
+    }
+
     public void Initialize(LobbyState state, MatchRules rules, bool canEdit)
     {
         bool rebind = _settingsEventsBound;

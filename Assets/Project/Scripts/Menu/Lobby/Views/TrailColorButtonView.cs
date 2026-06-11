@@ -9,7 +9,7 @@ public sealed class TrailColorButtonView
     [SerializeField] private Image colorImage;
     [SerializeField] private GameObject selectionFrame;
     [SerializeField] private CanvasGroup availabilityGroup;
-    [SerializeField] private Color selectionFrameFill = new(0f, 0.996f, 0.925f, 1.0f);
+    [SerializeField] private Color selectionFrameFill = new(0f, 0.996f, 0.925f, 7.0f);
     [SerializeField] private Color selectionFrameOutline = new(0f, 0.996f, 0.925f, 1.0f);
     [SerializeField, Range(0f, 1f)] private float availableAlpha = 0.75f;
     [SerializeField, Range(0f, 1f)] private float selectedAlpha = 0.95f;
@@ -20,7 +20,7 @@ public sealed class TrailColorButtonView
     public void SetColor(Color color)
     {
         if (colorImage == null && button != null)
-            colorImage = button.GetComponent<Image>();
+            colorImage = ResolveColorImage(button);
 
         if (colorImage != null)
             colorImage.color = color;
@@ -29,18 +29,20 @@ public sealed class TrailColorButtonView
     public void Initialize()
     {
         if (button != null && colorImage == null)
-            colorImage = button.GetComponent<Image>();
+            colorImage = ResolveColorImage(button);
 
         if (selectionFrame != null && selectionFrame.TryGetComponent(out Graphic frameGraphic))
         {
             frameGraphic.raycastTarget = false;
-            frameGraphic.color = selectionFrameFill;
+            Color color = selectionFrameFill;
+            color.a = 7f;
+            frameGraphic.color = color;
         }
 
         if (selectionFrame != null && selectionFrame.TryGetComponent(out Outline frameOutline))
         {
             frameOutline.effectColor = selectionFrameOutline;
-            frameOutline.effectDistance = new Vector2(2f, -2f);
+            frameOutline.effectDistance = new Vector2(1f, -1f);
         }
     }
 
@@ -72,4 +74,31 @@ public sealed class TrailColorButtonView
         if (selectionFrame == null)
             Debug.LogError($"{nameof(LobbyController)} is missing trail color selection frame at index {index}.", owner);
     }
+
+    private static Image ResolveColorImage(Button sourceButton)
+    {
+        if (sourceButton == null)
+            return null;
+
+        Transform preview = sourceButton.transform.Find("ColorPreview");
+        if (preview != null && preview.TryGetComponent(out Image previewImage))
+            return previewImage;
+
+        return sourceButton.GetComponent<Image>();
+    }
+
+#if UNITY_EDITOR
+    internal void EditorBind(Button button, Image colorImage, GameObject selectionFrame, CanvasGroup availabilityGroup)
+    {
+        this.button = button;
+        this.colorImage = colorImage;
+        this.selectionFrame = selectionFrame;
+        this.availabilityGroup = availabilityGroup;
+        selectionFrameFill = new Color(0f, 0.996f, 0.925f, 7f);
+        selectionFrameOutline = new Color(0f, 0.996f, 0.925f, 1f);
+        availableAlpha = 1f;
+        selectedAlpha = 1f;
+        unavailableAlpha = 0.35f;
+    }
+#endif
 }

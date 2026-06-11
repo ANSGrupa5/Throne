@@ -16,6 +16,8 @@ public class LobbyController : MonoBehaviour
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
     [SerializeField] private TrailColorButtonView[] trailColorButtons;
+    [SerializeField] private TrailColorSelectionPanelBinding trailColorPanelBinding;
+    [SerializeField] private MatchSettingsPanelBinding matchSettingsPanelBinding;
 
     [Header("Scene Buttons")]
     [SerializeField] private Button startButton;
@@ -70,6 +72,7 @@ public class LobbyController : MonoBehaviour
     protected virtual void Awake()
     {
         configuredLobbyMode = LobbyLaunchContext.ConsumeMode(configuredLobbyMode);
+        ResolvePrefabBindings();
         ValidateSceneReferences();
 
         if (gameSettings != null)
@@ -670,6 +673,8 @@ public class LobbyController : MonoBehaviour
 
     private void ValidateSceneReferences()
     {
+        ResolvePrefabBindings();
+
         if (trailColorButtons == null || trailColorButtons.Length == 0)
             Debug.LogError($"{nameof(LobbyController)} on {name} has no trail color buttons assigned.", this);
         else
@@ -682,6 +687,53 @@ public class LobbyController : MonoBehaviour
             Debug.LogError($"{nameof(LobbyController)} on {name} has no start button assigned.", this);
         if (backButton == null)
             Debug.LogError($"{nameof(LobbyController)} on {name} has no back button assigned.", this);
+    }
+
+    private void ResolvePrefabBindings()
+    {
+        if ((trailColorButtons == null || trailColorButtons.Length == 0) && trailColorPanelBinding != null)
+            trailColorButtons = trailColorPanelBinding.TrailColorButtons;
+
+        if (matchSettingsPanelBinding == null)
+            matchSettingsPanelBinding = GetComponentInChildren<MatchSettingsPanelBinding>(true);
+
+        if (matchSettingsPanelBinding == null)
+        {
+            Transform bindingRoot = FindChildByName(transform, "MatchSettingsPanel");
+            if (bindingRoot == null)
+                bindingRoot = transform;
+
+            matchSettingsPanelBinding = bindingRoot.GetComponent<MatchSettingsPanelBinding>();
+            if (matchSettingsPanelBinding == null)
+                matchSettingsPanelBinding = bindingRoot.gameObject.AddComponent<MatchSettingsPanelBinding>();
+        }
+
+        matchSettingsPanelBinding.ResolveReferences();
+
+        if (matchSettings != null)
+            matchSettings.BindReferences(matchSettingsPanelBinding);
+        if (hostMatchSettings != null)
+            hostMatchSettings.BindReferences(matchSettingsPanelBinding);
+        if (clientMatchSettings != null)
+            clientMatchSettings.BindReferences(matchSettingsPanelBinding);
+    }
+
+    private static Transform FindChildByName(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        if (root.name == childName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform result = FindChildByName(root.GetChild(i), childName);
+            if (result != null)
+                return result;
+        }
+
+        return null;
     }
 }
 

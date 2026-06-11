@@ -54,9 +54,12 @@ public static class Milestone72LobbyVisualSplitPatcher
         "LobbyStatusTitle"
     };
 
-    [MenuItem("Throne/Tools/Migrations/Run Milestone 7.2 Lobby Visual Split")]
+    [MenuItem("Throne/Tools/Migrations/DO NOT RUN - Legacy Migration/Run Milestone 7.2 Lobby Visual Split")]
     public static void Run()
     {
+        if (!ConfirmLegacyRun("Milestone 7.2 Lobby Visual Split"))
+            return;
+
         EnsureRoleLobbyPrefabs();
         PatchVisualPresets();
         PatchCoreMenuPrefabs();
@@ -69,11 +72,27 @@ public static class Milestone72LobbyVisualSplitPatcher
         Debug.Log("[Milestone72LobbyVisualSplitPatcher] Patch complete.");
     }
 
+    private static bool ConfirmLegacyRun(string migrationName)
+    {
+        const string message = "This is a legacy one-shot lobby visual split migration. It can overwrite lobby root visuals and scene wiring. Use the Milestone 8.2 targeted repair/verifier instead unless you are intentionally replaying history.";
+        if (Application.isBatchMode)
+        {
+            Debug.LogError($"[{nameof(Milestone72LobbyVisualSplitPatcher)}] Blocked legacy migration '{migrationName}' in batch mode. {message}");
+            return false;
+        }
+
+        return EditorUtility.DisplayDialog(
+            $"Legacy migration: {migrationName}",
+            message,
+            "Run Legacy Migration",
+            "Cancel");
+    }
+
     [MenuItem("Throne/Tools/Migrations/Verify Milestone 7.2 Lobby Visual Split")]
     public static void Verify()
     {
-        VerifyLobbyRootPrefab(SingleplayerLobbyRootPrefabPath, "SOLO RUN SETUP", LobbyMode.Singleplayer);
-        VerifyLobbyRootPrefab(MultiplayerLobbyRootPrefabPath, "NETWORK LOBBY", LobbyMode.MultiplayerClient);
+        VerifyLobbyRootPrefab(SingleplayerLobbyRootPrefabPath, "SINGLEPLAYER", LobbyMode.Singleplayer);
+        VerifyLobbyRootPrefab(MultiplayerLobbyRootPrefabPath, "MULTIPLAYER", LobbyMode.MultiplayerClient);
         VerifyLobbyScene();
         VerifyGameOverScene();
         VerifyCoreMenuPrefabs();
@@ -163,7 +182,7 @@ public static class Milestone72LobbyVisualSplitPatcher
 
     private static void PatchLobbyTexts(GameObject root, bool multiplayer)
     {
-        SetText(root, "LobbyText (TMP)", multiplayer ? "NETWORK LOBBY" : "SOLO RUN SETUP");
+        SetText(root, "LobbyText (TMP)", multiplayer ? "MULTIPLAYER" : "SINGLEPLAYER");
         SetText(root, "PlayersText (TMP)", multiplayer ? "PLAYERS" : "BOTS");
         SetText(root, "TitleText (TMP)", "THRONE");
     }
@@ -554,9 +573,9 @@ public static class Milestone72LobbyVisualSplitPatcher
     private static void PatchGameOverScene()
     {
         Scene scene = EditorSceneManager.OpenScene(GameOverScenePath, OpenSceneMode.Single);
-        GameOverController controller = Object.FindFirstObjectByType<GameOverController>(FindObjectsInactive.Include);
+        MatchResultsController controller = Object.FindFirstObjectByType<MatchResultsController>(FindObjectsInactive.Include);
         if (controller == null)
-            throw new InvalidOperationException("GameOver scene is missing GameOverController.");
+            throw new InvalidOperationException("GameOver scene is missing MatchResultsController.");
 
         Transform panel = FindDeepChild(controller.transform, "GameOverPanel") ?? controller.transform;
         Button mainMenuButton = FindButtonByName(panel, "ReturnToMainMenuButton") ?? FindButtonByName(panel, "BackButton");
@@ -644,9 +663,9 @@ public static class Milestone72LobbyVisualSplitPatcher
     private static void VerifyGameOverScene()
     {
         EditorSceneManager.OpenScene(GameOverScenePath, OpenSceneMode.Single);
-        GameOverController controller = Object.FindFirstObjectByType<GameOverController>(FindObjectsInactive.Include);
+        MatchResultsController controller = Object.FindFirstObjectByType<MatchResultsController>(FindObjectsInactive.Include);
         if (controller == null)
-            throw new InvalidOperationException("GameOver scene is missing GameOverController.");
+            throw new InvalidOperationException("GameOver scene is missing MatchResultsController.");
 
         VerifyButtonPersistentCall("ReturnToMainMenuButton", "ReturnToMainMenu");
         VerifyButtonPersistentCall("ReturnToLobbyButton", "ReturnToLobby");

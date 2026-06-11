@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b0facb420c3ba142b7b3cc0350308e3, type: 3}
   m_Name: MenuSelectable_Danger
   m_EditorClassIdentifier: 
-  NormalColor: {r: 0.95, g: 0.18, b: 0.22, a: 1}
-  HighlightedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
-  PressedColor: {r: 0.62, g: 0.05, b: 0.08, a: 1}
-  SelectedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
-  DisabledColor: {r: 0.95, g: 0.18, b: 0.22, a: 0.35}
+  NormalColor: {r: 0.24, g: 0.04, b: 0.08, a: 0.92}
+  HighlightedColor: {r: 0.88, g: 0.18, b: 0.28, a: 1}
+  PressedColor: {r: 0.62, g: 0.08, b: 0.14, a: 1}
+  SelectedColor: {r: 0.7, g: 0.12, b: 0.18, a: 1}
+  DisabledColor: {r: 0.08, g: 0.025, b: 0.03, a: 0.5}
   ColorMultiplier: 1
   FadeDuration: 0.08

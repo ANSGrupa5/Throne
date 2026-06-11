@@ -1,33 +1,58 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Selectable))]
 [AddComponentMenu("Throne/UI/Menu Selectable")]
-public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelectHandler, IPointerDownHandler, ISubmitHandler
+public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelectHandler, IPointerDownHandler, IPointerUpHandler, ISubmitHandler
 {
+    [Header("Target")]
     [SerializeField] private Selectable selectable;
     [SerializeField] private Graphic targetGraphicOverride;
+
+    [Header("Presets")]
     [SerializeField] private MenuSelectableVisualPreset visualPreset;
     [SerializeField] private MenuSelectableAudioPreset audioPreset;
+
+    [Header("Behavior")]
+    [SerializeField] private MenuSelectionPersistence selectionPersistence = MenuSelectionPersistence.None;
+    [SerializeField] private bool clearEventSystemSelectionOnPointerUp = true;
     [SerializeField] private bool useColorTint = true;
+
+    [Header("Audio")]
     [SerializeField] private bool playHoverSound = true;
     [SerializeField] private bool playClickSound = true;
 
     private int _lastHoverFrame = -1;
     private int _lastClickFrame = -1;
+    private Coroutine _clearSelectionRoutine;
+
+    public MenuSelectionPersistence SelectionPersistence => selectionPersistence;
 
     private void Awake()
     {
         CacheSelectable();
         ApplyVisualPreset();
+        BindSelectionCallbacks();
     }
 
     private void OnEnable()
     {
         CacheSelectable();
         ApplyVisualPreset();
+        BindSelectionCallbacks();
+    }
+
+    private void OnDisable()
+    {
+        UnbindSelectionCallbacks();
+        if (_clearSelectionRoutine != null)
+        {
+            StopCoroutine(_clearSelectionRoutine);
+            _clearSelectionRoutine = null;
+        }
     }
 
     private void Reset()
@@ -61,9 +86,21 @@ public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelec
         TryPlayClickSound();
     }
 
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        if (selectionPersistence == MenuSelectionPersistence.None && clearEventSystemSelectionOnPointerUp)
+            ClearSelectionAtEndOfFrame();
+    }
+
     public void OnSubmit(BaseEventData eventData)
     {
         TryPlayClickSound();
+
+        if (selectionPersistence == MenuSelectionPersistence.None && clearEventSystemSelectionOnPointerUp)
+            ClearSelectionAtEndOfFrame();
     }
 
     private void CacheSelectable()
@@ -125,5 +162,48 @@ public sealed class MenuSelectable : MonoBehaviour, IPointerEnterHandler, ISelec
 
         _lastClickFrame = Time.frameCount;
         PersistentUiAudioPlayer.PlayOneShot(clip, audioPreset != null ? audioPreset.ClickVolume : 1f);
+    }
+
+    private void BindSelectionCallbacks()
+    {
+        if (selectable is TMPro.TMP_Dropdown dropdown)
+        {
+            dropdown.onValueChanged.RemoveListener(HandleDropdownValueChanged);
+            dropdown.onValueChanged.AddListener(HandleDropdownValueChanged);
+        }
+    }
+
+    private void UnbindSelectionCallbacks()
+    {
+        if (selectable is TMPro.TMP_Dropdown dropdown)
+            dropdown.onValueChanged.RemoveListener(HandleDropdownValueChanged);
+    }
+
+    private void HandleDropdownValueChanged(int _)
+    {
+        if (selectionPersistence == MenuSelectionPersistence.WhileInteracting)
+            ClearSelectionAtEndOfFrame();
+    }
+
+    private void ClearSelectionAtEndOfFrame()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (_clearSelectionRoutine != null)
+            StopCoroutine(_clearSelectionRoutine);
+
+        _clearSelectionRoutine = StartCoroutine(ClearSelectionRoutine());
+    }
+
+    private IEnumerator ClearSelectionRoutine()
+    {
+        yield return null;
+
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem != null && eventSystem.currentSelectedGameObject == gameObject)
+            eventSystem.SetSelectedGameObject(null);
+
+        _clearSelectionRoutine = null;
     }
 }
