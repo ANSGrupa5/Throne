@@ -342,11 +342,11 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0.996, b: 0.925, a: 1}
-    m_HighlightedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
-    m_PressedColor: {r: 0, g: 0.64, b: 0.72, a: 1}
-    m_SelectedColor: {r: 0.9, g: 1, b: 0.98, a: 1}
-    m_DisabledColor: {r: 0, g: 0.996, b: 0.925, a: 0.5}
+    m_NormalColor: {r: 0.11764706, g: 0.8784314, b: 0.80784315, a: 1}
+    m_HighlightedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
+    m_PressedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
+    m_SelectedColor: {r: 0, g: 0.99607843, b: 0.9254902, a: 1}
+    m_DisabledColor: {r: 0, g: 0.996, b: 0.925, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
@@ -537,11 +537,11 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.95, g: 0.18, b: 0.22, a: 1}
-    m_HighlightedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
-    m_PressedColor: {r: 0.62, g: 0.05, b: 0.08, a: 1}
-    m_SelectedColor: {r: 1, g: 0.35, b: 0.32, a: 1}
-    m_DisabledColor: {r: 0.95, g: 0.18, b: 0.22, a: 0.35}
+    m_NormalColor: {r: 0.012, g: 0.018, b: 0.03, a: 0.82}
+    m_HighlightedColor: {r: 0.03, g: 0.14, b: 0.16, a: 0.9}
+    m_PressedColor: {r: 0.01, g: 0.08, b: 0.09, a: 0.9}
+    m_SelectedColor: {r: 0.03, g: 0.14, b: 0.16, a: 0.9}
+    m_DisabledColor: {r: 0.012, g: 0.018, b: 0.03, a: 0.35}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
   m_SpriteState:
@@ -574,7 +574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MenuSelectable
   selectable: {fileID: 642019904559650212}
   targetGraphicOverride: {fileID: 4073404706809674653}
-  visualPreset: {fileID: 11400000, guid: c9a02154199b4140a73fee70e3351bdb, type: 2}
+  visualPreset: {fileID: 11400000, guid: b00bee63c1534bf791700a3980ba9e69, type: 2}
   audioPreset: {fileID: 11400000, guid: 7a5d791580c74d5cb5773c0bfb2c4260, type: 2}
   useColorTint: 1
   playHoverSound: 1

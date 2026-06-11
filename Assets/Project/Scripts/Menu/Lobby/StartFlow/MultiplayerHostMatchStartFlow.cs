@@ -11,6 +11,7 @@ public sealed class MultiplayerHostMatchStartFlow : IMatchStartFlow
 
     public bool CanStart(LobbyState state)
     {
+        return true; ;
         MultiplayerRuntimeBootstrap bootstrap = MultiplayerRuntimeBootstrap.Instance;
         return state != null &&
                bootstrap != null &&
