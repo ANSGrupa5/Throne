@@ -25,6 +25,12 @@ public class VehicleCameraController : MonoBehaviour
             label = "TopDown",
             localPosition    = new Vector3(0f, 14f, -3f),
             localEulerAngles = new Vector3(65f, 0f, 0f)
+        },
+        new CameraPreset
+        {
+            label = "Chase",
+            localPosition    = new Vector3(0f, 10f, -12f),
+            localEulerAngles = new Vector3(25f, 0f, 0f)
         }
     };
 

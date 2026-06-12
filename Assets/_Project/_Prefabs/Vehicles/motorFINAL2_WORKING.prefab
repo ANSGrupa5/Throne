@@ -301,7 +301,7 @@ GameObject:
   - component: {fileID: 3780930728728040342}
   - component: {fileID: 8459290600318073669}
   - component: {fileID: 2542742008586709182}
-  - component: {fileID: 6846199149765510444}
+  - component: {fileID: 8182914507186362344}
   - component: {fileID: 8173538643334265692}
   - component: {fileID: 772959941781675302}
   - component: {fileID: 4872575697609542131}
@@ -379,7 +379,7 @@ MonoBehaviour:
   leanSmooth: 2
   boostSpeedMultiplier: 1.35
   boostAccelerationMultiplier: 1.2
---- !u!114 &6846199149765510444
+--- !u!114 &8182914507186362344
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -395,11 +395,14 @@ MonoBehaviour:
   transitionSpeed: 6
   presets:
   - label: Follow
-    localPosition: {x: 0, y: 5.5, z: 0.5}
-    localEulerAngles: {x: 20, y: 0, z: 0}
+    localPosition: {x: 0, y: 5.5, z: 0}
+    localEulerAngles: {x: 15, y: 0, z: 0}
   - label: TopDown
-    localPosition: {x: 0, y: 20, z: -3}
+    localPosition: {x: 0, y: 14, z: -3}
     localEulerAngles: {x: 65, y: 0, z: 0}
+  - label: Chase
+    localPosition: {x: 0, y: 10, z: -12}
+    localEulerAngles: {x: 25, y: 0, z: 0}
 --- !u!114 &8173538643334265692
 MonoBehaviour:
   m_ObjectHideFlags: 0
