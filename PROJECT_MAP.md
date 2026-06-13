@@ -37,25 +37,27 @@ MultiplayerMatchState.cs
 Assets/_Project/_Features/Vehicle
 Vehicle prefabs and movement/input scripts.
 Known relevant files:
-VehicleController.cs
-PlayerVehicleInput.cs
 BotVehicleInput.cs
-IVehicleInput.cs
+BotWaypointNode.cs
+DistanceTracker.cs
 IVehicleCommandSource.cs
+IVehicleInput.cs
 Movement.cs
+NetworkPlayerVehicleInput.cs
+NetworkVehicleLife.cs
+PlayerVehicleInput.cs
 RotatePreview.cs
 VehicleCameraController.cs
-DistanceTracker.cs
+VehicleColorApplier.cs
+VehicleController.cs
+VehicleLife.cs
 WheelVisualSync.cs
-BotWaypointNode.cs
-Assets/_Project/_Features/TrailSystem
-Trail, death, and vehicle life systems.
+
+Assets/_Project/_Features/Vehicle/Scripts/TrailSystem
+Trail system scripts.
 Known relevant files:
 TrailEmitter.cs
 TrailSegment.cs
-VehicleLife.cs
-VehicleDeathSequence.cs
-VehicleColorApplier.cs
 Assets/_Project/_Features/UI
 Menu, lobby, settings, game-over UI scripts and prefabs.
 Known relevant files:
@@ -75,9 +77,16 @@ AreaBoundaryScript.cs
 Assets/_Project/_Debug
 Debugging utilities.
 Known relevant files:
+
+Assets/_Project/_Debug/Input
 InputDiagnostic.cs
+
+Assets/_Project/_Debug/Vehicle
 VehicleGroundHitDebug.cs
 VehicleTelemetryDebug.cs
+
+Assets/_Project/_Debug/_Editor
+DumpSelectedGameObjectFull.cs
 Networking assets
 Assets/_Project/Resources/Networking
 Contains networking prefabs/assets.
