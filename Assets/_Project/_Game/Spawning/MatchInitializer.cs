@@ -78,10 +78,11 @@ public class MatchInitializer : MonoBehaviour
 
     private IEnumerator InitializeRoutine()
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            yield break;
-
         GameSessionRuntime session = ResolveSession();
+        bool isMultiplayerSession = session != null && !session.isSingleplayer;
+
+        if (isMultiplayerSession && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+            yield break;
 
         if (!TryValidateSession(session, out string validationError))
         {
@@ -96,7 +97,7 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
-        List<NetworkConnection> players = GetConnectedPlayers();
+        List<NetworkConnection> players = isMultiplayerSession ? GetConnectedPlayers() : new List<NetworkConnection>();
         int totalHumanPlayers = Mathf.Max(1, players.Count);
         int totalBots = 0;
         EnsureBotLooks(session);
@@ -129,7 +130,8 @@ public class MatchInitializer : MonoBehaviour
             SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
             index++;
             StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
-            DistanceTracker.Instance.GetTarget();
+            //Temporary disable: DistanceTracker uses string to find player, unsafe.
+            //DistanceTracker.Instance.GetTarget();
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
@@ -147,7 +149,7 @@ public class MatchInitializer : MonoBehaviour
         // Wait one frame to ensure all Awake/Start run
         yield return null;
 
-        if (MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
+        if (isMultiplayerSession && MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
         {
             yield return StartCoroutine(MultiplayerSessionDriver.Instance.RunMatchStartSequence(
                 preMatchCountdownSeconds,
@@ -180,6 +182,14 @@ public class MatchInitializer : MonoBehaviour
         colorApplier.SetColor(trailColor);
 
         VehicleLife life = go.GetComponent<VehicleLife>();
+        if (life == null)
+        {
+            Debug.LogError($"Match initialization aborted: spawned prefab '{prefab.name}' has no VehicleLife component.");
+            Destroy(go);
+            _spawned.Remove(go);
+            return;
+        }
+
         life.ConfigureSpawn(pos, rot);
         life.ConfigureIdentity(displayName, ownerId);
         session.GetOrCreateStats(ownerId, displayName, trailColor);
@@ -195,7 +205,7 @@ public class MatchInitializer : MonoBehaviour
         }
 
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        if (networkObject != null && InstanceFinder.IsServerStarted)
+        if (networkObject != null && session != null && !session.isSingleplayer && InstanceFinder.IsServerStarted)
             InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
     }
 
@@ -301,7 +311,7 @@ public class MatchInitializer : MonoBehaviour
 
         Debug.LogWarning("No runtime session found. Falling back to default ScriptableObject assets.");
         GameSessionRuntime fallbackSession = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
-        if (InstanceFinder.IsServerStarted && MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
             fallbackSession.isSingleplayer = false;
 
         GameSessionBootstrap.SetSession(fallbackSession);

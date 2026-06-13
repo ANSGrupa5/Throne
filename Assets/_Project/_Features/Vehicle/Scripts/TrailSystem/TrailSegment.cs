@@ -54,8 +54,11 @@ public class TrailSegment : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            return;
+        if (IsMultiplayerSession())
+        {
+            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+                return;
+        }
 
         if (_ownerLife == null || other == null)
             return;
@@ -82,5 +85,11 @@ public class TrailSegment : MonoBehaviour
             return other.attachedRigidbody.GetComponent<VehicleLife>();
 
         return null;
+    }
+
+    private static bool IsMultiplayerSession()
+    {
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        return session != null && !session.isSingleplayer;
     }
 }

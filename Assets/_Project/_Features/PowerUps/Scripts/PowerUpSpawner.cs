@@ -26,13 +26,19 @@ public class PowerUpSpawner : MonoBehaviour
 
     private void Start()
     {
-        if (InstanceFinder.IsClientStarted || InstanceFinder.IsServerStarted)
+        if (IsMultiplayerSession() && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
         {
             enabled = false;
             return;
         }
 
         _nextSpawnTime = Time.time + initialSpawnDelay;
+    }
+
+    private static bool IsMultiplayerSession()
+    {
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        return session != null && !session.isSingleplayer;
     }
 
     private void Update()

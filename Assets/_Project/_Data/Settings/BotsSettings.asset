@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 569c4cb4c7f83cd41adad8b0931562c5, type: 3}
   m_Name: BotsSettings
   m_EditorClassIdentifier: Assembly-CSharp::BotsSettings
+  defaultBotPrefab: {fileID: 3746183853180310409, guid: eef41e1d07e3ac64188384502bbab4d2, type: 3}
   bots:
   - prefab: {fileID: 3746183853180310409, guid: c674e6d67cd04a14b9a7e430237c8df3, type: 3}
     count: 3

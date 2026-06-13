@@ -11,7 +11,6 @@ public enum PowerUpType
 public class PowerUp : MonoBehaviour
 {
     public PowerUpType powerUpType;
-    private bool collected = false;
 
     [Header("Speed Up Settings")]
     [SerializeField] private float speedMultiplier = 1.5f;
@@ -26,15 +25,14 @@ public class PowerUp : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            return;
+        if (IsMultiplayerSession())
+        {
+            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+                return;
+        }
 
         // Sprawdzamy czy pobrany został VehicleLife z collidera lub Rigidbody
-        VehicleLife vehicleLife = other.GetComponentInParent<VehicleLife>();
-        if (vehicleLife == null && other.attachedRigidbody != null)
-        {
-            vehicleLife = other.attachedRigidbody.GetComponent<VehicleLife>();
-        }
+        VehicleLife vehicleLife = ResolveVehicleLife(other);
 
         if (vehicleLife == null || vehicleLife.IsDead)
             return;
@@ -84,5 +82,23 @@ public class PowerUp : MonoBehaviour
                 collectorLife.GrantInvulnerability(invincibilityDuration);
                 break;
         }
+    }
+
+    private VehicleLife ResolveVehicleLife(Collider other)
+    {
+        VehicleLife vehicleLife = other.GetComponentInParent<VehicleLife>();
+        if (vehicleLife != null)
+            return vehicleLife;
+
+        if (other.attachedRigidbody != null)
+            return other.attachedRigidbody.GetComponent<VehicleLife>();
+
+        return null;
+    }
+
+    private static bool IsMultiplayerSession()
+    {
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        return session != null && !session.isSingleplayer;
     }
 }

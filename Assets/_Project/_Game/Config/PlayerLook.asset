@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6738cdae4e014d140a6c57d8ddfa6fa9, type: 3}
   m_Name: PlayerLook
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLook
-  playerPrefab: {fileID: 6119533628748497837, guid: c4599bf534bedef4bbb6fe60049e2358, type: 3}
+  playerPrefab: {fileID: 3746183853180310409, guid: 3ea10f934d1892d48a55b911b969bc99, type: 3}
   displayName: Player
+  ownerId: player_1
+  trailColor: {r: 1, g: 1, b: 1, a: 1}

@@ -75,8 +75,11 @@ public class EndGameController : MonoBehaviour
 
     private void HandleTimerEnded()
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            return;
+        if (IsMultiplayerSession())
+        {
+            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+                return;
+        }
 
         Debug.Log("[EndGameController] Timer ended!");
         TryBindSession();
@@ -114,8 +117,11 @@ public class EndGameController : MonoBehaviour
 
     private void HandleVehicleDied(VehicleLife victim, GameObject killer)
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            return;
+        if (IsMultiplayerSession())
+        {
+            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+                return;
+        }
 
         if (victim == null)
             return;
@@ -176,7 +182,7 @@ public class EndGameController : MonoBehaviour
         if (gameTimer != null)
             gameTimer.StopTimer();
 
-        if ((InstanceFinder.IsServerStarted || InstanceFinder.IsClientStarted) && MultiplayerSessionDriver.Instance != null)
+        if (IsMultiplayerSession() && (InstanceFinder.IsServerStarted || InstanceFinder.IsClientStarted) && MultiplayerSessionDriver.Instance != null)
         {
             MultiplayerSessionDriver.Instance.BeginNetworkEndSequence(reason, slowDownDuration, postFreezeDelay, finalTimescale, gameOverSceneName);
             return;
@@ -255,5 +261,11 @@ public class EndGameController : MonoBehaviour
             return applier.GetColor();
 
         return Color.white;
+    }
+
+    private static bool IsMultiplayerSession()
+    {
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        return session != null && !session.isSingleplayer;
     }
 }

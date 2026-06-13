@@ -1,11 +1,9 @@
 using System.Collections;
 using System;
-using FishNet;
-using FishNet.Object;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class VehicleLife : NetworkBehaviour
+public class VehicleLife : MonoBehaviour
 {
     public static event Action<VehicleLife, GameObject> AnyVehicleDied;
 
@@ -23,12 +21,15 @@ public class VehicleLife : NetworkBehaviour
     private bool _isInvulnerable;
     private string _displayName;
     private string _ownerId;
+    private Func<bool> _canApplyGameplay;
 
     public bool IsDead => _isDead;
     public bool CanBeKilled => !_isDead && !_isInvulnerable;
     public GameObject LastKiller { get; private set; }
     public string DisplayName => string.IsNullOrWhiteSpace(_displayName) ? gameObject.name : _displayName;
     public string OwnerId => string.IsNullOrWhiteSpace(_ownerId) ? DisplayName : _ownerId;
+    public event Action<VehicleLife, GameObject> Died;
+    public event Action<VehicleLife> Respawned;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class VehicleLife : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!CanApplyAuthoritativeGameplay())
+        if (!CanApplyGameplay())
             return;
 
         if (!CanBeKilled)
@@ -69,16 +70,13 @@ public class VehicleLife : NetworkBehaviour
 
     public bool Kill(GameObject killer)
     {
-        if (!CanApplyAuthoritativeGameplay())
+        if (!CanApplyGameplay())
             return false;
 
         if (!CanBeKilled)
             return false;
 
         ApplyDeath(killer, invokeEvent: true);
-        if (IsSpawned && IsServerInitialized)
-            RpcApplyDeath();
-
         return true;
     }
 
@@ -91,17 +89,15 @@ public class VehicleLife : NetworkBehaviour
 
     public void Respawn()
     {
-        if (!CanApplyAuthoritativeGameplay())
+        if (!CanApplyGameplay())
             return;
 
-        ApplyRespawn();
-        if (IsSpawned && IsServerInitialized)
-            RpcApplyRespawn();
+        ApplyRespawn(invokeEvent: true);
     }
 
     public void GrantInvulnerability(float duration)
     {
-        if (!CanApplyAuthoritativeGameplay())
+        if (!CanApplyGameplay())
             return;
 
         _isInvulnerable = true;
@@ -118,22 +114,19 @@ public class VehicleLife : NetworkBehaviour
         _isInvulnerable = false;
     }
 
-    [ObserversRpc]
-    private void RpcApplyDeath()
+    public void SetGameplayAuthority(Func<bool> canApplyGameplay)
     {
-        if (IsServerInitialized)
-            return;
-
-        ApplyDeath(null, invokeEvent: true);
+        _canApplyGameplay = canApplyGameplay;
     }
 
-    [ObserversRpc]
-    private void RpcApplyRespawn()
+    public void ApplyReplicatedDeath(GameObject killer)
     {
-        if (IsServerInitialized)
-            return;
+        ApplyDeath(killer, invokeEvent: true);
+    }
 
-        ApplyRespawn();
+    public void ApplyReplicatedRespawn()
+    {
+        ApplyRespawn(invokeEvent: true);
     }
 
     private void ApplyDeath(GameObject killer, bool invokeEvent)
@@ -143,10 +136,13 @@ public class VehicleLife : NetworkBehaviour
         FreezePhysicsForDeath();
         SetGameplayActive(false);
         if (invokeEvent)
+        {
+            Died?.Invoke(this, killer);
             AnyVehicleDied?.Invoke(this, killer);
+        }
     }
 
-    private void ApplyRespawn()
+    private void ApplyRespawn(bool invokeEvent)
     {
         transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
         SetVisibility(true);
@@ -154,9 +150,9 @@ public class VehicleLife : NetworkBehaviour
 
         if (_rb != null)
         {
+            _rb.isKinematic = false;
             _rb.linearVelocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
-            _rb.isKinematic = false;
             _rb.detectCollisions = true;
         }
 
@@ -171,14 +167,14 @@ public class VehicleLife : NetworkBehaviour
             _invulnerabilityCoroutine = StartCoroutine(ClearInvulnerabilityAfterDelay(respawnProtectionTime));
         else
             _isInvulnerable = false;
+
+        if (invokeEvent)
+            Respawned?.Invoke(this);
     }
 
-    private bool CanApplyAuthoritativeGameplay()
+    private bool CanApplyGameplay()
     {
-        if (!InstanceFinder.IsServerStarted && !InstanceFinder.IsClientStarted)
-            return true;
-
-        return IsServerInitialized;
+        return _canApplyGameplay == null || _canApplyGameplay();
     }
 
     private void FreezePhysicsForDeath()

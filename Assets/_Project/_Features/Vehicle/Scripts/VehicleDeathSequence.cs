@@ -67,7 +67,7 @@ public class VehicleDeathSequence : MonoBehaviour
         }
         else
         {
-            if (life != null && (!InstanceFinder.IsServerStarted || life.IsServerInitialized))
+            if (life != null && CanRespawnRuntimeLife())
                 life.Respawn();
 
             if (cameraController != null)
@@ -80,6 +80,21 @@ public class VehicleDeathSequence : MonoBehaviour
         _isHandlingDeath = false;
     }
 
+    private bool CanRespawnRuntimeLife()
+    {
+        if (!IsMultiplayerSession())
+            return true;
+
+        NetworkVehicleLife networkLife = life != null ? life.GetComponent<NetworkVehicleLife>() : null;
+        if (networkLife == null)
+            return true;
+
+        if (!InstanceFinder.IsServerStarted)
+            return true;
+
+        return networkLife.IsServerInitialized;
+    }
+
     private Transform ResolveSpectatorTarget()
     {
         if (spectatorCameraTarget != null)
@@ -90,5 +105,11 @@ public class VehicleDeathSequence : MonoBehaviour
             return sceneSpectator.transform;
 
         return null;
+    }
+
+    private static bool IsMultiplayerSession()
+    {
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        return session != null && !session.isSingleplayer;
     }
 }
