@@ -10,6 +10,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     private const string MainMenuSceneName = "MainMenu";
     private const string MultiplayerScenePrefix = "Multiplayer";
     private const string PrefabCollectionResourcePath = "Networking/DefaultPrefabObjects";
+    private const string EditorPrefabCollectionAssetPath = "Assets/DefaultPrefabObjects.asset";
     private const string SessionDriverResourcePath = "Networking/MultiplayerSessionDriver";
 
     private static MultiplayerRuntimeBootstrap _instance;
@@ -263,12 +264,12 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (_networkManager != null)
             return;
 
-        _prefabCollection = Resources.Load<DefaultPrefabObjects>(PrefabCollectionResourcePath);
+        _prefabCollection = LoadPrefabCollection();
         _sessionDriverPrefab = Resources.Load<GameObject>(SessionDriverResourcePath);
 
         if (_prefabCollection == null)
         {
-            Debug.LogError($"Missing FishNet prefab collection at Resources/{PrefabCollectionResourcePath}.");
+            Debug.LogError($"Missing FishNet prefab collection. Expected Resources/{PrefabCollectionResourcePath}.");
             return;
         }
 
@@ -280,13 +281,39 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
         GameObject managerObject = new("FishNetRuntime");
         managerObject.SetActive(false);
-        DontDestroyOnLoad(managerObject);
 
         _networkManager = managerObject.AddComponent<NetworkManager>();
-        managerObject.AddComponent<Tugboat>();
         _networkManager.SpawnablePrefabs = _prefabCollection;
+        managerObject.AddComponent<Tugboat>();
 
+        if (_networkManager.SpawnablePrefabs == null)
+        {
+            Debug.LogError("FishNetRuntime NetworkManager was created without SpawnablePrefabs assigned.");
+            Destroy(managerObject);
+            _networkManager = null;
+            return;
+        }
+
+        DontDestroyOnLoad(managerObject);
         managerObject.SetActive(true);
+    }
+
+    private DefaultPrefabObjects LoadPrefabCollection()
+    {
+        DefaultPrefabObjects prefabCollection = Resources.Load<DefaultPrefabObjects>(PrefabCollectionResourcePath);
+        if (prefabCollection != null)
+            return prefabCollection;
+
+#if UNITY_EDITOR
+        prefabCollection = UnityEditor.AssetDatabase.LoadAssetAtPath<DefaultPrefabObjects>(EditorPrefabCollectionAssetPath);
+        if (prefabCollection != null)
+        {
+            Debug.LogWarning($"FishNet prefab collection was not found at Resources/{PrefabCollectionResourcePath}; using editor asset '{EditorPrefabCollectionAssetPath}'.");
+            return prefabCollection;
+        }
+#endif
+
+        return null;
     }
 
     private void EnsureSessionDriverSpawned()

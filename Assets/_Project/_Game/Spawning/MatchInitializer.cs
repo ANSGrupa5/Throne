@@ -300,7 +300,12 @@ public class MatchInitializer : MonoBehaviour
             return activeSession;
 
         Debug.LogWarning("No runtime session found. Falling back to default ScriptableObject assets.");
-        return GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
+        GameSessionRuntime fallbackSession = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
+        if (InstanceFinder.IsServerStarted && MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+            fallbackSession.isSingleplayer = false;
+
+        GameSessionBootstrap.SetSession(fallbackSession);
+        return fallbackSession;
     }
 
     private List<SpawnSpot> SelectSpawnSpots(List<SpawnSpot> available, int count)
