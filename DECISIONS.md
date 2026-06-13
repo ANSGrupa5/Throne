@@ -1,47 +1,21 @@
-DECISIONS.md
-Throne Decision Log
-
-Keep entries short.
-
-Template
-YYYY-MM-DD — Decision title
+## 2026-06-13 — Move from AI stack setup to multiplayer inspection
 
 Decision:
-
-...
-
-Reason:
-
-...
-
-Consequences:
-
-...
-
-Affected files/subsystems:
-
-...
-2026-06-13 — Establish AI-assisted workflow before multiplayer refactor
-
-Decision:
-
-Add root workflow files before starting FishNet multiplayer changes.
+- Treat the AI workflow files and initial `PROJECT_MAP.md` as usable enough for the first FishNet multiplayer inspection pass.
+- Run Codex in inspection-only mode before implementation.
 
 Reason:
-
-The project has risky Unity scenes, prefabs, serialized assets, and mixed singleplayer/multiplayer logic.
-Codex needs bounded task packets and clear no-touch rules.
+- `PROJECT_MAP.md` identifies the likely gameplay, spawning, multiplayer, vehicle, UI, scene, prefab, and plugin areas.
+- `PACKET.md` gives Codex a bounded no-edit task.
+- `TASK.md` needed to move from Goal 1 to Goal 2.
 
 Consequences:
-
-First task is documentation and repo map.
-Multiplayer refactoring waits until the map is reviewed.
+- Codex may inspect selected C# files.
+- Codex must not edit scenes, prefabs, assets, `.meta`, packages, ProjectSettings, or FishNet vendor files.
+- First implementation patch will be created only after reviewing Codex’s inspection report.
 
 Affected files/subsystems:
-
-AGENTS.md
-WORKFLOW.md
-PROJECT_MAP.md
-DECISIONS.md
-TASK.md
-.aiderignore
+- `TASK.md`
+- `PACKET.md`
+- `PROJECT_MAP.md`
+- FishNet multiplayer planning

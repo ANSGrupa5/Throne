@@ -113,8 +113,3 @@ Logs/
 UserSettings/
 .vs/
 generated *.csproj, *.sln, *.slnx, *.lscache
-Current known priority
-Finish AI stack files.
-Use Aider to improve this map from actual file summaries.
-Review map.
-Only then plan FishNet multiplayer work.
