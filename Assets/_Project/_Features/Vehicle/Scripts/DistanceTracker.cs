@@ -57,7 +57,7 @@ public class DistanceTracker : MonoBehaviour
         if( distance < 25f) //don't count the distance between death position and respawn position
             totalDistance += distance;
         lastPosition = target.position;
-        Debug.Log("Updated distance... total distance: " + totalDistance);
+        //Debug.Log("Updated distance... total distance: " + totalDistance);
     }
 
     public float GetTotalDistance()

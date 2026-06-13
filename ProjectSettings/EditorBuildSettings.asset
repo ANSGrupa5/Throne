@@ -27,7 +27,7 @@ EditorBuildSettings:
     path: Assets/_Project/_Scenes/Arenas/Neon City XL.unity
     guid: a30e253b0d99ca54fafe1f1801376c48
   - enabled: 1
-    path: Assets/_Project/_Scenes/Network/multi Neon City XL.unity
+    path: Assets/_Project/_Scenes/Arenas/MultiplayerNeon City XL.unity
     guid: e98ec61fd3ffd1549af1e5bb258f612f
   - enabled: 1
     path: Assets/_Project/_Scenes/MultiplayerLobby.unity
