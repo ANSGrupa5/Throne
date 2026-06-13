@@ -41,7 +41,6 @@ public class SingleplayerLobby : MonoBehaviour
     private int trailColor;
     private string gameMode;
     private bool suddenDeath;
-    //private int trailLength; // ToDo: make UI for that
 
     private void Awake()
     {
