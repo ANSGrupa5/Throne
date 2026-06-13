@@ -27,6 +27,7 @@ SpawnSpot.cs
 GameStartTimer.cs
 GameTimer.cs
 EndGameController.cs
+GameOverPayload.cs
 Assets/_Project/_Features/Multiplayer
 Current multiplayer-specific scripts.
 Known relevant files:
@@ -41,7 +42,12 @@ PlayerVehicleInput.cs
 BotVehicleInput.cs
 IVehicleInput.cs
 IVehicleCommandSource.cs
-VehicleCommand.cs
+Movement.cs
+RotatePreview.cs
+VehicleCameraController.cs
+DistanceTracker.cs
+WheelVisualSync.cs
+BotWaypointNode.cs
 Assets/_Project/_Features/TrailSystem
 Trail, death, and vehicle life systems.
 Known relevant files:
@@ -58,6 +64,20 @@ MultiplayerMenuButtons.cs
 SingleplayerLobby.cs
 GameOverScene.cs
 SettingsManager.cs
+GameOverResultRow.cs
+InputManager.cs
+StatsManager.cs
+VolumeButton.cs
+Assets/_Project/_Features/Arena
+Gameplay elements related to the arena.
+Known relevant files:
+AreaBoundaryScript.cs
+Assets/_Project/_Debug
+Debugging utilities.
+Known relevant files:
+InputDiagnostic.cs
+VehicleGroundHitDebug.cs
+VehicleTelemetryDebug.cs
 Networking assets
 Assets/_Project/Resources/Networking
 Contains networking prefabs/assets.
