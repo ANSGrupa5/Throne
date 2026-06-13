@@ -79,9 +79,69 @@ public class MatchInitializer : MonoBehaviour
     private IEnumerator InitializeRoutine()
     {
         GameSessionRuntime session = ResolveSession();
-        bool isMultiplayerSession = session != null && !session.isSingleplayer;
+        if (session == null)
+        {
+            Debug.LogError("Match initialization aborted: Runtime session is null.");
+            yield break;
+        }
 
-        if (isMultiplayerSession && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+        if (session.isSingleplayer)
+        {
+            yield return StartCoroutine(InitializeSingleplayer(session));
+            yield break;
+        }
+
+        yield return StartCoroutine(InitializeMultiplayer(session));
+    }
+
+    private IEnumerator InitializeSingleplayer(GameSessionRuntime session)
+    {
+        if (!TryValidateSession(session, out string validationError))
+        {
+            Debug.LogError($"Match initialization aborted: {validationError}");
+            yield break;
+        }
+
+        EnsureBotLooks(session);
+        int totalHumanPlayers = 1;
+        int totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
+        int totalToSpawn = totalHumanPlayers + totalBots;
+
+        if (!TrySelectSpawnSpots(totalToSpawn, out List<SpawnSpot> chosen))
+            yield break;
+
+        int index = 0;
+        SetFreeze(true);
+
+        SpawnLocalAt(session, session.playerPrefab, chosen[index], session.playerDisplayName, session.playerOwnerId, session.playerTrailColor, false);
+        index++;
+        StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
+        //Temporary disable: DistanceTracker uses string to find player, unsafe.
+        //DistanceTracker.Instance.GetTarget();
+        yield return new WaitForSecondsRealtime(spawnInterval);
+
+        for (int i = 0; i < totalBots; i++)
+        {
+            if (index >= chosen.Count) break;
+
+            PlayerLook botLook = i < session.botLooks.Count ? session.botLooks[i] : CreateFallbackBotLook(session, i);
+            SpawnLocalAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true);
+            index++;
+            yield return new WaitForSecondsRealtime(spawnInterval);
+        }
+
+        yield return null;
+        yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
+        if (gameTimer != null)
+            gameTimer.Begin(session.matchDuration);
+
+        SetFreeze(false);
+        OnMatchStart?.Invoke();
+    }
+
+    private IEnumerator InitializeMultiplayer(GameSessionRuntime session)
+    {
+        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
             yield break;
 
         if (!TryValidateSession(session, out string validationError))
@@ -90,33 +150,14 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
-        var spots = SpawnSpot.Active.ToList();
-        if (spots.Count == 0)
-        {
-            Debug.LogWarning("No SpawnSpots found in scene.");
-            yield break;
-        }
-
-        List<NetworkConnection> players = isMultiplayerSession ? GetConnectedPlayers() : new List<NetworkConnection>();
+        List<NetworkConnection> players = GetConnectedPlayers();
         int totalHumanPlayers = Mathf.Max(1, players.Count);
-        int totalBots = 0;
         EnsureBotLooks(session);
-        totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
+        int totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
+        int totalToSpawn = totalHumanPlayers + totalBots;
 
-        int totalToSpawn = totalBots + totalHumanPlayers;
-
-        if (totalToSpawn > spots.Count)
-        {
-            Debug.LogError($"Match initialization aborted: requested {totalToSpawn} entities but only {spots.Count} SpawnSpots are available.");
+        if (!TrySelectSpawnSpots(totalToSpawn, out List<SpawnSpot> chosen))
             yield break;
-        }
-
-        List<SpawnSpot> chosen = SelectSpawnSpots(spots, totalToSpawn);
-        if (chosen.Count < totalToSpawn)
-        {
-            Debug.LogError($"Match initialization aborted: could not reserve enough SpawnSpots ({chosen.Count}/{totalToSpawn}).");
-            yield break;
-        }
 
         int index = 0;
         SetFreeze(true);
@@ -127,7 +168,7 @@ public class MatchInitializer : MonoBehaviour
             string ownerId = ownerConnection != null ? $"player_{ownerConnection.ClientId}" : session.playerOwnerId;
             string displayName = playerIndex == 0 ? session.playerDisplayName : $"Player {playerIndex + 1}";
             Color trailColor = ResolvePlayerColor(session, playerIndex);
-            SpawnAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
+            SpawnNetworkAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
             index++;
             StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
             //Temporary disable: DistanceTracker uses string to find player, unsafe.
@@ -135,21 +176,19 @@ public class MatchInitializer : MonoBehaviour
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
-        // Spawn bots
         for (int i = 0; i < totalBots; i++)
         {
             if (index >= chosen.Count) break;
 
             PlayerLook botLook = i < session.botLooks.Count ? session.botLooks[i] : CreateFallbackBotLook(session, i);
-            SpawnAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true, null);
+            SpawnNetworkAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true, null);
             index++;
             yield return new WaitForSecondsRealtime(spawnInterval);
         }
 
-        // Wait one frame to ensure all Awake/Start run
         yield return null;
 
-        if (isMultiplayerSession && MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
+        if (MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
         {
             yield return StartCoroutine(MultiplayerSessionDriver.Instance.RunMatchStartSequence(
                 preMatchCountdownSeconds,
@@ -169,15 +208,42 @@ public class MatchInitializer : MonoBehaviour
         OnMatchStart?.Invoke();
     }
 
-    private void SpawnAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
+    private GameObject SpawnLocalAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot)
     {
-        if (prefab == null || spot == null) return;
+        if (prefab == null || spot == null) return null;
 
         Vector3 pos = spot.Position;
         Quaternion rot = spot.Rotation;
         GameObject go = Instantiate(prefab, pos, rot);
         _spawned.Add(go);
 
+        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
+            return null;
+
+        return go;
+    }
+
+    private GameObject SpawnNetworkAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
+    {
+        if (prefab == null || spot == null) return null;
+
+        Vector3 pos = spot.Position;
+        Quaternion rot = spot.Rotation;
+        GameObject go = Instantiate(prefab, pos, rot);
+        _spawned.Add(go);
+
+        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
+            return null;
+
+        NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        if (networkObject != null && InstanceFinder.IsServerStarted)
+            InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
+
+        return go;
+    }
+
+    private bool ConfigureSpawnedVehicle(GameSessionRuntime session, GameObject go, GameObject prefab, Vector3 pos, Quaternion rot, string displayName, string ownerId, Color trailColor, bool isBot)
+    {
         VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
         colorApplier.SetColor(trailColor);
 
@@ -187,7 +253,7 @@ public class MatchInitializer : MonoBehaviour
             Debug.LogError($"Match initialization aborted: spawned prefab '{prefab.name}' has no VehicleLife component.");
             Destroy(go);
             _spawned.Remove(go);
-            return;
+            return false;
         }
 
         life.ConfigureSpawn(pos, rot);
@@ -204,9 +270,34 @@ public class MatchInitializer : MonoBehaviour
                 botInput.ConfigureRuntime(botMapBoundaryMask, botSuddenDeathMask, botTrailMask, botPowerupMask, botMapCenter);
         }
 
-        NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        if (networkObject != null && session != null && !session.isSingleplayer && InstanceFinder.IsServerStarted)
-            InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
+        return true;
+    }
+
+    private bool TrySelectSpawnSpots(int totalToSpawn, out List<SpawnSpot> chosen)
+    {
+        chosen = null;
+
+        var spots = SpawnSpot.Active.ToList();
+        if (spots.Count == 0)
+        {
+            Debug.LogWarning("No SpawnSpots found in scene.");
+            return false;
+        }
+
+        if (totalToSpawn > spots.Count)
+        {
+            Debug.LogError($"Match initialization aborted: requested {totalToSpawn} entities but only {spots.Count} SpawnSpots are available.");
+            return false;
+        }
+
+        chosen = SelectSpawnSpots(spots, totalToSpawn);
+        if (chosen.Count < totalToSpawn)
+        {
+            Debug.LogError($"Match initialization aborted: could not reserve enough SpawnSpots ({chosen.Count}/{totalToSpawn}).");
+            return false;
+        }
+
+        return true;
     }
 
     private List<NetworkConnection> GetConnectedPlayers()
