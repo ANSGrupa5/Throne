@@ -507,7 +507,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37addc6a83f74d846aa66a00545c62eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleDeathSequence
-  life: {fileID: 900000000000000103, guid: eef41e1d07e3ac64188384502bbab4d2, type: 3}
+  life: {fileID: -8983866093615196203}
   cameraController: {fileID: 6846199149765510444}
   deathAnimationTime: 3
   spectatorCameraTarget: {fileID: 0}
