@@ -45,7 +45,66 @@ public class GameSessionRuntime
     public readonly List<Color> trailColorPalette = new List<Color>();
     public readonly List<PlayerMatchStats> playerStats = new List<PlayerMatchStats>();
 
-    // Builds a runtime session from the provided assets and falls back to safe defaults when needed.
+    public static GameSessionRuntime FromSettings(
+        MatchSettings settings,
+        VehiclePrefabSet vehiclePrefabSet,
+        TrailColorPalette trailColorPalette,
+        bool isSingleplayer)
+    {
+        if (settings == null)
+        {
+            Debug.LogWarning("[GameSessionRuntime] Cannot create session from null MatchSettings. Using a new settings instance.");
+            settings = new MatchSettings();
+        }
+
+        var session = new GameSessionRuntime
+        {
+            isSingleplayer = isSingleplayer,
+            maxPlayers = Mathf.Max(1, Mathf.Max(0, settings.PlayerCount) + Mathf.Max(0, settings.BotCount)),
+            gameMode = ToLegacyGameMode(settings.MatchMode),
+            arenaSceneName = settings.ArenaSceneName,
+            matchDuration = settings.MatchDurationSeconds,
+            respawnTime = settings.RespawnTimeSeconds,
+            isSuddenDeath = settings.SuddenDeathEnabled,
+            suddenDeathTime = settings.SuddenDeathTimeSeconds,
+            vehicleSpeed = 30f,
+            trailLength = settings.TrailLength,
+            playerPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.PlayerVehiclePrefab : null,
+            playerDisplayName = "Player",
+            playerOwnerId = "player_1",
+            playerTrailColor = settings.PlayerTrailColor,
+            botDefaultPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.BotVehiclePrefab : null
+        };
+
+        if (trailColorPalette != null && trailColorPalette.Colors != null)
+        {
+            for (int i = 0; i < trailColorPalette.Colors.Count; i++)
+                session.trailColorPalette.Add(trailColorPalette.Colors[i]);
+        }
+
+        if (session.trailColorPalette.Count == 0)
+            session.trailColorPalette.Add(settings.PlayerTrailColor);
+
+        if (settings.BotCount > 0)
+        {
+            session.bots.Add(new BotSpawnEntry
+            {
+                prefab = session.botDefaultPrefab,
+                count = settings.BotCount
+            });
+        }
+
+        PopulateBotLooks(session, null);
+        return session;
+    }
+
+    private static int ToLegacyGameMode(MatchMode matchMode)
+    {
+        return matchMode == MatchMode.KingOfTheHill ? 0 : 1;
+    }
+
+    // Builds a transitional runtime session from legacy assets and falls back to safe defaults when needed.
+    [System.Obsolete("Use FromSettings(MatchSettings, VehiclePrefabSet, TrailColorPalette, bool) for new match/session setup.")]
     public static GameSessionRuntime FromDefaults(
         GameSettings gameSettings,
         BotsSettings botsSettings,

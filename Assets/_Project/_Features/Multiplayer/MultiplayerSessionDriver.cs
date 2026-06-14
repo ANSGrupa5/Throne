@@ -7,10 +7,6 @@ using UnityEngine;
 
 public sealed class MultiplayerSessionDriver : NetworkBehaviour
 {
-    private const string EditorGameSettingsPath = "Assets/_Project/_Data/Settings/GameSettings.asset";
-    private const string EditorBotsSettingsPath = "Assets/_Project/_Data/Settings/BotsSettings.asset";
-    private const string EditorPlayerLookPath = "Assets/_Project/_Data/Settings/PlayerLook.asset";
-
     public struct MatchResultSnapshot
     {
         public string OwnerId;
@@ -23,9 +19,10 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     public static MultiplayerSessionDriver Instance { get; private set; }
 
     [Header("Default Config Assets")]
-    [SerializeField] private GameSettings gameSettings;
-    [SerializeField] private BotsSettings botsSettings;
-    [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private MatchDefaults matchDefaults;
+    [SerializeField] private MatchRules matchRules;
+    [SerializeField] private VehiclePrefabSet networkVehiclePrefabSet;
+    [SerializeField] private TrailColorPalette trailColorPalette;
 
     public bool IsMatchRunning { get; private set; }
 
@@ -51,7 +48,8 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         if (IsMatchRunning)
             return;
 
-        EnsureMultiplayerSession();
+        if (!EnsureMultiplayerSession())
+            return;
 
         MatchInitializer initializer = FindFirstObjectByType<MatchInitializer>();
         if (initializer == null)
@@ -64,7 +62,7 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     }
 
     [Server]
-    private void EnsureMultiplayerSession()
+    private bool EnsureMultiplayerSession()
     {
         GameSessionRuntime currentSession = GameSessionBootstrap.CurrentSession;
         if (currentSession != null && currentSession.isSingleplayer)
@@ -76,28 +74,49 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
             Debug.Log("[MultiplayerSessionDriver] Refreshing existing multiplayer session before match start.");
         }
 
-        GameSettings resolvedGameSettings = ResolveGameSettings();
-        BotsSettings resolvedBotsSettings = ResolveBotsSettings();
-        PlayerLook resolvedPlayerLook = ResolvePlayerLook();
+        if (matchDefaults == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchDefaults is not assigned.");
+            return false;
+        }
+
+        if (matchRules == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchRules is not assigned.");
+            return false;
+        }
+
+        if (networkVehiclePrefabSet == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because Network VehiclePrefabSet is not assigned.");
+            return false;
+        }
+
+        if (trailColorPalette == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because TrailColorPalette is not assigned.");
+            return false;
+        }
+
         int connectedHumanCount = CountConnectedHumans();
-        string arenaName = resolvedGameSettings != null ? resolvedGameSettings.arenaSceneName : null;
+        MatchSettings settings = matchDefaults.CreateSettings();
+        settings.PlayerCount = connectedHumanCount;
+        settings.BotCount = 0;
+        settings = matchRules.Validate(settings);
 
-        GameSessionRuntime session = GameSessionRuntime.FromDefaults(
-            resolvedGameSettings,
-            resolvedBotsSettings,
-            resolvedPlayerLook,
-            desiredBotCount: 0,
-            overrideArenaSceneName: arenaName,
-            allowZeroBots: true);
+        GameSessionRuntime session = GameSessionRuntime.FromSettings(
+            settings,
+            networkVehiclePrefabSet,
+            trailColorPalette,
+            isSingleplayer: false);
 
-        session.isSingleplayer = false;
-        session.maxPlayers = Mathf.Max(connectedHumanCount, 1);
         GameSessionBootstrap.SetSession(session);
 
         Debug.Log(
             $"[MultiplayerSessionDriver] Created multiplayer session: isSingleplayer={session.isSingleplayer}, " +
             $"arena='{session.arenaSceneName}', maxPlayers={session.maxPlayers}, connectedHumans={connectedHumanCount}, " +
             $"bots={CountSessionBots(session)}, playerPrefab='{GetPrefabName(session.playerPrefab)}'.");
+        return true;
     }
 
     private int CountConnectedHumans()
@@ -134,39 +153,6 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     private static string GetPrefabName(GameObject prefab)
     {
         return prefab != null ? prefab.name : "<none>";
-    }
-
-    private GameSettings ResolveGameSettings()
-    {
-        if (gameSettings != null)
-            return gameSettings;
-
-#if UNITY_EDITOR
-        gameSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<GameSettings>(EditorGameSettingsPath);
-#endif
-        return gameSettings;
-    }
-
-    private BotsSettings ResolveBotsSettings()
-    {
-        if (botsSettings != null)
-            return botsSettings;
-
-#if UNITY_EDITOR
-        botsSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<BotsSettings>(EditorBotsSettingsPath);
-#endif
-        return botsSettings;
-    }
-
-    private PlayerLook ResolvePlayerLook()
-    {
-        if (playerLook != null)
-            return playerLook;
-
-#if UNITY_EDITOR
-        playerLook = UnityEditor.AssetDatabase.LoadAssetAtPath<PlayerLook>(EditorPlayerLookPath);
-#endif
-        return playerLook;
     }
 
     [Server]

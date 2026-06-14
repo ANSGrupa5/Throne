@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7805eb0731f44c14e8ae4967bee4d743, type: 3}
-  m_Name: NetworkVehicleCollectionPrefab
+  m_Name: NetworkVehiclePrefabSet
   m_EditorClassIdentifier: Assembly-CSharp::VehicleCollectionPrefab
   playerVehiclePrefab: {fileID: 3746183853180310409, guid: dc242642d54c8ff4693a1498423197ee, type: 3}
   botVehiclePrefab: {fileID: 3746183853180310409, guid: f92e7ddbb1f28854b92aa82624715a15, type: 3}

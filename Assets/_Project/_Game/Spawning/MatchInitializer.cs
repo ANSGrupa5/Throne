@@ -9,14 +9,6 @@ using UnityEngine;
 
 public class MatchInitializer : MonoBehaviour
 {
-    [Header("Data")]
-    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
-    [SerializeField] private BotsSettings botsSettings;
-    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
-    [SerializeField] private GameSettings gameSettings;
-    [Tooltip("Fallback assets for direct scene testing when no runtime session exists.")]
-    [SerializeField] private PlayerLook playerLook;
-
     [Header("Spawn")]
     [SerializeField] private LayerMask obstacleMask;
     [SerializeField, Min(0f)] private float spawnInterval = 0.25f;
@@ -400,13 +392,8 @@ public class MatchInitializer : MonoBehaviour
         if (GameSessionBootstrap.TryGetSession(out var activeSession))
             return activeSession;
 
-        Debug.LogWarning("No runtime session found. Falling back to default ScriptableObject assets.");
-        GameSessionRuntime fallbackSession = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook);
-        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
-            fallbackSession.isSingleplayer = false;
-
-        GameSessionBootstrap.SetSession(fallbackSession);
-        return fallbackSession;
+        Debug.LogError("MatchInitializer could not start because no GameSessionRuntime was provided. Start the game through SingleplayerLobby or MultiplayerLobby. For direct scene testing, add an explicit DevMatchBootstrap later.");
+        return null;
     }
 
     private List<SpawnSpot> SelectSpawnSpots(List<SpawnSpot> available, int count)

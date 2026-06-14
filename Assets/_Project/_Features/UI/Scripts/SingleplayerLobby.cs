@@ -148,6 +148,7 @@ public class SingleplayerLobby : MonoBehaviour
                 selectedGameMode = 0;
                 break;
         }
+#pragma warning disable CS0618
         var session = GameSessionRuntime.FromDefaults(
             gameSettings,
             botsSettings,
@@ -159,6 +160,7 @@ public class SingleplayerLobby : MonoBehaviour
             overrideSuddenDeath: suddenDeath,
             overrideTrailLength: trailLength,
             overridePlayerTrailColor: playerTrailColor);
+#pragma warning restore CS0618
         session.isSingleplayer = true;
         GameSessionBootstrap.SetSession(session);
     }

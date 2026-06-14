@@ -106,3 +106,7 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 910000000000000001}
   _networkObjectCache: {fileID: 910000000000000001}
+  matchDefaults: {fileID: 11400000, guid: bbefd958a6a552d4283324910e5cadca, type: 2}
+  matchRules: {fileID: 11400000, guid: 4c3f257967eefcb47ba3a26763ab0546, type: 2}
+  networkVehiclePrefabSet: {fileID: 11400000, guid: edefeef6ebb2cff48a858249ac876ba6, type: 2}
+  trailColorPalette: {fileID: 11400000, guid: ea54d5c0733f5f84baf93fb533bac70e, type: 2}
