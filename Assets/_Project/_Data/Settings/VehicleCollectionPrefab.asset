@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7805eb0731f44c14e8ae4967bee4d743, type: 3}
   m_Name: VehicleCollectionPrefab
   m_EditorClassIdentifier: Assembly-CSharp::VehicleCollectionPrefab
-  playerVehiclePrefab: {fileID: 0}
-  botVehiclePrefab: {fileID: 0}
+  playerVehiclePrefab: {fileID: 3746183853180310409, guid: 3ea10f934d1892d48a55b911b969bc99, type: 3}
+  botVehiclePrefab: {fileID: 3746183853180310409, guid: eef41e1d07e3ac64188384502bbab4d2, type: 3}
