@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 900000000000000104}
   - component: {fileID: 900000000000000105}
   m_Layer: 0
-  m_Name: SingleplayerBotMotor
+  m_Name: BotVehicle1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

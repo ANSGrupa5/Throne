@@ -50,8 +50,6 @@ public class SingleplayerLobby : MonoBehaviour
         if (playerLook != null)
             playerTrailColor = playerLook.trailColor;
 
-        ApplyPlayerTrailColor();
-
         // Initialize bot count to 0, allowing the player to add them from scratch.
         // The previous implementation loaded a default value from an asset, which was confusing.
         _botCount = 0;
@@ -95,7 +93,7 @@ public class SingleplayerLobby : MonoBehaviour
     public void LoadScene()
     {
         InitializeGame();
-        SceneManager.LoadScene(gameSettings.arenaSceneName);
+        SceneManager.LoadScene(arenaSceneName);
     }
 
     public void GetSettingsFromUI(TMP_Dropdown dropdown, Toggle suddenDeathToggle)
@@ -119,7 +117,6 @@ public class SingleplayerLobby : MonoBehaviour
     public void SetPlayerTrailColor(Color color)
     {
         playerTrailColor = color;
-        ApplyPlayerTrailColor();
     }
 
     public void SetPlayerTrailColorFromPaletteIndex(int index)
@@ -135,28 +132,33 @@ public class SingleplayerLobby : MonoBehaviour
     {
         _botCount = Mathf.Clamp(_botCount, 0, GetMaxBotCount());
         
-        // Używamy natywnego wsparcia dla określonej liczby botów,
-        // która automatycznie pobierze prefab z pliku BotsSettings.
-        gameSettings.maxPlayers = 1 + _botCount;
-        gameSettings.matchDuration = timeInSecs;
         GetSettingsFromUI(dropdown, suddenDeathToggle);
-        gameSettings.isSuddenDeath = suddenDeath;
-        gameSettings.arenaSceneName = arenaSceneName;
 
         SetPlayerTrailColorFromPaletteIndex(trailColor);
 
 
         Debug.Log($"Initializing game with scene '{arenaSceneName}'");
+        int selectedGameMode = gameSettings != null ? gameSettings.gameMode : 0;
         switch (gameMode)
         {
             case "Deathmatch":
-                gameSettings.gameMode = 1;
+                selectedGameMode = 1;
                 break;
             case "Battle Royale":
-                gameSettings.gameMode = 0;
+                selectedGameMode = 0;
                 break;
         }
-        var session = GameSessionRuntime.FromDefaults(gameSettings, botsSettings, playerLook, _botCount);
+        var session = GameSessionRuntime.FromDefaults(
+            gameSettings,
+            botsSettings,
+            playerLook,
+            desiredBotCount: _botCount,
+            overrideGameMode: selectedGameMode,
+            overrideArenaSceneName: arenaSceneName,
+            overrideMatchDuration: timeInSecs,
+            overrideSuddenDeath: suddenDeath,
+            overrideTrailLength: trailLength,
+            overridePlayerTrailColor: playerTrailColor);
         session.isSingleplayer = true;
         GameSessionBootstrap.SetSession(session);
     }
@@ -187,12 +189,6 @@ public class SingleplayerLobby : MonoBehaviour
     {
         if (botCountText != null)
             botCountText.text = _botCount.ToString();
-    }
-
-    private void ApplyPlayerTrailColor()
-    {
-        if (playerLook != null)
-            playerLook.trailColor = playerTrailColor;
     }
 
     public void isSuddenDeath()
@@ -268,8 +264,6 @@ public class SingleplayerLobby : MonoBehaviour
         trailLength++;
         if (trailLength > gameSettings.GetMaxTrailLength())
             trailLength = gameSettings.GetMinTrailLength();
-
-        gameSettings.trailLength = trailLength;
 
         switch(trailLength)
         {

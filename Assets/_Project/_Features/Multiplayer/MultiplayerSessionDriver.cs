@@ -7,6 +7,10 @@ using UnityEngine;
 
 public sealed class MultiplayerSessionDriver : NetworkBehaviour
 {
+    private const string EditorGameSettingsPath = "Assets/_Project/_Data/Settings/GameSettings.asset";
+    private const string EditorBotsSettingsPath = "Assets/_Project/_Data/Settings/BotsSettings.asset";
+    private const string EditorPlayerLookPath = "Assets/_Project/_Data/Settings/PlayerLook.asset";
+
     public struct MatchResultSnapshot
     {
         public string OwnerId;
@@ -17,6 +21,11 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     }
 
     public static MultiplayerSessionDriver Instance { get; private set; }
+
+    [Header("Default Config Assets")]
+    [SerializeField] private GameSettings gameSettings;
+    [SerializeField] private BotsSettings botsSettings;
+    [SerializeField] private PlayerLook playerLook;
 
     public bool IsMatchRunning { get; private set; }
 
@@ -42,6 +51,8 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         if (IsMatchRunning)
             return;
 
+        EnsureMultiplayerSession();
+
         MatchInitializer initializer = FindFirstObjectByType<MatchInitializer>();
         if (initializer == null)
         {
@@ -50,6 +61,112 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         }
 
         initializer.BeginMatchInitialization();
+    }
+
+    [Server]
+    private void EnsureMultiplayerSession()
+    {
+        GameSessionRuntime currentSession = GameSessionBootstrap.CurrentSession;
+        if (currentSession != null && currentSession.isSingleplayer)
+        {
+            Debug.LogWarning("[MultiplayerSessionDriver] Replacing existing singleplayer session before multiplayer match start.");
+        }
+        else if (currentSession != null)
+        {
+            Debug.Log("[MultiplayerSessionDriver] Refreshing existing multiplayer session before match start.");
+        }
+
+        GameSettings resolvedGameSettings = ResolveGameSettings();
+        BotsSettings resolvedBotsSettings = ResolveBotsSettings();
+        PlayerLook resolvedPlayerLook = ResolvePlayerLook();
+        int connectedHumanCount = CountConnectedHumans();
+        string arenaName = resolvedGameSettings != null ? resolvedGameSettings.arenaSceneName : null;
+
+        GameSessionRuntime session = GameSessionRuntime.FromDefaults(
+            resolvedGameSettings,
+            resolvedBotsSettings,
+            resolvedPlayerLook,
+            desiredBotCount: 0,
+            overrideArenaSceneName: arenaName,
+            allowZeroBots: true);
+
+        session.isSingleplayer = false;
+        session.maxPlayers = Mathf.Max(connectedHumanCount, 1);
+        GameSessionBootstrap.SetSession(session);
+
+        Debug.Log(
+            $"[MultiplayerSessionDriver] Created multiplayer session: isSingleplayer={session.isSingleplayer}, " +
+            $"arena='{session.arenaSceneName}', maxPlayers={session.maxPlayers}, connectedHumans={connectedHumanCount}, " +
+            $"bots={CountSessionBots(session)}, playerPrefab='{GetPrefabName(session.playerPrefab)}'.");
+    }
+
+    private int CountConnectedHumans()
+    {
+        if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
+            return 1;
+
+        int count = 0;
+        foreach (var connection in InstanceFinder.ServerManager.Clients.Values)
+        {
+            if (connection != null && connection.IsAuthenticated)
+                count++;
+        }
+
+        return Mathf.Max(count, 1);
+    }
+
+    private static int CountSessionBots(GameSessionRuntime session)
+    {
+        if (session == null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < session.bots.Count; i++)
+        {
+            GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
+            if (entry != null)
+                count += Mathf.Max(0, entry.count);
+        }
+
+        return count;
+    }
+
+    private static string GetPrefabName(GameObject prefab)
+    {
+        return prefab != null ? prefab.name : "<none>";
+    }
+
+    private GameSettings ResolveGameSettings()
+    {
+        if (gameSettings != null)
+            return gameSettings;
+
+#if UNITY_EDITOR
+        gameSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<GameSettings>(EditorGameSettingsPath);
+#endif
+        return gameSettings;
+    }
+
+    private BotsSettings ResolveBotsSettings()
+    {
+        if (botsSettings != null)
+            return botsSettings;
+
+#if UNITY_EDITOR
+        botsSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<BotsSettings>(EditorBotsSettingsPath);
+#endif
+        return botsSettings;
+    }
+
+    private PlayerLook ResolvePlayerLook()
+    {
+        if (playerLook != null)
+            return playerLook;
+
+#if UNITY_EDITOR
+        playerLook = UnityEditor.AssetDatabase.LoadAssetAtPath<PlayerLook>(EditorPlayerLookPath);
+#endif
+        return playerLook;
     }
 
     [Server]

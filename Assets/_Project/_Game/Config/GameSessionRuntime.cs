@@ -26,6 +26,7 @@ public class GameSessionRuntime
     public bool isSingleplayer;
     public int maxPlayers;
     public int gameMode;
+    public string arenaSceneName;
     public float matchDuration;
     public float respawnTime;
     public bool isSuddenDeath;
@@ -45,7 +46,18 @@ public class GameSessionRuntime
     public readonly List<PlayerMatchStats> playerStats = new List<PlayerMatchStats>();
 
     // Builds a runtime session from the provided assets and falls back to safe defaults when needed.
-    public static GameSessionRuntime FromDefaults(GameSettings gameSettings, BotsSettings botsSettings, PlayerLook playerLook, int? desiredBotCount = null)
+    public static GameSessionRuntime FromDefaults(
+        GameSettings gameSettings,
+        BotsSettings botsSettings,
+        PlayerLook playerLook,
+        int? desiredBotCount = null,
+        int? overrideGameMode = null,
+        string overrideArenaSceneName = null,
+        float? overrideMatchDuration = null,
+        bool? overrideSuddenDeath = null,
+        int? overrideTrailLength = null,
+        Color? overridePlayerTrailColor = null,
+        bool allowZeroBots = false)
     {
         var session = new GameSessionRuntime();
 
@@ -54,6 +66,7 @@ public class GameSessionRuntime
             session.isSingleplayer = gameSettings.IsSingleplayer;
             session.maxPlayers = gameSettings.maxPlayers;
             session.gameMode = gameSettings.gameMode;
+            session.arenaSceneName = gameSettings.arenaSceneName;
             session.matchDuration = gameSettings.matchDuration;
             session.respawnTime = gameSettings.respawnTime;
             session.isSuddenDeath = gameSettings.isSuddenDeath;
@@ -67,6 +80,7 @@ public class GameSessionRuntime
             session.isSingleplayer = true;
             session.maxPlayers = 2;
             session.gameMode = 0;
+            session.arenaSceneName = "Neon City XL";
             session.matchDuration = 120f;
             session.respawnTime = 3f;
             session.isSuddenDeath = true;
@@ -90,6 +104,19 @@ public class GameSessionRuntime
             session.playerTrailColor = Color.white;
         }
 
+        if (overrideGameMode.HasValue)
+            session.gameMode = overrideGameMode.Value;
+        if (!string.IsNullOrWhiteSpace(overrideArenaSceneName))
+            session.arenaSceneName = overrideArenaSceneName.Trim();
+        if (overrideMatchDuration.HasValue)
+            session.matchDuration = overrideMatchDuration.Value;
+        if (overrideSuddenDeath.HasValue)
+            session.isSuddenDeath = overrideSuddenDeath.Value;
+        if (overrideTrailLength.HasValue)
+            session.trailLength = overrideTrailLength.Value;
+        if (overridePlayerTrailColor.HasValue)
+            session.playerTrailColor = overridePlayerTrailColor.Value;
+
         // Preserve the configured palette so bot colors can be picked from the same set.
         if (gameSettings != null && gameSettings.trailColorPalette != null)
             session.trailColorPalette.AddRange(gameSettings.trailColorPalette);
@@ -100,7 +127,9 @@ public class GameSessionRuntime
         {
             // Force an exact bot count when the caller requests one.
             int requestedBots = desiredBotCount.Value;
-            if (requestedBots <= 0)
+            if (requestedBots < 0)
+                requestedBots = 0;
+            if (requestedBots == 0 && !allowZeroBots)
                 requestedBots = 1;
             session.maxPlayers = (requestedBots>5 ? 5 : requestedBots) + 1;
             PopulateBotsForCount(session, botsSettings, requestedBots, requestedBots);

@@ -488,7 +488,7 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours:
-  - {fileID: 900000000000000103}
+  - {fileID: 0}
   - {fileID: 900000000000000106}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
@@ -527,9 +527,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3f4f8e46e2581b4e830ae3b064a0c0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLife
-  _componentIndexCache: 0
-  _addedNetworkObject: {fileID: 900000000000000101}
-  _networkObjectCache: {fileID: 900000000000000101}
   respawnProtectionTime: 1
 --- !u!114 &900000000000000104
 MonoBehaviour:

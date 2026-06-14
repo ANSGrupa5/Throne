@@ -456,9 +456,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec4d732a21a786d4ab51c17089836a72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVehicleInput
-  _componentIndexCache: 0
-  _addedNetworkObject: {fileID: 900000000000000001}
-  _networkObjectCache: {fileID: 900000000000000001}
 --- !u!114 &3963277036762231132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -527,8 +524,8 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours:
-  - {fileID: 4872575697609542131}
-  - {fileID: 900000000000000003}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 900000000000000006}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
@@ -567,9 +564,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3f4f8e46e2581b4e830ae3b064a0c0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VehicleLife
-  _componentIndexCache: 1
-  _addedNetworkObject: {fileID: 900000000000000001}
-  _networkObjectCache: {fileID: 900000000000000001}
   respawnProtectionTime: 1
 --- !u!114 &900000000000000004
 MonoBehaviour:
