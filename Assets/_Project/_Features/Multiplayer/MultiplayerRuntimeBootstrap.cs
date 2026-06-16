@@ -1,56 +1,34 @@
 using System.Collections;
 using FishNet;
 using FishNet.Managing;
-using FishNet.Managing.Object;
 using FishNet.Managing.Scened;
 using FishNet.Object;
-using FishNet.Transporting.Tugboat;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 {
-    private const string MainMenuSceneName = "MainMenu";
-    private const string MultiplayerScenePrefix = "Multiplayer";
-    private const string PrefabCollectionResourcePath = "Networking/DefaultPrefabObjects";
-    private const string SessionDriverResourcePath = "Networking/MultiplayerSessionDriver";
+    [Header("FishNet")]
+    [SerializeField] private NetworkManager networkManager;
+    [SerializeField] private NetworkObject sessionDriverPrefab;
+
+    [Header("Scenes")]
+    [SerializeField] private SceneReference mainMenuScene;
+
+    [Header("Connection")]
+    [SerializeField] private string defaultJoinAddress = "127.0.0.1";
 
     private static MultiplayerRuntimeBootstrap _instance;
 
-    private NetworkManager _networkManager;
-    private DefaultPrefabObjects _prefabCollection;
-    private GameObject _sessionDriverPrefab;
-    private string _joinAddress = "127.0.0.1";
+    private string _joinAddress;
     private bool _matchLoadInProgress;
     private string _pendingArenaSceneName;
 
     public static MultiplayerRuntimeBootstrap Instance => _instance;
 
-    public bool IsServerStarted => _networkManager != null && _networkManager.IsServerStarted;
-    public bool IsHostStartingOrStarted => _networkManager != null && (_networkManager.IsServerStarted || _networkManager.IsClientStarted);
+    public bool IsServerStarted => networkManager != null && networkManager.IsServerStarted;
+    public bool IsHostStartingOrStarted => networkManager != null && (networkManager.IsServerStarted || networkManager.IsClientStarted);
     public bool IsHostReady => InstanceFinder.IsServerStarted && InstanceFinder.IsClientStarted;
-
-    public static bool IsMultiplayerScene(Scene scene)
-    {
-        return scene.IsValid() && scene.name.StartsWith(MultiplayerScenePrefix, System.StringComparison.OrdinalIgnoreCase);
-    }
-
-    public static bool IsActiveMultiplayerScene()
-    {
-        return IsMultiplayerScene(UnitySceneManager.GetActiveScene());
-    }
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void EnsureRuntime()
-    {
-        if (_instance != null)
-            return;
-
-        GameObject runtimeObject = new(nameof(MultiplayerRuntimeBootstrap));
-        DontDestroyOnLoad(runtimeObject);
-        _instance = runtimeObject.AddComponent<MultiplayerRuntimeBootstrap>();
-    }
 
     private void Awake()
     {
@@ -61,14 +39,14 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         }
 
         _instance = this;
+        _joinAddress = NormalizeJoinAddress(defaultJoinAddress);
         DontDestroyOnLoad(gameObject);
-        UnitySceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
     private void OnDestroy()
     {
         if (_instance == this)
-            UnitySceneManager.sceneLoaded -= HandleSceneLoaded;
+            _instance = null;
     }
 
     public bool HostGame()
@@ -78,45 +56,48 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     public bool RequestHostGame()
     {
-        NetworkManager manager = EnsureNetworkManager();
-        if (manager == null)
-        {
-            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot host because NetworkManager is missing.");
+        if (!TryValidateNetworkSetup(out NetworkManager manager))
             return false;
-        }
 
-        StartHost();
+        StartHost(manager);
         return true;
     }
 
     public void JoinGame()
     {
-        JoinGame(_joinAddress);
+        JoinGame(defaultJoinAddress);
     }
 
     public void JoinGame(string address)
     {
-        NetworkManager manager = EnsureNetworkManager();
-        if (manager == null)
+        if (!TryValidateNetworkSetup(out NetworkManager manager))
             return;
 
-        _joinAddress = string.IsNullOrWhiteSpace(address) ? "127.0.0.1" : address.Trim();
-        StartClient();
+        _joinAddress = NormalizeJoinAddress(address);
+        StartClient(manager);
     }
 
     public void BackToMainMenu()
     {
         StopNetworkingIfNeeded();
-        UnitySceneManager.LoadScene(MainMenuSceneName);
+
+        if (mainMenuScene == null || string.IsNullOrWhiteSpace(mainMenuScene.SceneName))
+        {
+            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot return to main menu because Main Menu scene is not assigned.");
+            return;
+        }
+
+        UnitySceneManager.LoadScene(mainMenuScene.SceneName);
     }
 
     public void StartMatch()
     {
-        EnsureNetworkManager();
+        if (!TryValidateNetworkSetup(out _))
+            return;
 
         if (!InstanceFinder.IsServerStarted)
         {
-            Debug.LogWarning("Cannot start multiplayer match because the server is not started.");
+            Debug.LogWarning("[MultiplayerRuntimeBootstrap] Cannot start match because FishNet server is not started yet.");
             return;
         }
 
@@ -125,7 +106,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         MultiplayerSessionDriver driver = MultiplayerSessionDriver.Instance;
         if (driver == null)
         {
-            Debug.LogWarning("Cannot start multiplayer match because MultiplayerSessionDriver is not ready.");
+            Debug.LogWarning("[MultiplayerRuntimeBootstrap] Cannot start match because MultiplayerSessionDriver is not ready.");
             return;
         }
 
@@ -140,7 +121,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         TrailColorPalette trailColorPalette,
         Color selectedPlayerTrailColor)
     {
-        EnsureNetworkManager();
+        if (!TryValidateNetworkSetup(out _))
+            return;
 
         if (!InstanceFinder.IsServerStarted)
         {
@@ -241,13 +223,10 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         _matchLoadInProgress = false;
     }
 
-    private void StartHost()
+    private void StartHost(NetworkManager manager)
     {
-        NetworkManager manager = EnsureNetworkManager();
         if (manager == null)
             return;
-
-        MultiplayerMatchBroadcasts.RegisterClientHandlers(manager);
 
         if (!manager.IsServerStarted)
             manager.ServerManager.StartConnection();
@@ -256,26 +235,23 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             manager.ClientManager.StartConnection();
     }
 
-    private void StartClient()
+    private void StartClient(NetworkManager manager)
     {
-        NetworkManager manager = EnsureNetworkManager();
         if (manager == null)
             return;
 
-        string address = string.IsNullOrWhiteSpace(_joinAddress) ? "127.0.0.1" : _joinAddress.Trim();
-        MultiplayerMatchBroadcasts.RegisterClientHandlers(manager);
-        manager.ClientManager.StartConnection(address);
+        manager.ClientManager.StartConnection(_joinAddress);
     }
 
     private void StopNetworking()
     {
-        if (_networkManager == null)
+        if (networkManager == null)
             return;
 
-        if (_networkManager.IsClientStarted)
-            _networkManager.ClientManager.StopConnection();
-        if (_networkManager.IsServerStarted)
-            _networkManager.ServerManager.StopConnection(true);
+        if (networkManager.IsClientStarted)
+            networkManager.ClientManager.StopConnection();
+        if (networkManager.IsServerStarted)
+            networkManager.ServerManager.StopConnection(true);
 
         MultiplayerMatchState.SetFrozen(false);
         Time.timeScale = 1f;
@@ -283,102 +259,65 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     private void StopNetworkingIfNeeded()
     {
-        if (_networkManager != null && (_networkManager.IsServerStarted || _networkManager.IsClientStarted))
+        if (networkManager != null && (networkManager.IsServerStarted || networkManager.IsClientStarted))
             StopNetworking();
     }
 
-    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    private bool TryValidateNetworkSetup(out NetworkManager manager)
     {
-        if (!IsMultiplayerScene(scene))
+        manager = networkManager;
+
+        if (manager == null)
+            manager = FindFirstObjectByType<NetworkManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
         {
-            MultiplayerMatchState.SetFrozen(false);
-            Time.timeScale = 1f;
-            return;
+            Debug.LogError("[MultiplayerRuntimeBootstrap] NetworkManager is not assigned. Add NetworkManager to MultiplayerBootstrap.prefab and assign it.");
+            return false;
         }
 
-        EnsureNetworkManager();
-    }
+        networkManager = manager;
 
-    private NetworkManager EnsureNetworkManager()
-    {
-        if (_networkManager != null)
-            return _networkManager;
-
-        NetworkManager existing = FindFirstObjectByType<NetworkManager>(FindObjectsInactive.Include);
-        if (existing != null)
+        if (networkManager.SpawnablePrefabs == null)
         {
-            _networkManager = existing;
-            MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
-            return _networkManager;
+            Debug.LogError("[MultiplayerRuntimeBootstrap] NetworkManager.SpawnablePrefabs is not assigned. Assign DefaultPrefabObjects.asset in Unity.");
+            return false;
         }
 
-        _prefabCollection = LoadPrefabCollection();
-        _sessionDriverPrefab = Resources.Load<GameObject>(SessionDriverResourcePath);
-
-        if (_prefabCollection == null)
+        if (sessionDriverPrefab == null)
         {
-            Debug.LogError($"Missing FishNet prefab collection. Expected Resources/{PrefabCollectionResourcePath}.");
-            return null;
+            Debug.LogError("[MultiplayerRuntimeBootstrap] Session driver prefab is not assigned. Assign MultiplayerSessionDriver.prefab NetworkObject in Unity.");
+            return false;
         }
 
-        if (_sessionDriverPrefab == null)
-        {
-            Debug.LogError($"Missing session driver prefab at Resources/{SessionDriverResourcePath}.");
-            return null;
-        }
-
-        GameObject managerObject = new("FishNetRuntime");
-        managerObject.SetActive(false);
-
-        _networkManager = managerObject.AddComponent<NetworkManager>();
-        _networkManager.SpawnablePrefabs = _prefabCollection;
-        managerObject.AddComponent<Tugboat>();
-
-        if (_networkManager.SpawnablePrefabs == null)
-        {
-            Debug.LogError("FishNetRuntime NetworkManager was created without SpawnablePrefabs assigned.");
-            Destroy(managerObject);
-            _networkManager = null;
-            return null;
-        }
-
-        DontDestroyOnLoad(managerObject);
-        managerObject.SetActive(true);
-        MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
-        return _networkManager;
-    }
-
-    private DefaultPrefabObjects LoadPrefabCollection()
-    {
-        DefaultPrefabObjects prefabCollection = Resources.Load<DefaultPrefabObjects>(PrefabCollectionResourcePath);
-        if (prefabCollection != null)
-            return prefabCollection;
-
-        Debug.LogError($"FishNet prefab collection was not found at Resources/{PrefabCollectionResourcePath}.");
-        return null;
+        MultiplayerMatchBroadcasts.RegisterClientHandlers(networkManager);
+        return true;
     }
 
     private void EnsureSessionDriverSpawned()
     {
-        if (_networkManager == null || !_networkManager.IsServerStarted || MultiplayerSessionDriver.Instance != null)
+        if (networkManager == null || !networkManager.IsServerStarted || MultiplayerSessionDriver.Instance != null)
             return;
 
-        if (_sessionDriverPrefab == null)
-            _sessionDriverPrefab = Resources.Load<GameObject>(SessionDriverResourcePath);
-
-        if (_sessionDriverPrefab == null)
-            return;
-
-        GameObject instance = Instantiate(_sessionDriverPrefab);
-        instance.name = _sessionDriverPrefab.name;
-        NetworkObject networkObject = instance.GetComponent<NetworkObject>();
-        if (networkObject == null)
+        if (sessionDriverPrefab == null)
         {
-            Debug.LogError("Multiplayer session driver prefab is missing a NetworkObject.");
-            Destroy(instance);
+            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot spawn session driver because sessionDriverPrefab is not assigned.");
             return;
         }
 
-        _networkManager.ServerManager.Spawn(networkObject);
+        NetworkObject instance = Instantiate(sessionDriverPrefab);
+        instance.name = sessionDriverPrefab.name;
+        networkManager.ServerManager.Spawn(instance);
+    }
+
+    private string NormalizeJoinAddress(string address)
+    {
+        if (!string.IsNullOrWhiteSpace(address))
+            return address.Trim();
+
+        if (!string.IsNullOrWhiteSpace(defaultJoinAddress))
+            return defaultJoinAddress.Trim();
+
+        return "127.0.0.1";
     }
 }

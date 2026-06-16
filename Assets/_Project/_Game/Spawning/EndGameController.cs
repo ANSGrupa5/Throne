@@ -8,7 +8,7 @@ public class EndGameController : MonoBehaviour
 {
     [SerializeField] private GameTimer gameTimer;
     [SerializeField] private AreaBoundaryScript areaBoundary;
-    [SerializeField] private string gameOverSceneName = "GameOver";
+    [SerializeField] private SceneReference gameOverScene;
     [SerializeField, Min(0.1f)] private float slowDownDuration = 1.5f;
     [SerializeField, Min(0f)] private float postFreezeDelay = 1f;
     [SerializeField, Min(0f)] private float finalTimescale = 0f;
@@ -197,7 +197,10 @@ public class EndGameController : MonoBehaviour
 
         StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(gameOverSceneName);
+        if (!TryGetGameOverSceneName(out string sceneName))
+            yield break;
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
 
     private IEnumerator RunMultiplayerEndSequence(GameOverPayload.EndReason reason)
@@ -225,11 +228,25 @@ public class EndGameController : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        SceneLoadData sceneLoadData = new(gameOverSceneName);
+        if (!TryGetGameOverSceneName(out string sceneName))
+            yield break;
+
+        SceneLoadData sceneLoadData = new(sceneName);
         sceneLoadData.ReplaceScenes = ReplaceOption.All;
-        sceneLoadData.PreferredActiveScene = new PreferredScene(new SceneLookupData(gameOverSceneName));
+        sceneLoadData.PreferredActiveScene = new PreferredScene(new SceneLookupData(sceneName));
 
         InstanceFinder.SceneManager.LoadGlobalScenes(sceneLoadData);
+    }
+
+    private bool TryGetGameOverSceneName(out string sceneName)
+    {
+        sceneName = gameOverScene != null ? gameOverScene.SceneName : string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(sceneName))
+            return true;
+
+        Debug.LogError("[EndGameController] Cannot load GameOver scene because gameOverScene is not assigned.");
+        return false;
     }
 
     private void PrepareGameOverPayload(GameOverPayload.EndReason reason)

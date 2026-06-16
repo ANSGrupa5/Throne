@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.Rendering.DebugUI;
 
 public class StatsManager : MonoBehaviour
 {
@@ -39,18 +36,6 @@ public class StatsManager : MonoBehaviour
         LoadStats();
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void SetPlayerVehicle(GameObject playerVehicle, string displayName, string ownerId)
     {
         player = playerVehicle;
@@ -60,23 +45,17 @@ public class StatsManager : MonoBehaviour
 
     public bool CheckIfPlayerIsKiller(GameObject objectToCheck)
     {
-        if (player == objectToCheck)
-            return true;
-        return false;
+        return player == objectToCheck;
     }
 
     public bool CheckIfPlayerIsEliminated(VehicleLife objectToCheck)
     {
-        if (player == objectToCheck.gameObject)
-            return true;
-        return false;
+        return objectToCheck != null && player == objectToCheck.gameObject;
     }
 
     public bool CheckIfPlayerPickedUpPowerUp(VehicleLife objectToCheck)
     {
-        if (player == objectToCheck.gameObject && playerName == objectToCheck.DisplayName)
-            return true;
-        return false;
+        return objectToCheck != null && player == objectToCheck.gameObject && playerName == objectToCheck.DisplayName;
     }
 
     public void CheckIfPlayerWon(List<GameOverPayload.MatchResult> results)

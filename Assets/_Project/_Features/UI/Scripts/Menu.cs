@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
 
 public class Menu : MonoBehaviour
 {
@@ -50,12 +43,6 @@ public class Menu : MonoBehaviour
         //qualityDropdown.AddOptions(new List<string>(QualitySettings.names));
         //qualityDropdown.value = QualitySettings.GetQualityLevel();
         //qualityDropdown.RefreshShownValue();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void LoadScene(string sceneName)

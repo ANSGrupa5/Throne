@@ -62,20 +62,6 @@ public class SettingsManager : MonoBehaviour
         resolutionDropdown.RefreshShownValue();
 
         LoadSettings();
-        Debug.Log("MainVolume: " + PlayerPrefs.GetFloat("MainVolume"));
-        Debug.Log("SFXVolume: " + PlayerPrefs.GetFloat("SFXVolume"));
-        Debug.Log("Fullscreen: " + PlayerPrefs.GetInt("Fullscreen"));
-        Debug.Log("Resolution: " + PlayerPrefs.GetInt("ResolutionWidth") + "x" + PlayerPrefs.GetInt("ResolutionHeight") + "@" + PlayerPrefs.GetInt("ResolutionRefreshRate") + "Hz");
-        Debug.Log("Resolution index: " + PlayerPrefs.GetInt("ResolutionIndex"));
-        Debug.Log("Turn Left Key: " + (KeyCode)PlayerPrefs.GetInt("TurnLeft"));
-        Debug.Log("Turn Right Key: " + (KeyCode)PlayerPrefs.GetInt("TurnRight"));
-        Debug.Log("Change Camera Key: " + (KeyCode)PlayerPrefs.GetInt("Camera"));
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
     }
 
     // Update is called once per frame

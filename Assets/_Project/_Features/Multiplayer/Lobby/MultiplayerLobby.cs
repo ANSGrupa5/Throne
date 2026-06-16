@@ -1,3 +1,4 @@
+using FishNet.Example;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -135,6 +136,9 @@ public sealed class MultiplayerLobby : MonoBehaviour
         if (_hostReadyRoutine != null)
             StopCoroutine(_hostReadyRoutine);
 
+        NetworkHudCanvases fishnetHud = runtimeBootstrap.GetComponentInChildren<NetworkHudCanvases>();
+        fishnetHud.enabled = false;
+
         _hostReadyRoutine = StartCoroutine(WaitForHostReadyRoutine(runtime));
     }
 
@@ -159,6 +163,9 @@ public sealed class MultiplayerLobby : MonoBehaviour
         SetActive(connectionTypePanel, false);
         SetActive(hostSettingsPanel, false);
         SetStartMatchAvailable(false);
+
+        NetworkHudCanvases fishnetHud = runtimeBootstrap.GetComponentInChildren<NetworkHudCanvases>();
+        fishnetHud.enabled = false;
 
         runtime.JoinGame(defaultClientAddress);
     }

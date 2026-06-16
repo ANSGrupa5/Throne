@@ -86,7 +86,6 @@ public class GameOverResultRow : MonoBehaviour
             highlightRoot.SetActive(isWinner);
 
         ApplyAccent(isWinner ? winnerTextColor : Color.white);
-        Debug.Log($"[GameOverResultRow] Bound '{result.displayName}' trailColor={result.trailColor}, textColor={textColor}");
     }
 
     private static Color SanitizeDisplayColor(Color color, Color fallback)

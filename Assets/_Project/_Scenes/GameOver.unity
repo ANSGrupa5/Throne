@@ -512,6 +512,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 650469497}
+  - component: {fileID: 650469498}
   m_Layer: 0
   m_Name: GameOverScreenObject
   m_TagString: Untagged
@@ -535,6 +536,22 @@ Transform:
   - {fileID: 265825377}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &650469498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650469496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ee124ec385e63949a0bf033959156a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverController
+  reasonText: {fileID: 0}
+  resultsRoot: {fileID: 1811784708}
+  resultRowPrefab: {fileID: 6555623977046813562}
+  navigationConfig: {fileID: 11400000, guid: c8c9fe3fcd39de6458a10dee3f7d38c7, type: 2}
 --- !u!1 &735160658
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,7 +962,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1623535369}
   - component: {fileID: 1623535371}
-  - component: {fileID: 1623535372}
   m_Layer: 5
   m_Name: GameOverPanel
   m_TagString: Untagged
@@ -983,22 +999,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623535368}
   m_CullTransparentMesh: 1
---- !u!114 &1623535372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1623535368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ee124ec385e63949a0bf033959156a7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameOverController
-  reasonText: {fileID: 0}
-  resultsRoot: {fileID: 1811784708}
-  resultRowPrefab: {fileID: 6555623977046813562}
-  navigationConfig: {fileID: 11400000, guid: c8c9fe3fcd39de6458a10dee3f7d38c7, type: 2}
 --- !u!1 &1811784707
 GameObject:
   m_ObjectHideFlags: 0
@@ -1102,7 +1102,7 @@ PrefabInstance:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1623535372}
+      objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: LoadScene

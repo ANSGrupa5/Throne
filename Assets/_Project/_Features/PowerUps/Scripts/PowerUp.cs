@@ -33,12 +33,8 @@ public class PowerUp : MonoBehaviour
         if (vehicleLife == null || vehicleLife.IsDead)
             return;
 
-        if (StatsManager.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
-        {
-            Debug.Log("POWER UP PICKED UP. Power Ups picked up before: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
+        if (StatsManager.Instance != null && StatsManager.Instance.CheckIfPlayerPickedUpPowerUp(vehicleLife))
             StatsManager.Instance.IncPowerUpsPickedUp();
-            Debug.Log("Power Ups picked up after update: " + PlayerPrefs.GetInt("StatPowerUpsPickedUp"));
-        }
 
         ApplyEffect(vehicleLife);
         

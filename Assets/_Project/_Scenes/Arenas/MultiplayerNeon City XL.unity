@@ -469,10 +469,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837764517}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 411ff8f1fdb74ef45b8575c30c045192, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.99867266
@@ -541,6 +537,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 411ff8f1fdb74ef45b8575c30c045192, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3544,7 +3544,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndGameController
   gameTimer: {fileID: 4101060509138089424}
   areaBoundary: {fileID: 641438993}
-  gameOverSceneName: GameOver
+  gameOverScene:
+    sceneAsset: {fileID: 102900000, guid: 91d24baec70dc9444a982a875819aa26, type: 3}
+    sceneName: GameOver
   slowDownDuration: 1.5
   postFreezeDelay: 1
   finalTimescale: 0
@@ -4625,10 +4627,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: fa154e21f8ea8ff48a506e946aa7529e, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 32048
@@ -4697,6 +4695,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fa154e21f8ea8ff48a506e946aa7529e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -4841,10 +4843,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837764517}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 0dc2615605fa039449fe2fdaec643f83, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.99867266
@@ -4913,6 +4911,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0dc2615605fa039449fe2fdaec643f83, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

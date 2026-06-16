@@ -139,20 +139,11 @@ public class GameOverController : MonoBehaviour
             if (result == null)
                 continue;
 
-            Debug.Log(
-                $"[GameOverController] Result row {i + 1}: " +
-                $"name='{result.displayName}', " +
-                $"ownerId='{result.ownerId}', " +
-                $"kills={result.kills}, deaths={result.deaths}, " +
-                $"trailColor={result.trailColor}");
-
             GameOverResultRow row = CreateResultRow();
             PositionRow(row.transform as RectTransform, rowIndex);
             row.Bind(i + 1, result, i == 0);
             rowIndex++;
         }
-
-        Debug.Log($"GameOverController rendered {rowIndex} rows for {results.Count} match results.");
     }
 
     private GameOverResultRow CreateResultRow()
