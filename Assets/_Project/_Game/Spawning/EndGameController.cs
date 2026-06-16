@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using FishNet;
 using FishNet.Managing.Scened;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class EndGameController : MonoBehaviour
 {
@@ -18,13 +17,8 @@ public class EndGameController : MonoBehaviour
     private bool _isEnding;
     private bool _wasSubscribed;
 
-    private void Awake()
-    {
-        if (gameTimer == null)
-            gameTimer = GetComponent<GameTimer>();
-
-        TryBindAreaBoundary();
-    }
+    public bool HasGameTimer => gameTimer != null;
+    public bool HasAreaBoundary => areaBoundary != null;
 
     private void OnEnable()
     {
@@ -67,20 +61,11 @@ public class EndGameController : MonoBehaviour
             _session = session;
     }
 
-    private void TryBindAreaBoundary()
-    {
-        if (areaBoundary != null)
-            return;
-
-        areaBoundary = Object.FindAnyObjectByType<AreaBoundaryScript>();
-    }
-
     private void HandleTimerEnded()
     {
         if (MultiplayerRuntimeMode.IsClientOnly)
             return;
 
-        Debug.Log("[EndGameController] Timer ended!");
         TryBindSession();
         if (_session == null)
         {
@@ -88,29 +73,24 @@ public class EndGameController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[EndGameController] gameMode: {_session.gameMode}");
-
-        if (_session.gameMode == 0 && _session.isSuddenDeath)
+        if (_session.gameMode == GameSessionRuntime.KingOfTheHillMode && _session.isSuddenDeath)
         {
-            TryBindAreaBoundary();
             if (areaBoundary == null)
             {
                 Debug.LogWarning("[EndGameController] Sudden death requested, but no AreaBoundaryScript was found. Match will continue without shrinking.");
                 return;
             }
 
-            Debug.Log("[EndGameController] Sudden death triggered - enabling arena shrink.");
             areaBoundary.isShrinking = true;
             return;
         }
 
-        if (_session.gameMode != 1)
+        if (_session.gameMode != GameSessionRuntime.DeathmatchMode)
         {
-            Debug.LogWarning($"[EndGameController] Skipping end sequence - gameMode is {_session.gameMode}, expected 1");
+            Debug.LogWarning($"[EndGameController] Skipping end sequence - gameMode is {_session.gameMode}, expected {GameSessionRuntime.DeathmatchMode}");
             return;
         }
 
-        Debug.Log($"[EndGameController] Calling BeginEndSequence with reason: {GameOverPayload.EndReason.TimeUp}");
         BeginEndSequence(GameOverPayload.EndReason.TimeUp);
     }
 
@@ -138,7 +118,7 @@ public class EndGameController : MonoBehaviour
         GameSessionRuntime.PlayerMatchStats victimStats = _session.GetOrCreateStats(victim.OwnerId, victim.DisplayName, victimColor);
         victimStats.deaths++;
 
-        if (_session.gameMode == 0 && CountAliveVehicles() <= 1)
+        if (_session.gameMode == GameSessionRuntime.KingOfTheHillMode && CountAliveVehicles() <= 1)
             BeginEndSequence(GameOverPayload.EndReason.LastAlive);
     }
 
@@ -164,11 +144,9 @@ public class EndGameController : MonoBehaviour
 
     public void BeginEndSequence(GameOverPayload.EndReason reason)
     {
-        Debug.Log($"[EndGameController] BeginEndSequence called with reason: {reason}, _isEnding: {_isEnding}");
         bool isMultiplayerSession = IsMultiplayerSession();
         if (isMultiplayerSession && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
         {
-            Debug.Log("[EndGameController] Ignoring client-only BeginEndSequence. Server owns multiplayer end-game.");
             return;
         }
 
@@ -186,7 +164,6 @@ public class EndGameController : MonoBehaviour
         }
 
         _isEnding = true;
-        Debug.Log("[EndGameController] _isEnding set to true");
         if (gameTimer != null)
             gameTimer.StopTimer();
 
@@ -196,22 +173,14 @@ public class EndGameController : MonoBehaviour
             return;
         }
 
-        Debug.Log("[EndGameController] Starting RunEndSequence coroutine");
         StartCoroutine(RunEndSequence(reason));
-    }
-
-    public void SetAreaBoundary(AreaBoundaryScript boundary)
-    {
-        areaBoundary = boundary;
     }
 
     private IEnumerator RunEndSequence(GameOverPayload.EndReason reason)
     {
-        Debug.Log("[EndGameController] RunEndSequence started");
         float initialTimeScale = Time.timeScale <= 0f ? 1f : Time.timeScale;
         float elapsed = 0f;
 
-        Debug.Log($"[EndGameController] Starting slow-down from {initialTimeScale} to {finalTimescale} over {slowDownDuration}s");
         while (elapsed < slowDownDuration)
         {
             elapsed += Time.unscaledDeltaTime;
@@ -221,23 +190,18 @@ public class EndGameController : MonoBehaviour
         }
 
         Time.timeScale = finalTimescale;
-        Debug.Log($"[EndGameController] Slow-down complete. Waiting {postFreezeDelay}s before loading scene");
         yield return new WaitForSecondsRealtime(postFreezeDelay);
 
         PrepareGameOverPayload(reason);
-        Debug.Log($"[EndGameController] Loaded game over payload. Loading scene: {gameOverSceneName}");
         Time.timeScale = 1f;
 
         StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(gameOverSceneName);
-        Debug.Log("[EndGameController] SceneManager.LoadScene called - sequence complete");
     }
 
     private IEnumerator RunMultiplayerEndSequence(GameOverPayload.EndReason reason)
     {
-        Debug.Log($"[MultiplayerEndGame] RunMultiplayerEndSequence started. reason={reason}");
-
         float initialTimeScale = Time.timeScale <= 0f ? 1f : Time.timeScale;
         float elapsed = 0f;
 
@@ -260,8 +224,6 @@ public class EndGameController : MonoBehaviour
         yield return null;
 
         Time.timeScale = 1f;
-
-        Debug.Log($"[MultiplayerEndGame] Loading GameOver scene globally: {gameOverSceneName}");
 
         SceneLoadData sceneLoadData = new(gameOverSceneName);
         sceneLoadData.ReplaceScenes = ReplaceOption.All;
@@ -328,7 +290,6 @@ public class EndGameController : MonoBehaviour
             });
         }
 
-        Debug.Log($"[MultiplayerEndGame] Built {results.Count} result snapshots. reason={reason}");
         return results.ToArray();
     }
 

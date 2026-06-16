@@ -40,17 +40,13 @@ public static class GameOverPayload
 
     public static string GetReasonText(EndReason endReason)
     {
-        switch (endReason)
+        return endReason switch
         {
-            case EndReason.TimeUp:
-                return "Time up.";
-            case EndReason.LastAlive:
-                return "Last alive.";
-            case EndReason.Manual:
-                return "Ended manually.";
-            default:
-                return "Match ended.";
-        }
+            EndReason.TimeUp => "Time up.",
+            EndReason.LastAlive => "Last alive.",
+            EndReason.Manual => "Ended manually.",
+            _ => "Match ended."
+        };
     }
 
     public static void Clear()

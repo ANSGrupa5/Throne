@@ -57,14 +57,12 @@ public static class MatchStartSequence
         for (int i = context.PreMatchCountdownSeconds; i > 0; i--)
         {
             MultiplayerMatchState.SetCountdownValue(i);
-            Debug.Log(i);
             if (context.SceneReferences.GameStartTimer != null)
                 context.SceneReferences.GameStartTimer.ShowCount(i);
             yield return new WaitForSecondsRealtime(1f);
         }
 
         MultiplayerMatchState.SetCountdownValue(0);
-        Debug.Log("GO");
         if (context.SceneReferences.GameStartTimer != null)
             context.SceneReferences.GameStartTimer.ShowGo();
         yield return new WaitForSecondsRealtime(context.GoDisplayDuration);

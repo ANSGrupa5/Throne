@@ -33,7 +33,6 @@ public sealed class MultiplayerMatchFlow
     {
         GameSessionRuntime session = _context.Session;
         List<NetworkConnection> connections = GetAuthenticatedServerConnectionsSnapshot();
-        LogConnectedPlayers(connections);
         if (connections.Count <= 0)
         {
             Debug.LogError($"{MultiplayerSpawnLogPrefix} Cannot initialize multiplayer match: no authenticated server connections.");
@@ -75,7 +74,6 @@ public sealed class MultiplayerMatchFlow
             yield return new WaitForSecondsRealtime(_context.SpawnInterval);
         }
 
-        Debug.Log($"{MultiplayerSpawnLogPrefix} Spawned human network players={spawnedHumanCount}, expected={connections.Count}.");
         if (spawnedHumanCount <= 0)
             Debug.LogError($"{MultiplayerSpawnLogPrefix} No human network players were spawned.");
 
@@ -118,24 +116,6 @@ public sealed class MultiplayerMatchFlow
 
         result.Sort((a, b) => a.ClientId.CompareTo(b.ClientId));
         return result;
-    }
-
-    private static void LogConnectedPlayers(IReadOnlyList<NetworkConnection> connections)
-    {
-        Debug.Log($"{MultiplayerSpawnLogPrefix} Connected player count={connections?.Count ?? 0}");
-
-        if (connections == null)
-            return;
-
-        for (int i = 0; i < connections.Count; i++)
-        {
-            NetworkConnection connection = connections[i];
-            Debug.Log(
-                $"{MultiplayerSpawnLogPrefix} connection[{i}] " +
-                $"clientId={(connection != null ? connection.ClientId.ToString() : "<null>")} " +
-                $"isValid={(connection != null)} " +
-                $"isLocalClient={(connection != null && connection.IsLocalClient)}");
-        }
     }
 
     private static Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex)

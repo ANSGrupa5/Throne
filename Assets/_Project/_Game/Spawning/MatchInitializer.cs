@@ -25,12 +25,6 @@ public class MatchInitializer : MonoBehaviour
     private bool _hasInitializationStarted;
     private bool _isFreezeOwned;
 
-    [Obsolete]
-    private void Awake()
-    {
-        BindSceneReferences();
-    }
-
     private void Start()
     {
         // Singleplayer lobby creates a local session before loading the arena.
@@ -60,20 +54,6 @@ public class MatchInitializer : MonoBehaviour
         StartCoroutine(InitializeRoutine());
     }
 
-    [Obsolete]
-    private void BindSceneReferences()
-    {
-        if (endGameController == null)
-            endGameController = FindObjectOfType<EndGameController>();
-
-        if (endGameController == null)
-            return;
-
-        AreaBoundaryScript areaBoundary = FindObjectOfType<AreaBoundaryScript>();
-        if (areaBoundary != null)
-            endGameController.SetAreaBoundary(areaBoundary);
-    }
-
     private IEnumerator InitializeRoutine()
     {
         GameSessionRuntime session = ResolveSession();
@@ -83,10 +63,16 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
+        if (!TryValidateSceneReferences(session, out string sceneReferenceError))
+        {
+            Debug.LogError($"Match initialization aborted: {sceneReferenceError}");
+            yield break;
+        }
+
         MatchInitializationContext context = CreateContext(session);
         MatchSpawnPlanner spawnPlanner = new MatchSpawnPlanner(obstacleMask);
         BotSpawnFactory botSpawnFactory = new BotSpawnFactory(context);
-        MatchSpawnService spawnService = new MatchSpawnService(spawnPlanner, botSpawnFactory, this);
+        MatchSpawnService spawnService = new MatchSpawnService(spawnPlanner, botSpawnFactory);
 
         if (session.isSingleplayer)
         {
@@ -145,6 +131,48 @@ public class MatchInitializer : MonoBehaviour
         return null;
     }
 
+    private bool TryValidateSceneReferences(GameSessionRuntime session, out string error)
+    {
+        if (gameStartTimer == null)
+        {
+            error = "GameStartTimer is not assigned on MatchInitializer.";
+            return false;
+        }
+
+        if (gameTimer == null)
+        {
+            error = "GameTimer is not assigned on MatchInitializer.";
+            return false;
+        }
+
+        if (endGameController == null)
+        {
+            error = "EndGameController is not assigned on MatchInitializer.";
+            return false;
+        }
+
+        if (!endGameController.HasGameTimer)
+        {
+            error = "GameTimer is not assigned on EndGameController.";
+            return false;
+        }
+
+        if (SessionWillSpawnBots(session) && botMapCenter == null)
+        {
+            error = "BotMapCenter is not assigned on MatchInitializer, but this session will spawn bots.";
+            return false;
+        }
+
+        if (session != null && session.isSuddenDeath && !endGameController.HasAreaBoundary)
+        {
+            error = "AreaBoundaryScript is not assigned on EndGameController, but sudden death is enabled.";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
     private bool TryValidateSession(GameSessionRuntime session, out string error)
     {
         if (session == null)
@@ -196,6 +224,24 @@ public class MatchInitializer : MonoBehaviour
 
         error = null;
         return true;
+    }
+
+    private static bool SessionWillSpawnBots(GameSessionRuntime session)
+    {
+        if (session == null)
+            return false;
+
+        if (session.isSingleplayer && session.maxPlayers > 1)
+            return true;
+
+        for (int i = 0; i < session.bots.Count; i++)
+        {
+            GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
+            if (entry != null && entry.count > 0)
+                return true;
+        }
+
+        return false;
     }
 
     private void SetFreeze(bool freeze)

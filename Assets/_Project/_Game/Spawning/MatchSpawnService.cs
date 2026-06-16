@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using FishNet;
 using FishNet.Connection;
@@ -11,14 +10,12 @@ public sealed class MatchSpawnService
 
     private readonly MatchSpawnPlanner _spawnPlanner;
     private readonly BotSpawnFactory _botSpawnFactory;
-    private readonly MonoBehaviour _coroutineHost;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    public MatchSpawnService(MatchSpawnPlanner spawnPlanner, BotSpawnFactory botSpawnFactory, MonoBehaviour coroutineHost)
+    public MatchSpawnService(MatchSpawnPlanner spawnPlanner, BotSpawnFactory botSpawnFactory)
     {
         _spawnPlanner = spawnPlanner;
         _botSpawnFactory = botSpawnFactory;
-        _coroutineHost = coroutineHost;
     }
 
     public bool TrySelectSpawnSpots(int totalToSpawn, out List<SpawnSpot> chosen)
@@ -82,22 +79,7 @@ public sealed class MatchSpawnService
 
         if (InstanceFinder.IsServerStarted)
         {
-            Debug.Log(
-                $"{MultiplayerSpawnLogPrefix} Spawning '{go.name}' " +
-                $"participantId='{ownerId}' displayName='{displayName}' " +
-                $"ownerClientId={(ownerConnection != null ? ownerConnection.ClientId.ToString() : "<null>")} " +
-                $"isBot={isBot} position={pos}");
-
             InstanceFinder.ServerManager.Spawn(go, ownerConnection);
-
-            Debug.Log(
-                $"{MultiplayerSpawnLogPrefix} Spawn submitted '{go.name}' " +
-                $"ObjectId={networkObject.ObjectId} " +
-                $"Owner={(networkObject.Owner != null ? networkObject.Owner.ClientId.ToString() : "<null>")} " +
-                $"ExpectedOwner={(ownerConnection != null ? ownerConnection.ClientId.ToString() : "<null>")}");
-
-            if (ownerConnection != null && _coroutineHost != null)
-                _coroutineHost.StartCoroutine(LogOwnershipNextFrame(networkObject, ownerConnection.ClientId));
         }
 
         return go;
@@ -137,19 +119,5 @@ public sealed class MatchSpawnService
             _botSpawnFactory.ConfigureBotInput(go);
 
         return true;
-    }
-
-    private static IEnumerator LogOwnershipNextFrame(NetworkObject networkObject, int expectedOwnerClientId)
-    {
-        yield return null;
-
-        if (networkObject == null)
-            yield break;
-
-        Debug.Log(
-            $"{MultiplayerSpawnLogPrefix} Post-spawn ownership '{networkObject.name}' " +
-            $"ObjectId={networkObject.ObjectId} " +
-            $"Owner={(networkObject.Owner != null ? networkObject.Owner.ClientId.ToString() : "<null>")} " +
-            $"ExpectedOwner={expectedOwnerClientId}");
     }
 }
