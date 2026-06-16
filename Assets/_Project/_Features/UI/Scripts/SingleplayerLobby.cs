@@ -104,9 +104,6 @@ public class SingleplayerLobby : MonoBehaviour
         Toggle suddenDeathSource = suddenDeathToggle != null ? suddenDeathToggle : this.suddenDeathToggle;
         if (suddenDeathSource != null)
             suddenDeath = suddenDeathSource.isOn;
-
-        Debug.Log("Wybrany tryb gry: " + GetDisplayName(selectedMatchMode));
-        Debug.Log("Tryb Sudden Death: " + suddenDeath);
     }
 
     public void AddBot()
@@ -149,7 +146,8 @@ public class SingleplayerLobby : MonoBehaviour
             settings,
             vehiclePrefabSet,
             trailColorPalette,
-            isSingleplayer: true);
+            isSingleplayer: true,
+            playerTrailColor);
 
         if (session == null)
         {
@@ -159,7 +157,6 @@ public class SingleplayerLobby : MonoBehaviour
 
         GameSessionBootstrap.SetSession(session);
         arenaSceneName = settings.ArenaSceneName;
-        Debug.Log($"Initializing singleplayer game with scene '{arenaSceneName}'");
         return true;
     }
 
@@ -199,7 +196,7 @@ public class SingleplayerLobby : MonoBehaviour
         }
 
         GetSettingsFromUI(dropdown, suddenDeathToggle);
-        ApplySelectedTrailColor(settings);
+        ApplySelectedTrailColor();
 
         settings.PlayerCount = 1;
         settings.BotCount = ClampBotCount(_botCount);
@@ -207,7 +204,6 @@ public class SingleplayerLobby : MonoBehaviour
         settings.MatchDurationSeconds = NormalizeMatchDurationSeconds(timeInSecs);
         settings.SuddenDeathEnabled = suddenDeath;
         settings.TrailLength = ClampTrailLength(trailLength);
-        settings.PlayerTrailColor = playerTrailColor;
 
         settings = matchRules.Validate(settings);
 
@@ -232,7 +228,7 @@ public class SingleplayerLobby : MonoBehaviour
         return true;
     }
 
-    private void ApplySelectedTrailColor(MatchSettings settings)
+    private void ApplySelectedTrailColor()
     {
         playerTrailColor = GetLobbySelectedColorOrFallback();
     }

@@ -52,7 +52,8 @@ public class GameSessionRuntime
         MatchSettings settings,
         VehiclePrefabSet vehiclePrefabSet,
         TrailColorPalette trailColorPalette,
-        bool isSingleplayer)
+        bool isSingleplayer,
+        Color selectedPlayerTrailColor)
     {
         if (settings == null)
         {
@@ -75,7 +76,7 @@ public class GameSessionRuntime
             playerPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.PlayerVehiclePrefab : null,
             playerDisplayName = "Player",
             playerOwnerId = "player_1",
-            playerTrailColor = TrailColorPalette.SanitizeColor(settings.PlayerTrailColor, Color.white),
+            playerTrailColor = TrailColorPalette.SanitizeColor(selectedPlayerTrailColor, Color.white),
             botDefaultPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.BotVehiclePrefab : null
         };
 

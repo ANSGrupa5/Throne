@@ -23,8 +23,6 @@ public sealed class MatchSettings
     [SerializeField] private int respawnTimeSeconds = 5;
     [SerializeField] private int trailLength = 1;
 
-    [SerializeField] private Color playerTrailColor = Color.white;
-
     public MatchMode MatchMode
     {
         get => matchMode;
@@ -81,12 +79,6 @@ public sealed class MatchSettings
         set => trailLength = value;
     }
 
-    public Color PlayerTrailColor
-    {
-        get => playerTrailColor;
-        set => playerTrailColor = value;
-    }
-
     public MatchSettings Clone()
     {
         return new MatchSettings
@@ -99,8 +91,7 @@ public sealed class MatchSettings
             suddenDeathEnabled = suddenDeathEnabled,
             suddenDeathTimeSeconds = suddenDeathTimeSeconds,
             respawnTimeSeconds = respawnTimeSeconds,
-            trailLength = trailLength,
-            playerTrailColor = playerTrailColor
+            trailLength = trailLength
         };
     }
 }

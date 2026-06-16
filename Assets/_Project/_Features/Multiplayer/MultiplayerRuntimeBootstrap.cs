@@ -137,7 +137,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         MatchSettings settings,
         MatchRules matchRules,
         VehiclePrefabSet networkVehiclePrefabSet,
-        TrailColorPalette trailColorPalette)
+        TrailColorPalette trailColorPalette,
+        Color selectedPlayerTrailColor)
     {
         EnsureNetworkManager();
 
@@ -163,7 +164,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (driver.IsMatchRunning)
             return;
 
-        driver.StartMatch(settings, matchRules, networkVehiclePrefabSet, trailColorPalette);
+        driver.StartMatch(settings, matchRules, networkVehiclePrefabSet, trailColorPalette, selectedPlayerTrailColor);
     }
 
     public void BeginServerArenaLoadAndInitialize(string arenaSceneName)
@@ -193,8 +194,6 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     private IEnumerator ServerLoadArenaAndInitializeRoutine(string arenaSceneName)
     {
         _matchLoadInProgress = true;
-
-        Debug.Log($"[MultiplayerRuntimeBootstrap] Loading multiplayer arena '{arenaSceneName}' from persistent bootstrap.");
 
         SceneLoadData sceneLoadData = new(arenaSceneName);
         sceneLoadData.ReplaceScenes = ReplaceOption.All;
@@ -237,36 +236,9 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         while (Time.realtimeSinceStartup < settleUntil)
             yield return null;
 
-        LogServerConnectionsBeforeInitialization("Before BeginMatchInitialization");
-
-        Debug.Log($"[MultiplayerRuntimeBootstrap] Calling MatchInitializer.BeginMatchInitialization() in arena '{arenaSceneName}'.");
         initializer.BeginMatchInitialization();
 
         _matchLoadInProgress = false;
-    }
-
-    private static void LogServerConnectionsBeforeInitialization(string source)
-    {
-        if (InstanceFinder.ServerManager == null)
-        {
-            Debug.Log($"[MultiplayerRuntimeBootstrap] {source}: ServerManager is null.");
-            return;
-        }
-
-        int count = 0;
-        foreach (var connection in InstanceFinder.ServerManager.Clients.Values)
-        {
-            if (connection == null)
-                continue;
-
-            count++;
-
-            Debug.Log(
-                $"[MultiplayerRuntimeBootstrap] {source}: " +
-                $"clientId={connection.ClientId}, authenticated={connection.IsAuthenticated}");
-        }
-
-        Debug.Log($"[MultiplayerRuntimeBootstrap] {source}: connection count={count}.");
     }
 
     private void StartHost()
@@ -408,6 +380,5 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         }
 
         _networkManager.ServerManager.Spawn(networkObject);
-        Debug.Log("[MultiplayerRuntimeBootstrap] Spawned MultiplayerSessionDriver for active multiplayer scene.");
     }
 }

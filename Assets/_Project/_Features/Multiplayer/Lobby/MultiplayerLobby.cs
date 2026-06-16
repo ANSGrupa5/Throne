@@ -68,9 +68,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
         if (runtimeBootstrap == null)
             runtimeBootstrap = MultiplayerRuntimeBootstrap.Instance;
 
-        ResolvePanelsIfNeeded();
-        ResolveHostSettingsUiIfNeeded();
-
         if (matchRules == null)
             Debug.LogError("MultiplayerLobby needs MatchRules assigned to apply lobby UI bounds. Assign MatchRules.asset in the MultiplayerLobby inspector.");
 
@@ -106,9 +103,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void HostGame()
     {
-        ResolvePanelsIfNeeded();
-        ResolveHostSettingsUiIfNeeded();
-
         if (_hostRequested)
         {
             ShowHostSettingsPanel();
@@ -146,9 +140,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void JoinGame()
     {
-        ResolvePanelsIfNeeded();
-        ResolveHostSettingsUiIfNeeded();
-
         if (_joinRequested)
             return;
 
@@ -174,8 +165,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void StartMatch()
     {
-        ResolveHostSettingsUiIfNeeded();
-
         if (!_isHost)
         {
             Debug.LogWarning("Only the host can start a multiplayer match.");
@@ -199,7 +188,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         if (!TryCreateSettings(out MatchSettings settings))
             return;
 
-        runtime.StartMatch(settings, matchRules, networkVehiclePrefabSet, trailColorPalette);
+        runtime.StartMatch(settings, matchRules, networkVehiclePrefabSet, trailColorPalette, playerTrailColor);
     }
 
     public void BackToMainMenu()
@@ -226,9 +215,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
         Toggle suddenDeathSource = suddenDeathToggle != null ? suddenDeathToggle : this.suddenDeathToggle;
         if (suddenDeathSource != null)
             suddenDeath = suddenDeathSource.isOn;
-
-        Debug.Log("Wybrany tryb gry: " + GetDisplayName(selectedMatchMode));
-        Debug.Log("Tryb Sudden Death: " + suddenDeath);
     }
 
     public void SetPlayerTrailColor(Color color)
@@ -263,36 +249,26 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void IncreaseMin()
     {
-        ResolveHostSettingsUiIfNeeded();
         AdjustMatchDurationSeconds(MinutesStep);
-        Debug.Log($"[MultiplayerLobby] IncreaseMin -> {timeInSecs}s");
     }
 
     public void DecreaseMin()
     {
-        ResolveHostSettingsUiIfNeeded();
         AdjustMatchDurationSeconds(-MinutesStep);
-        Debug.Log($"[MultiplayerLobby] DecreaseMin -> {timeInSecs}s");
     }
 
     public void IncreaseSec()
     {
-        ResolveHostSettingsUiIfNeeded();
         AdjustMatchDurationSeconds(SecondsStep);
-        Debug.Log($"[MultiplayerLobby] IncreaseSec -> {timeInSecs}s");
     }
 
     public void DecreaseSec()
     {
-        ResolveHostSettingsUiIfNeeded();
         AdjustMatchDurationSeconds(-SecondsStep);
-        Debug.Log($"[MultiplayerLobby] DecreaseSec -> {timeInSecs}s");
     }
 
     public void ChangeTrailLength()
     {
-        ResolveHostSettingsUiIfNeeded();
-
         if (matchRules == null)
         {
             Debug.LogError("[MultiplayerLobby] Cannot change trail length because MatchRules is not assigned.");
@@ -305,14 +281,10 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
         trailLength = ClampTrailLength(trailLength);
         RefreshTrailLengthUI();
-
-        Debug.Log($"[MultiplayerLobby] ChangeTrailLength -> {trailLength}");
     }
 
     public void ChangePlayerModelUp()
     {
-        ResolveHostSettingsUiIfNeeded();
-
         if (motorPreview == null || motorPreview.Length == 0)
             return;
 
@@ -325,8 +297,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void ChangePlayerModelDown()
     {
-        ResolveHostSettingsUiIfNeeded();
-
         if (motorPreview == null || motorPreview.Length == 0)
             return;
 
@@ -339,8 +309,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void SetPlayerModel(int selectedMotor)
     {
-        ResolveHostSettingsUiIfNeeded();
-
         if (motorPreview == null || motorPreview.Length == 0)
         {
             Debug.LogWarning("[MultiplayerLobby] Cannot switch scooter preview because Motor Preview array is empty.");
@@ -354,8 +322,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
             if (motorPreview[i] != null)
                 motorPreview[i].SetActive(i == currentModel);
         }
-
-        Debug.Log($"[MultiplayerLobby] Scooter preview selected index={currentModel}.");
     }
 
     public void isSuddenDeath()
@@ -387,7 +353,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
         {
             if (runtime != null && runtime.IsHostReady)
             {
-                Debug.Log("[MultiplayerLobby] Host is ready. Start Match enabled.");
                 SetStartMatchAvailable(true);
                 _hostReadyRoutine = null;
                 yield break;
@@ -399,98 +364,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
         Debug.LogError("[MultiplayerLobby] Host did not become ready before timeout.");
         SetStartMatchAvailable(false);
         _hostReadyRoutine = null;
-    }
-
-    private void ResolvePanelsIfNeeded()
-    {
-        if (connectionTypePanel == null)
-        {
-            Transform found = FindDeepChild(transform, "ConnectionType");
-            if (found != null)
-                connectionTypePanel = found.gameObject;
-        }
-
-        if (hostSettingsPanel == null)
-        {
-            Transform found = FindDeepChild(transform, "Panel");
-            if (found != null)
-                hostSettingsPanel = found.gameObject;
-        }
-
-        if (connectionTypePanel == null)
-            Debug.LogWarning("[MultiplayerLobby] Could not find ConnectionType panel.");
-
-        if (hostSettingsPanel == null)
-            Debug.LogWarning("[MultiplayerLobby] Could not find host settings Panel.");
-    }
-
-    private void ResolveHostSettingsUiIfNeeded()
-    {
-        if (minutes == null)
-        {
-            Transform found = FindDeepChild(transform, "TimePreviewMin");
-            if (found != null)
-                minutes = found.GetComponent<TMP_Text>();
-        }
-
-        if (seconds == null)
-        {
-            Transform found = FindDeepChild(transform, "TimePreviewSec");
-            if (found != null)
-                seconds = found.GetComponent<TMP_Text>();
-        }
-
-        if (dropdown == null)
-        {
-            Transform found = FindDeepChild(transform, "GameModeSelector");
-            if (found != null)
-                dropdown = found.GetComponent<TMP_Dropdown>();
-        }
-
-        if (suddenDeathToggle == null)
-        {
-            Transform found = FindDeepChild(transform, "SuddenDeathTgl");
-            if (found != null)
-                suddenDeathToggle = found.GetComponent<Toggle>();
-        }
-
-        if (trailLengthText == null)
-        {
-            Transform found =
-                FindDeepChild(transform, "TrailLengthValue") ??
-                FindDeepChild(transform, "TrailLengthText") ??
-                FindDeepChild(transform, "TrailLengthPreview");
-
-            if (found == null)
-            {
-                Transform trailLengthButton = FindDeepChild(transform, "TrailLengthButton");
-                if (trailLengthButton != null)
-                    found = FindDeepChild(trailLengthButton, "Value");
-            }
-
-            if (found == null)
-            {
-                Transform trailLengthSetting = FindDeepChild(transform, "TrailLengthSetting");
-                if (trailLengthSetting != null)
-                    found = FindDeepChild(trailLengthSetting, "Value");
-            }
-
-            if (found != null)
-                trailLengthText = found.GetComponent<TMP_Text>();
-        }
-
-        if ((motorPreview == null || motorPreview.Length == 0) && hostSettingsPanel != null)
-        {
-            Transform first = FindDeepChild(hostSettingsPanel.transform, "motorPreview");
-            Transform second = FindDeepChild(hostSettingsPanel.transform, "motor2Preview");
-
-            if (first != null || second != null)
-            {
-                motorPreview = second != null
-                    ? new[] { first != null ? first.gameObject : null, second.gameObject }
-                    : new[] { first.gameObject };
-            }
-        }
     }
 
     private bool TryCreateSettings(out MatchSettings settings)
@@ -535,7 +408,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         }
 
         GetSettingsFromUI(dropdown, suddenDeathToggle);
-        ApplySelectedTrailColor(settings);
+        ApplySelectedTrailColor();
 
         settings.PlayerCount = 1; // placeholder; server driver replaces with connected humans.
         settings.BotCount = 0;
@@ -543,7 +416,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
         settings.MatchDurationSeconds = NormalizeMatchDurationSeconds(timeInSecs);
         settings.SuddenDeathEnabled = suddenDeath;
         settings.TrailLength = ClampTrailLength(trailLength);
-        settings.PlayerTrailColor = playerTrailColor;
 
         settings = matchRules.Validate(settings);
 
@@ -559,7 +431,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         return true;
     }
 
-    private void ApplySelectedTrailColor(MatchSettings settings)
+    private void ApplySelectedTrailColor()
     {
         playerTrailColor = GetLobbySelectedColorOrFallback();
     }
@@ -769,24 +641,5 @@ public sealed class MultiplayerLobby : MonoBehaviour
     {
         if (target != null && target.activeSelf != active)
             target.SetActive(active);
-    }
-
-    private static Transform FindDeepChild(Transform root, string childName)
-    {
-        if (root == null || string.IsNullOrWhiteSpace(childName))
-            return null;
-
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform child = root.GetChild(i);
-            if (child.name == childName)
-                return child;
-
-            Transform nested = FindDeepChild(child, childName);
-            if (nested != null)
-                return nested;
-        }
-
-        return null;
     }
 }

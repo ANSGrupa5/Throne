@@ -95,25 +95,19 @@ public static class MultiplayerHudBridge
     {
         GameStartTimer startTimer = Object.FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
         if (startTimer == null)
-        {
-            Debug.Log($"[MultiplayerHudBridge] {source}: GameStartTimer not found.");
             return;
-        }
 
         switch (MultiplayerMatchState.CountdownState)
         {
             case MultiplayerMatchState.CountdownDisplayState.Count:
-                Debug.Log($"[MultiplayerHudBridge] {source}: ShowCount({MultiplayerMatchState.CountdownValue}).");
                 startTimer.ShowCount(MultiplayerMatchState.CountdownValue);
                 break;
 
             case MultiplayerMatchState.CountdownDisplayState.Go:
-                Debug.Log($"[MultiplayerHudBridge] {source}: ShowGo().");
                 startTimer.ShowGo();
                 break;
 
             default:
-                Debug.Log($"[MultiplayerHudBridge] {source}: Hide countdown.");
                 startTimer.Hide();
                 break;
         }
@@ -129,13 +123,9 @@ public static class MultiplayerHudBridge
 
         GameTimer timer = Object.FindFirstObjectByType<GameTimer>(FindObjectsInactive.Include);
         if (timer == null)
-        {
-            Debug.Log($"[MultiplayerHudBridge] {source}: GameTimer not found.");
             return;
-        }
 
         float remaining = MultiplayerMatchState.GetTimerRemaining();
-        Debug.Log($"[MultiplayerHudBridge] {source}: Begin timer remaining={remaining:0.00}.");
         timer.Begin(remaining);
 
         _lastAppliedTimerGeneration = MultiplayerMatchState.TimerGeneration;
