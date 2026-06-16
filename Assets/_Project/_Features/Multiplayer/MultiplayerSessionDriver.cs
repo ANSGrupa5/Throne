@@ -62,6 +62,28 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         if (!EnsureMultiplayerSession(matchDefaultsOverride, matchRulesOverride, networkVehiclePrefabSetOverride, trailColorPaletteOverride))
             return;
 
+        StartMatchAfterSessionCreated();
+    }
+
+    [Server]
+    public void StartMatch(
+        MatchSettings settingsOverride,
+        MatchRules matchRulesOverride,
+        VehiclePrefabSet networkVehiclePrefabSetOverride,
+        TrailColorPalette trailColorPaletteOverride)
+    {
+        if (IsMatchRunning)
+            return;
+
+        if (!EnsureMultiplayerSession(settingsOverride, matchRulesOverride, networkVehiclePrefabSetOverride, trailColorPaletteOverride))
+            return;
+
+        StartMatchAfterSessionCreated();
+    }
+
+    [Server]
+    private void StartMatchAfterSessionCreated()
+    {
         GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
         if (session == null)
         {
@@ -153,6 +175,94 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         return true;
     }
 
+    [Server]
+    private bool EnsureMultiplayerSession(
+        MatchSettings settingsOverride,
+        MatchRules matchRulesOverride,
+        VehiclePrefabSet networkVehiclePrefabSetOverride,
+        TrailColorPalette trailColorPaletteOverride)
+    {
+        GameSessionRuntime currentSession = GameSessionBootstrap.CurrentSession;
+        if (currentSession != null && currentSession.isSingleplayer)
+        {
+            Debug.LogWarning("[MultiplayerSessionDriver] Replacing existing singleplayer session before multiplayer match start.");
+        }
+        else if (currentSession != null)
+        {
+            Debug.Log("[MultiplayerSessionDriver] Refreshing existing multiplayer session before match start.");
+        }
+
+        MatchRules activeMatchRules = matchRulesOverride != null ? matchRulesOverride : matchRules;
+        VehiclePrefabSet activeNetworkVehiclePrefabSet = networkVehiclePrefabSetOverride != null
+            ? networkVehiclePrefabSetOverride
+            : networkVehiclePrefabSet;
+        TrailColorPalette activeTrailColorPalette = trailColorPaletteOverride != null
+            ? trailColorPaletteOverride
+            : trailColorPalette;
+
+        if (settingsOverride == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchSettings override is null.");
+            return false;
+        }
+
+        if (activeMatchRules == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchRules is not assigned.");
+            return false;
+        }
+
+        if (activeNetworkVehiclePrefabSet == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because Network VehiclePrefabSet is not assigned.");
+            return false;
+        }
+
+        if (activeTrailColorPalette == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because TrailColorPalette is not assigned.");
+            return false;
+        }
+
+        MatchSettings settings = CloneSettings(settingsOverride);
+        if (settings == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchSettings clone is null.");
+            return false;
+        }
+
+        int connectedHumanCount = CountConnectedHumans();
+        settings.PlayerCount = connectedHumanCount;
+        settings.BotCount = 0;
+
+        settings = activeMatchRules.Validate(settings);
+        settings.PlayerCount = connectedHumanCount;
+        settings.BotCount = 0;
+
+        GameSessionRuntime session = GameSessionRuntime.FromSettings(
+            settings,
+            activeNetworkVehiclePrefabSet,
+            activeTrailColorPalette,
+            isSingleplayer: false);
+
+        if (session == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because GameSessionRuntime.FromSettings returned null.");
+            return false;
+        }
+
+        GameSessionBootstrap.SetSession(session);
+
+        Debug.Log(
+            $"[MultiplayerSessionDriver] Created multiplayer session from lobby settings: " +
+            $"isSingleplayer={session.isSingleplayer}, arena='{session.arenaSceneName}', " +
+            $"maxPlayers={session.maxPlayers}, connectedHumans={connectedHumanCount}, " +
+            $"bots={CountSessionBots(session)}, mode={session.gameMode}, duration={session.matchDuration}, " +
+            $"trailLength={session.trailLength}, playerPrefab='{GetPrefabName(session.playerPrefab)}'.");
+
+        return true;
+    }
+
     private int CountConnectedHumans()
     {
         if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
@@ -187,6 +297,11 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     private static string GetPrefabName(GameObject prefab)
     {
         return prefab != null ? prefab.name : "<none>";
+    }
+
+    private static MatchSettings CloneSettings(MatchSettings source)
+    {
+        return source != null ? source.Clone() : null;
     }
 
     [Server]

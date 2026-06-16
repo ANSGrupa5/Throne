@@ -28,6 +28,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
     public static MultiplayerRuntimeBootstrap Instance => _instance;
 
     public bool IsServerStarted => _networkManager != null && _networkManager.IsServerStarted;
+    public bool IsHostStartingOrStarted => _networkManager != null && (_networkManager.IsServerStarted || _networkManager.IsClientStarted);
+    public bool IsHostReady => InstanceFinder.IsServerStarted && InstanceFinder.IsClientStarted;
 
     public static bool IsMultiplayerScene(Scene scene)
     {
@@ -69,13 +71,22 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             UnitySceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
-    public void HostGame()
+    public bool HostGame()
     {
-        EnsureNetworkManager();
-        if (_networkManager == null)
-            return;
+        return RequestHostGame();
+    }
+
+    public bool RequestHostGame()
+    {
+        NetworkManager manager = EnsureNetworkManager();
+        if (manager == null)
+        {
+            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot host because NetworkManager is missing.");
+            return false;
+        }
 
         StartHost();
+        return true;
     }
 
     public void JoinGame()
@@ -85,8 +96,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     public void JoinGame(string address)
     {
-        EnsureNetworkManager();
-        if (_networkManager == null)
+        NetworkManager manager = EnsureNetworkManager();
+        if (manager == null)
             return;
 
         _joinAddress = string.IsNullOrWhiteSpace(address) ? "127.0.0.1" : address.Trim();
@@ -101,7 +112,9 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     public void StartMatch()
     {
-        if (_networkManager == null || !_networkManager.IsServerStarted)
+        EnsureNetworkManager();
+
+        if (!InstanceFinder.IsServerStarted)
         {
             Debug.LogWarning("Cannot start multiplayer match because the server is not started.");
             return;
@@ -118,6 +131,39 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
         if (!driver.IsMatchRunning)
             driver.StartMatch();
+    }
+
+    public void StartMatch(
+        MatchSettings settings,
+        MatchRules matchRules,
+        VehiclePrefabSet networkVehiclePrefabSet,
+        TrailColorPalette trailColorPalette)
+    {
+        EnsureNetworkManager();
+
+        if (!InstanceFinder.IsServerStarted)
+        {
+            Debug.LogWarning("[MultiplayerRuntimeBootstrap] Cannot start match because FishNet server is not started yet.");
+            return;
+        }
+
+        MultiplayerSessionDriver driver = MultiplayerSessionDriver.Instance;
+        if (driver == null)
+        {
+            EnsureSessionDriverSpawned();
+            driver = MultiplayerSessionDriver.Instance;
+        }
+
+        if (driver == null)
+        {
+            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot start match because MultiplayerSessionDriver.Instance is null.");
+            return;
+        }
+
+        if (driver.IsMatchRunning)
+            return;
+
+        driver.StartMatch(settings, matchRules, networkVehiclePrefabSet, trailColorPalette);
     }
 
     public void BeginServerArenaLoadAndInitialize(string arenaSceneName)
@@ -225,28 +271,28 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     private void StartHost()
     {
-        EnsureNetworkManager();
-        if (_networkManager == null)
+        NetworkManager manager = EnsureNetworkManager();
+        if (manager == null)
             return;
 
-        MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
+        MultiplayerMatchBroadcasts.RegisterClientHandlers(manager);
 
-        if (!_networkManager.IsServerStarted)
-            _networkManager.ServerManager.StartConnection();
+        if (!manager.IsServerStarted)
+            manager.ServerManager.StartConnection();
 
-        if (!_networkManager.IsClientStarted)
-            _networkManager.ClientManager.StartConnection();
+        if (!manager.IsClientStarted)
+            manager.ClientManager.StartConnection();
     }
 
     private void StartClient()
     {
-        EnsureNetworkManager();
-        if (_networkManager == null)
+        NetworkManager manager = EnsureNetworkManager();
+        if (manager == null)
             return;
 
         string address = string.IsNullOrWhiteSpace(_joinAddress) ? "127.0.0.1" : _joinAddress.Trim();
-        MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
-        _networkManager.ClientManager.StartConnection(address);
+        MultiplayerMatchBroadcasts.RegisterClientHandlers(manager);
+        manager.ClientManager.StartConnection(address);
     }
 
     private void StopNetworking()
@@ -281,10 +327,18 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         EnsureNetworkManager();
     }
 
-    private void EnsureNetworkManager()
+    private NetworkManager EnsureNetworkManager()
     {
         if (_networkManager != null)
-            return;
+            return _networkManager;
+
+        NetworkManager existing = FindFirstObjectByType<NetworkManager>(FindObjectsInactive.Include);
+        if (existing != null)
+        {
+            _networkManager = existing;
+            MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
+            return _networkManager;
+        }
 
         _prefabCollection = LoadPrefabCollection();
         _sessionDriverPrefab = Resources.Load<GameObject>(SessionDriverResourcePath);
@@ -292,13 +346,13 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (_prefabCollection == null)
         {
             Debug.LogError($"Missing FishNet prefab collection. Expected Resources/{PrefabCollectionResourcePath}.");
-            return;
+            return null;
         }
 
         if (_sessionDriverPrefab == null)
         {
             Debug.LogError($"Missing session driver prefab at Resources/{SessionDriverResourcePath}.");
-            return;
+            return null;
         }
 
         GameObject managerObject = new("FishNetRuntime");
@@ -313,12 +367,13 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             Debug.LogError("FishNetRuntime NetworkManager was created without SpawnablePrefabs assigned.");
             Destroy(managerObject);
             _networkManager = null;
-            return;
+            return null;
         }
 
         DontDestroyOnLoad(managerObject);
         managerObject.SetActive(true);
         MultiplayerMatchBroadcasts.RegisterClientHandlers(_networkManager);
+        return _networkManager;
     }
 
     private DefaultPrefabObjects LoadPrefabCollection()

@@ -30,6 +30,21 @@ public static class MultiplayerMatchBroadcasts
         public double ServerRealtime;
     }
 
+    public struct EndGameResultSnapshot : IBroadcast
+    {
+        public string OwnerId;
+        public string DisplayName;
+        public int Kills;
+        public int Deaths;
+        public Color TrailColor;
+    }
+
+    public struct EndGamePayload : IBroadcast
+    {
+        public string Reason;
+        public EndGameResultSnapshot[] Results;
+    }
+
     private static bool _clientHandlersRegistered;
 
     public static void RegisterClientHandlers(NetworkManager networkManager)
@@ -48,6 +63,7 @@ public static class MultiplayerMatchBroadcasts
         networkManager.ClientManager.RegisterBroadcast<CountdownGo>(OnCountdownGo);
         networkManager.ClientManager.RegisterBroadcast<CountdownHide>(OnCountdownHide);
         networkManager.ClientManager.RegisterBroadcast<TimerStarted>(OnTimerStarted);
+        networkManager.ClientManager.RegisterBroadcast<EndGamePayload>(OnEndGamePayload);
 
         _clientHandlersRegistered = true;
         Debug.Log("[MultiplayerMatchBroadcasts] Client broadcast handlers registered.");
@@ -113,6 +129,22 @@ public static class MultiplayerMatchBroadcasts
         Debug.Log($"[MultiplayerMatchBroadcasts] Broadcast TimerStarted({duration}).");
     }
 
+    public static void SendEndGamePayload(string reason, EndGameResultSnapshot[] results)
+    {
+        if (!InstanceFinder.IsServerStarted)
+            return;
+
+        ApplyEndGamePayload(reason, results);
+
+        InstanceFinder.ServerManager.Broadcast(new EndGamePayload
+        {
+            Reason = reason,
+            Results = results
+        });
+
+        Debug.Log($"[MultiplayerEndGame] Broadcast EndGamePayload reason={reason}, results={(results != null ? results.Length : 0)}.");
+    }
+
     private static void OnFrozenState(FrozenState message, Channel channel)
     {
         MultiplayerMatchState.SetFrozen(message.Frozen);
@@ -145,5 +177,33 @@ public static class MultiplayerMatchBroadcasts
         MultiplayerMatchState.BeginTimer(message.Duration);
         Debug.Log($"[MultiplayerMatchBroadcasts] Received TimerStarted({message.Duration}).");
         MultiplayerHudBridge.ApplyTimerNow("Broadcast.TimerStarted");
+    }
+
+    private static void OnEndGamePayload(EndGamePayload message, Channel channel)
+    {
+        ApplyEndGamePayload(message.Reason, message.Results);
+        Debug.Log($"[MultiplayerEndGame] Received EndGamePayload reason={message.Reason}, results={(message.Results != null ? message.Results.Length : 0)}.");
+    }
+
+    private static void ApplyEndGamePayload(string reason, EndGameResultSnapshot[] results)
+    {
+        GameOverPayload.Clear();
+        GameOverPayload.reason = GameOverPayload.ParseReason(reason);
+
+        if (results == null)
+            return;
+
+        for (int i = 0; i < results.Length; i++)
+        {
+            EndGameResultSnapshot result = results[i];
+            GameOverPayload.results.Add(new GameOverPayload.MatchResult
+            {
+                ownerId = result.OwnerId,
+                displayName = result.DisplayName,
+                kills = result.Kills,
+                deaths = result.Deaths,
+                trailColor = result.TrailColor
+            });
+        }
     }
 }

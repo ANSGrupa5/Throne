@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
+using FishNet;
+using FishNet.Managing.Scened;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -162,9 +165,10 @@ public class EndGameController : MonoBehaviour
     public void BeginEndSequence(GameOverPayload.EndReason reason)
     {
         Debug.Log($"[EndGameController] BeginEndSequence called with reason: {reason}, _isEnding: {_isEnding}");
-        if (MultiplayerRuntimeMode.IsClientOnly)
+        bool isMultiplayerSession = IsMultiplayerSession();
+        if (isMultiplayerSession && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
         {
-            Debug.Log("[EndGameController] Ignoring client-only BeginEndSequence. Server owns multiplayer end sequence.");
+            Debug.Log("[EndGameController] Ignoring client-only BeginEndSequence. Server owns multiplayer end-game.");
             return;
         }
 
@@ -186,9 +190,9 @@ public class EndGameController : MonoBehaviour
         if (gameTimer != null)
             gameTimer.StopTimer();
 
-        if (IsMultiplayerSession() && MultiplayerRuntimeMode.IsFishNetActive && MultiplayerSessionDriver.Instance != null)
+        if (isMultiplayerSession && InstanceFinder.IsServerStarted)
         {
-            MultiplayerSessionDriver.Instance.BeginNetworkEndSequence(reason.ToString(), slowDownDuration, postFreezeDelay, finalTimescale, gameOverSceneName);
+            StartCoroutine(RunMultiplayerEndSequence(reason));
             return;
         }
 
@@ -226,8 +230,44 @@ public class EndGameController : MonoBehaviour
 
         StatsManager.Instance.IncDistDriven(DistanceTracker.Instance.GetTotalDistance());
 
-        SceneManager.LoadScene(gameOverSceneName);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(gameOverSceneName);
         Debug.Log("[EndGameController] SceneManager.LoadScene called - sequence complete");
+    }
+
+    private IEnumerator RunMultiplayerEndSequence(GameOverPayload.EndReason reason)
+    {
+        Debug.Log($"[MultiplayerEndGame] RunMultiplayerEndSequence started. reason={reason}");
+
+        float initialTimeScale = Time.timeScale <= 0f ? 1f : Time.timeScale;
+        float elapsed = 0f;
+
+        while (elapsed < slowDownDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / slowDownDuration);
+            Time.timeScale = Mathf.Lerp(initialTimeScale, finalTimescale, t);
+            yield return null;
+        }
+
+        Time.timeScale = finalTimescale;
+        yield return new WaitForSecondsRealtime(postFreezeDelay);
+
+        MultiplayerMatchBroadcasts.EndGameResultSnapshot[] snapshots = BuildEndGameSnapshots(reason);
+
+        MultiplayerMatchBroadcasts.SendEndGamePayload(reason.ToString(), snapshots);
+
+        yield return null;
+        yield return null;
+
+        Time.timeScale = 1f;
+
+        Debug.Log($"[MultiplayerEndGame] Loading GameOver scene globally: {gameOverSceneName}");
+
+        SceneLoadData sceneLoadData = new(gameOverSceneName);
+        sceneLoadData.ReplaceScenes = ReplaceOption.All;
+        sceneLoadData.PreferredActiveScene = new PreferredScene(new SceneLookupData(gameOverSceneName));
+
+        InstanceFinder.SceneManager.LoadGlobalScenes(sceneLoadData);
     }
 
     private void PrepareGameOverPayload(GameOverPayload.EndReason reason)
@@ -255,6 +295,41 @@ public class EndGameController : MonoBehaviour
                 trailColor = stats.trailColor
             });
         }
+    }
+
+    private MultiplayerMatchBroadcasts.EndGameResultSnapshot[] BuildEndGameSnapshots(GameOverPayload.EndReason reason)
+    {
+        TryBindSession();
+
+        if (_session == null)
+        {
+            Debug.LogError("[MultiplayerEndGame] Cannot build end-game payload because session is null.");
+            return System.Array.Empty<MultiplayerMatchBroadcasts.EndGameResultSnapshot>();
+        }
+
+        EnsureStatsForSpawnedVehicles();
+
+        List<MultiplayerMatchBroadcasts.EndGameResultSnapshot> results =
+            new List<MultiplayerMatchBroadcasts.EndGameResultSnapshot>();
+
+        for (int i = 0; i < _session.playerStats.Count; i++)
+        {
+            GameSessionRuntime.PlayerMatchStats stats = _session.playerStats[i];
+            if (stats == null)
+                continue;
+
+            results.Add(new MultiplayerMatchBroadcasts.EndGameResultSnapshot
+            {
+                OwnerId = stats.ownerId,
+                DisplayName = stats.displayName,
+                Kills = stats.kills,
+                Deaths = stats.deaths,
+                TrailColor = stats.trailColor
+            });
+        }
+
+        Debug.Log($"[MultiplayerEndGame] Built {results.Count} result snapshots. reason={reason}");
+        return results.ToArray();
     }
 
     private void EnsureStatsForSpawnedVehicles()

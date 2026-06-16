@@ -48,7 +48,6 @@ public class SingleplayerLobby : MonoBehaviour
     private int trailColor;
     private MatchMode selectedMatchMode = MatchMode.Deathmatch;
     private bool suddenDeath;
-    private bool hasSelectedTrailColor;
 
     private void Awake()
     {
@@ -64,10 +63,10 @@ public class SingleplayerLobby : MonoBehaviour
             suddenDeath = defaultSettings.SuddenDeathEnabled;
             trailLength = ClampTrailLength(defaultSettings.TrailLength);
             timeInSecs = NormalizeMatchDurationSeconds(defaultSettings.MatchDurationSeconds);
-            playerTrailColor = trailColorPalette != null
-                ? trailColorPalette.GetDefaultColor(defaultSettings.PlayerTrailColor)
-                : defaultSettings.PlayerTrailColor;
         }
+
+        trailColor = 0;
+        playerTrailColor = GetLobbySelectedColorOrFallback();
 
         SyncTimeFieldsFromSeconds();
         RefreshTimeUI();
@@ -122,8 +121,9 @@ public class SingleplayerLobby : MonoBehaviour
 
     public void SetPlayerTrailColor(Color color)
     {
-        playerTrailColor = color;
-        hasSelectedTrailColor = true;
+        playerTrailColor = TrailColorPalette.SanitizeColor(color, Color.white);
+        if (playerTrailColor.a <= 0.01f)
+            playerTrailColor.a = 1f;
     }
 
     public void SetPlayerTrailColorFromPaletteIndex(int index)
@@ -134,6 +134,7 @@ public class SingleplayerLobby : MonoBehaviour
             return;
         }
 
+        trailColor = Mathf.Clamp(index, 0, trailColorPalette.Colors.Count - 1);
         SetPlayerTrailColor(color);
     }
 
@@ -233,16 +234,15 @@ public class SingleplayerLobby : MonoBehaviour
 
     private void ApplySelectedTrailColor(MatchSettings settings)
     {
-        if (hasSelectedTrailColor)
-            return;
+        playerTrailColor = GetLobbySelectedColorOrFallback();
+    }
 
+    private Color GetLobbySelectedColorOrFallback()
+    {
         if (TryGetPaletteColor(trailColor, out Color selectedColor))
-        {
-            playerTrailColor = selectedColor;
-            return;
-        }
+            return TrailColorPalette.SanitizeColor(selectedColor, Color.white);
 
-        playerTrailColor = trailColorPalette.GetDefaultColor(settings.PlayerTrailColor);
+        return Color.white;
     }
 
     private void SetBotCount(int value)

@@ -19,7 +19,7 @@ MonoBehaviour:
       sceneName: MultiplayerNeon City XL
     playerCount: 1
     botCount: 0
-    matchDurationSeconds: 600
+    matchDurationSeconds: 60
     suddenDeathEnabled: 0
     suddenDeathTimeSeconds: 300
     respawnTimeSeconds: 5
