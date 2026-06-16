@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using FishNet;
 
 public class PowerUpSpawner : MonoBehaviour
 {
@@ -26,7 +25,7 @@ public class PowerUpSpawner : MonoBehaviour
 
     private void Start()
     {
-        if (IsMultiplayerSession() && InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
+        if (MultiplayerRuntimeMode.IsClientOnly)
         {
             enabled = false;
             return;
@@ -34,13 +33,6 @@ public class PowerUpSpawner : MonoBehaviour
 
         _nextSpawnTime = Time.time + initialSpawnDelay;
     }
-
-    private static bool IsMultiplayerSession()
-    {
-        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        return session != null && !session.isSingleplayer;
-    }
-
     private void Update()
     {
         // Oczyszczanie zebranych/zniszczonych powerupów z listy

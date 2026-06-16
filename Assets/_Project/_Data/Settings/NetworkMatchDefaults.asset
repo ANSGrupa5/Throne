@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cd04518933145c4d97b3574c03ed786, type: 3}
+  m_Name: NetworkMatchDefaults
+  m_EditorClassIdentifier: Assembly-CSharp::MatchDefaults
+  settings:
+    matchMode: 0
+    arenaScene:
+      sceneAsset: {fileID: 102900000, guid: e98ec61fd3ffd1549af1e5bb258f612f, type: 3}
+      sceneName: MultiplayerNeon City XL
+    playerCount: 1
+    botCount: 0
+    matchDurationSeconds: 600
+    suddenDeathEnabled: 0
+    suddenDeathTimeSeconds: 300
+    respawnTimeSeconds: 5
+    trailLength: 1
+    playerTrailColor: {r: 1, g: 1, b: 1, a: 1}

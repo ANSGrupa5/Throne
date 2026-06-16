@@ -22,6 +22,24 @@ public sealed class MatchRules : ScriptableObject
     [SerializeField] private int minTrailLength = 1;
     [SerializeField] private int maxTrailLength = 10;
 
+    public int MinPlayerCount => minPlayerCount;
+    public int MaxPlayerCount => maxPlayerCount;
+
+    public int MinBotCount => minBotCount;
+    public int MaxBotCount => maxBotCount;
+
+    public int MinMatchDurationSeconds => minMatchDurationSeconds;
+    public int MaxMatchDurationSeconds => maxMatchDurationSeconds;
+
+    public int MinRespawnTimeSeconds => minRespawnTimeSeconds;
+    public int MaxRespawnTimeSeconds => maxRespawnTimeSeconds;
+
+    public int MinSuddenDeathTimeSeconds => minSuddenDeathTimeSeconds;
+    public int MaxSuddenDeathTimeSeconds => maxSuddenDeathTimeSeconds;
+
+    public int MinTrailLength => minTrailLength;
+    public int MaxTrailLength => maxTrailLength;
+
     public MatchSettings Validate(MatchSettings settings)
     {
         if (settings == null)

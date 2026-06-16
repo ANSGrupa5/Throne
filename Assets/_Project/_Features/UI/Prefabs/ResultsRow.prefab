@@ -159,6 +159,10 @@ MonoBehaviour:
   statsText: {fileID: 2939089140356131702}
   colorSwatch: {fileID: 0}
   highlightRoot: {fileID: 6089406901650791585}
+  headerTextColor: {r: 1, g: 1, b: 1, a: 1}
+  normalTextColor: {r: 1, g: 1, b: 1, a: 1}
+  winnerTextColor: {r: 1, g: 0.86, b: 0.25, a: 1}
+  fallbackSwatchColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &3884120669776986533
 GameObject:
   m_ObjectHideFlags: 0
@@ -361,7 +365,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0123456789ABCDEF
+  m_text: Name
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -1,5 +1,4 @@
 using System.Collections;
-using FishNet;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -75,11 +74,8 @@ public class EndGameController : MonoBehaviour
 
     private void HandleTimerEnded()
     {
-        if (IsMultiplayerSession())
-        {
-            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-                return;
-        }
+        if (MultiplayerRuntimeMode.IsClientOnly)
+            return;
 
         Debug.Log("[EndGameController] Timer ended!");
         TryBindSession();
@@ -111,17 +107,14 @@ public class EndGameController : MonoBehaviour
             return;
         }
 
-        Debug.Log("[EndGameController] Calling BeginEndSequence with reason: TimeUp");
-        BeginEndSequence("TimeUp");
+        Debug.Log($"[EndGameController] Calling BeginEndSequence with reason: {GameOverPayload.EndReason.TimeUp}");
+        BeginEndSequence(GameOverPayload.EndReason.TimeUp);
     }
 
     private void HandleVehicleDied(VehicleLife victim, GameObject killer)
     {
-        if (IsMultiplayerSession())
-        {
-            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-                return;
-        }
+        if (MultiplayerRuntimeMode.IsClientOnly)
+            return;
 
         if (victim == null)
             return;
@@ -143,7 +136,7 @@ public class EndGameController : MonoBehaviour
         victimStats.deaths++;
 
         if (_session.gameMode == 0 && CountAliveVehicles() <= 1)
-            BeginEndSequence("LastAlive");
+            BeginEndSequence(GameOverPayload.EndReason.LastAlive);
     }
 
     private int CountAliveVehicles()
@@ -163,7 +156,18 @@ public class EndGameController : MonoBehaviour
 
     public void BeginEndSequence(string reason)
     {
+        BeginEndSequence(GameOverPayload.ParseReason(reason));
+    }
+
+    public void BeginEndSequence(GameOverPayload.EndReason reason)
+    {
         Debug.Log($"[EndGameController] BeginEndSequence called with reason: {reason}, _isEnding: {_isEnding}");
+        if (MultiplayerRuntimeMode.IsClientOnly)
+        {
+            Debug.Log("[EndGameController] Ignoring client-only BeginEndSequence. Server owns multiplayer end sequence.");
+            return;
+        }
+
         if (_isEnding)
         {
             Debug.LogWarning("[EndGameController] Already ending, ignoring call");
@@ -182,9 +186,9 @@ public class EndGameController : MonoBehaviour
         if (gameTimer != null)
             gameTimer.StopTimer();
 
-        if (IsMultiplayerSession() && (InstanceFinder.IsServerStarted || InstanceFinder.IsClientStarted) && MultiplayerSessionDriver.Instance != null)
+        if (IsMultiplayerSession() && MultiplayerRuntimeMode.IsFishNetActive && MultiplayerSessionDriver.Instance != null)
         {
-            MultiplayerSessionDriver.Instance.BeginNetworkEndSequence(reason, slowDownDuration, postFreezeDelay, finalTimescale, gameOverSceneName);
+            MultiplayerSessionDriver.Instance.BeginNetworkEndSequence(reason.ToString(), slowDownDuration, postFreezeDelay, finalTimescale, gameOverSceneName);
             return;
         }
 
@@ -197,7 +201,7 @@ public class EndGameController : MonoBehaviour
         areaBoundary = boundary;
     }
 
-    private IEnumerator RunEndSequence(string reason)
+    private IEnumerator RunEndSequence(GameOverPayload.EndReason reason)
     {
         Debug.Log("[EndGameController] RunEndSequence started");
         float initialTimeScale = Time.timeScale <= 0f ? 1f : Time.timeScale;
@@ -226,13 +230,15 @@ public class EndGameController : MonoBehaviour
         Debug.Log("[EndGameController] SceneManager.LoadScene called - sequence complete");
     }
 
-    private void PrepareGameOverPayload(string reason)
+    private void PrepareGameOverPayload(GameOverPayload.EndReason reason)
     {
         GameOverPayload.Clear();
         GameOverPayload.reason = reason;
 
         if (_session == null)
             return;
+
+        EnsureStatsForSpawnedVehicles();
 
         for (int i = 0; i < _session.playerStats.Count; i++)
         {
@@ -251,6 +257,24 @@ public class EndGameController : MonoBehaviour
         }
     }
 
+    private void EnsureStatsForSpawnedVehicles()
+    {
+        if (_session == null)
+            return;
+
+        VehicleLife[] vehicles = Object.FindObjectsByType<VehicleLife>(FindObjectsSortMode.None);
+        for (int i = 0; i < vehicles.Length; i++)
+        {
+            VehicleLife life = vehicles[i];
+            if (life == null)
+                continue;
+
+            Color color = GetVehicleColor(life.gameObject);
+            GameSessionRuntime.PlayerMatchStats stats = _session.GetOrCreateStats(life.OwnerId, life.DisplayName, color);
+            stats.trailColor = color;
+        }
+    }
+
     private Color GetVehicleColor(GameObject vehicle)
     {
         if (vehicle == null)
@@ -258,14 +282,13 @@ public class EndGameController : MonoBehaviour
 
         VehicleColorApplier applier = vehicle.GetComponent<VehicleColorApplier>();
         if (applier != null)
-            return applier.GetColor();
+            return TrailColorPalette.SanitizeColor(applier.GetColor(), Color.white);
 
         return Color.white;
     }
 
     private static bool IsMultiplayerSession()
     {
-        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        return session != null && !session.isSingleplayer;
+        return MultiplayerRuntimeMode.HasMultiplayerSessionOnThisPeer;
     }
 }

@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.Linq;
 
 public class GameOverResultRow : MonoBehaviour
 {
@@ -12,24 +11,33 @@ public class GameOverResultRow : MonoBehaviour
     [SerializeField] private Image colorSwatch;
     [SerializeField] private GameObject highlightRoot;
 
+    [Header("Colors")]
+    [SerializeField] private Color headerTextColor = Color.white;
+    [SerializeField] private Color normalTextColor = Color.white;
+    [SerializeField] private Color winnerTextColor = new Color(1f, 0.86f, 0.25f, 1f);
+    [SerializeField] private Color fallbackSwatchColor = Color.white;
+
     public void BindHeader()
     {
         if (rankText != null)
         {
             rankText.enabled = true;
             rankText.text = "#";
+            rankText.color = headerTextColor;
         }
 
         if (nameText != null)
         {
             nameText.enabled = true;
             nameText.text = "Player";
+            nameText.color = headerTextColor;
         }
 
         if (statsText != null)
         {
             statsText.enabled = true;
             statsText.text = "Kills\tDeaths\tK/D";
+            statsText.color = headerTextColor;
         }
 
         if (colorSwatch != null)
@@ -39,40 +47,55 @@ public class GameOverResultRow : MonoBehaviour
             highlightRoot.SetActive(false);
     }
 
-    public void Bind(int rank, GameOverPayload.MatchResult result, Color accentColor)
+    public void Bind(int rank, GameOverPayload.MatchResult result, bool isWinner)
     {
         if (result == null)
             return;
+
+        Color textColor = SanitizeDisplayColor(result.trailColor, isWinner ? winnerTextColor : normalTextColor);
 
         if (rankText != null)
         {
             rankText.enabled = true;
             rankText.text = rank.ToString()+".";
-            rankText.color = result.trailColor;
+            rankText.color = textColor;
         }
 
         if (nameText != null)
         {
             nameText.enabled = true;
             nameText.text = string.IsNullOrWhiteSpace(result.displayName) ? "Unknown" : result.displayName;
-            nameText.color = result.trailColor;
+            nameText.color = textColor;
         }
 
         if (statsText != null)
         {
             statsText.enabled = true;
-            float kdratio = result.kills / Mathf.Max(1, result.deaths);
+            float kdratio = result.kills / (float)Mathf.Max(1, result.deaths);
             statsText.text = $"{result.kills}\t{result.deaths}\t\t{kdratio:0.00}";
-            statsText.color = result.trailColor;
+            statsText.color = textColor;
         }
 
         if (colorSwatch != null)
-            colorSwatch.color = result.trailColor;
+        {
+            colorSwatch.gameObject.SetActive(true);
+            colorSwatch.color = SanitizeDisplayColor(result.trailColor, fallbackSwatchColor);
+        }
 
         if (highlightRoot != null)
-            highlightRoot.SetActive(rank == 1);
+            highlightRoot.SetActive(isWinner);
 
-        ApplyAccent(accentColor);
+        ApplyAccent(isWinner ? winnerTextColor : Color.white);
+        Debug.Log($"[GameOverResultRow] Bound '{result.displayName}' trailColor={result.trailColor}, textColor={textColor}");
+    }
+
+    private static Color SanitizeDisplayColor(Color color, Color fallback)
+    {
+        if (color.a <= 0.01f)
+            color = fallback;
+
+        color.a = 1f;
+        return color;
     }
 
     private void ApplyAccent(Color accentColor)

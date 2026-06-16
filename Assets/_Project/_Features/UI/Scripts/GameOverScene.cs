@@ -7,21 +7,19 @@ using UnityEngine.SceneManagement;
 public class GameOverController : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private TMP_Text fallbackResultsText;
+    [SerializeField] private TMP_Text reasonText;
     [SerializeField] private Transform resultsRoot;
     [SerializeField] private GameOverResultRow resultRowPrefab;
 
-    [Header("Styling")]
-    [SerializeField] private Color winnerColor = new Color(1f, 0.86f, 0.25f, 1f);
-    [SerializeField] private Color fallbackTextColor = Color.white;
+    [Header("Navigation")]
+    [SerializeField] private GameOverNavigationConfig navigationConfig;
 
-    [Header("Scenes")]
-    [SerializeField] private string mainMenuSceneName = "MainMenu";
-    [SerializeField] private string lobbySceneName = "SingleplayerLobby";
+    private readonly List<GameOverResultRow> spawnedRows = new List<GameOverResultRow>();
 
     private void Awake()
     {
         Time.timeScale = 1f;
+        NormalizeCanvasForRuntime();
     }
 
     private void Start()
@@ -31,23 +29,53 @@ public class GameOverController : MonoBehaviour
 
     public void RefreshView()
     {
+        ApplyReasonText();
         ApplyResults();
     }
 
     public void LoadScene(string sceneName)
     {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogError("GameOverController cannot load scene because the requested scene name is empty.");
+            return;
+        }
+
         CleanupPayload();
         SceneManager.LoadScene(sceneName);
     }
 
     public void ReturnToMainMenu()
     {
-        LoadScene(mainMenuSceneName);
+        LoadConfiguredScene(navigationConfig != null ? navigationConfig.MainMenuSceneName : string.Empty, "main menu");
     }
 
     public void ReturnToLobby()
     {
-        LoadScene(lobbySceneName);
+        LoadConfiguredScene(navigationConfig != null ? navigationConfig.SingleplayerLobbySceneName : string.Empty, "singleplayer lobby");
+    }
+
+    private void LoadConfiguredScene(string sceneName, string sceneRole)
+    {
+        if (navigationConfig == null)
+        {
+            Debug.LogError($"GameOverController cannot load {sceneRole} because GameOverNavigationConfig is not assigned.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogError($"GameOverController cannot load {sceneRole} because its scene reference is empty in GameOverNavigationConfig.");
+            return;
+        }
+
+        LoadScene(sceneName);
+    }
+
+    private void ApplyReasonText()
+    {
+        if (reasonText != null)
+            reasonText.text = GameOverPayload.GetReasonText();
     }
 
     private void ApplyResults()
@@ -59,64 +87,48 @@ public class GameOverController : MonoBehaviour
             .ThenBy(result => result.displayName)
             .ToList();
 
-        StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+        if (StatsManager.Instance != null)
+            StatsManager.Instance.CheckIfPlayerWon(orderedResults);
+        else
+            Debug.LogWarning("GameOverController could not update win/loss stats because StatsManager.Instance is null.");
 
-        ApplyFallbackResultsText(orderedResults);
         ApplyRowResults(orderedResults);
-    }
-
-    private void ApplyFallbackResultsText(List<GameOverPayload.MatchResult> results)
-    {
-        if (fallbackResultsText == null)
-            return;
-
-        bool hasDedicatedRows = resultsRoot != null && resultRowPrefab != null;
-        fallbackResultsText.gameObject.SetActive(!hasDedicatedRows);
-        if (hasDedicatedRows)
-            return;
-
-        fallbackResultsText.color = fallbackTextColor;
-
-        if (results.Count == 0)
-        {
-            fallbackResultsText.gameObject.SetActive(true);
-            fallbackResultsText.text = "No match data.";
-            return;
-        }
-
-        System.Text.StringBuilder builder = new System.Text.StringBuilder();
-        for (int i = 0; i < results.Count; i++)
-        {
-            GameOverPayload.MatchResult result = results[i];
-            if (result == null)
-                continue;
-
-            builder.AppendLine(FormatRowLine(i + 1, result));
-        }
-
-        fallbackResultsText.gameObject.SetActive(true);
-        fallbackResultsText.text = builder.ToString().TrimEnd();
     }
 
     private void ApplyRowResults(List<GameOverPayload.MatchResult> results)
     {
-        if (resultsRoot == null || resultRowPrefab == null)
-            return;
-
-        for (int i = resultsRoot.childCount - 1; i >= 0; i--)
+        if (resultsRoot == null)
         {
-            Transform child = resultsRoot.GetChild(i);
-            if (child != null)
-                Destroy(child.gameObject);
+            Debug.LogError("GameOverController cannot display match results because resultsRoot is not assigned.");
+            return;
         }
 
-        if (results.Count == 0)
+        if (resultRowPrefab == null)
+        {
+            Debug.LogError("GameOverController cannot display match results because resultRowPrefab is not assigned.");
             return;
+        }
+
+        GameObject rowTemplate = resultRowPrefab.gameObject;
+        rowTemplate.SetActive(false);
+
+        for (int i = spawnedRows.Count - 1; i >= 0; i--)
+        {
+            GameOverResultRow row = spawnedRows[i];
+            if (row != null)
+                Destroy(row.gameObject);
+        }
+        spawnedRows.Clear();
+
+        if (results.Count == 0)
+        {
+            Debug.LogWarning("GameOverController has no match results to display.");
+            return;
+        }
 
         int rowIndex = 0;
 
-        // Wstawiamy nagłówek (Header)
-        GameOverResultRow headerRow = Instantiate(resultRowPrefab, resultsRoot);
+        GameOverResultRow headerRow = CreateResultRow();
         PositionRow(headerRow.transform as RectTransform, rowIndex);
         headerRow.BindHeader();
         rowIndex++;
@@ -127,10 +139,55 @@ public class GameOverController : MonoBehaviour
             if (result == null)
                 continue;
 
-            GameOverResultRow row = Instantiate(resultRowPrefab, resultsRoot);
+            Debug.Log(
+                $"[GameOverController] Result row {i + 1}: " +
+                $"name='{result.displayName}', " +
+                $"ownerId='{result.ownerId}', " +
+                $"kills={result.kills}, deaths={result.deaths}, " +
+                $"trailColor={result.trailColor}");
+
+            GameOverResultRow row = CreateResultRow();
             PositionRow(row.transform as RectTransform, rowIndex);
-            row.Bind(i + 1, result, i == 0 ? winnerColor : Color.white);
+            row.Bind(i + 1, result, i == 0);
             rowIndex++;
+        }
+
+        Debug.Log($"GameOverController rendered {rowIndex} rows for {results.Count} match results.");
+    }
+
+    private GameOverResultRow CreateResultRow()
+    {
+        GameOverResultRow row = Instantiate(resultRowPrefab, resultsRoot);
+        row.gameObject.SetActive(true);
+        row.enabled = true;
+        row.transform.SetAsLastSibling();
+        spawnedRows.Add(row);
+
+        RectTransform rect = row.transform as RectTransform;
+        if (rect != null && rect.localScale == Vector3.zero)
+            rect.localScale = Vector3.one;
+
+        return row;
+    }
+
+    private void NormalizeCanvasForRuntime()
+    {
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return;
+
+        Transform canvasTransform = canvas.transform;
+        Vector3 scale = canvasTransform.localScale;
+        if (Mathf.Approximately(scale.x, 0f) || Mathf.Approximately(scale.y, 0f) || Mathf.Approximately(scale.z, 0f))
+        {
+            canvasTransform.localScale = Vector3.one;
+            Debug.LogWarning("GameOverController corrected a zero-scale Canvas at runtime. Fix the GameOver Canvas RectTransform scale to 1,1,1 in the Unity scene.");
+        }
+
+        if (canvas.renderMode == RenderMode.ScreenSpaceCamera && canvas.worldCamera == null)
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            Debug.LogWarning("GameOverController changed a Screen Space Camera Canvas with no camera to Screen Space Overlay at runtime. Fix the GameOver Canvas render mode or camera assignment in the Unity scene.");
         }
     }
 
@@ -138,26 +195,6 @@ public class GameOverController : MonoBehaviour
     {
         if (rect == null) return;
         rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -30f - (50f * index));
-    }
-
-    private string TranslateReason(string reason)
-    {
-        if (string.IsNullOrWhiteSpace(reason))
-            return "Match ended.";
-
-        return reason switch
-        {
-            "TimeUp" => "Time up.",
-            "LastAlive" => "Last alive.",
-            "Manual" => "Ended manually.",
-            _ => reason
-        };
-    }
-
-    private string FormatRowLine(int rank, GameOverPayload.MatchResult result)
-    {
-        string name = string.IsNullOrWhiteSpace(result.displayName) ? "Unknown" : result.displayName;
-        return $"{rank}. {name}   K:{result.kills}   D:{result.deaths}";
     }
 
     private void CleanupPayload()

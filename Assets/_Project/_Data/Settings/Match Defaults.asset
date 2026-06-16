@@ -19,9 +19,9 @@ MonoBehaviour:
       sceneName: Neon City XL
     playerCount: 1
     botCount: 0
-    matchDurationSeconds: 600
+    matchDurationSeconds: 60
     suddenDeathEnabled: 0
-    suddenDeathTimeSeconds: 300
+    suddenDeathTimeSeconds: 10
     respawnTimeSeconds: 5
     trailLength: 1
     playerTrailColor: {r: 1, g: 1, b: 1, a: 1}

@@ -31,12 +31,22 @@ public class VehicleCameraController : MonoBehaviour
     private int _currentPreset;
     private Transform _spectatorTarget;
     private bool _useSpectatorTarget;
+    private Camera _camera;
+    private AudioListener _audioListener;
 
     public Transform CameraTransform => cameraTransform;
+
+    private void Awake()
+    {
+        CachePresentationComponents();
+    }
 
     // Handles preset switching input and updates camera interpolation.
     private void Update()
     {
+        if (cameraTransform == null)
+            return;
+
         if (Input.GetKeyDown(InputManager.Instance.Camera))
             // Cycle through presets
             _currentPreset = (_currentPreset + 1) % presets.Length;
@@ -47,6 +57,9 @@ public class VehicleCameraController : MonoBehaviour
     // Smoothly moves and rotates the camera toward the active preset.
     private void SmoothTransition()
     {
+        if (cameraTransform == null)
+            return;
+
         if (_useSpectatorTarget && _spectatorTarget != null)
         {
             cameraTransform.position = Vector3.Lerp(
@@ -108,5 +121,34 @@ public class VehicleCameraController : MonoBehaviour
     {
         _spectatorTarget = null;
         _useSpectatorTarget = false;
+    }
+
+    public void SetCameraActive(bool active)
+    {
+        CachePresentationComponents();
+
+        if (_camera != null)
+            _camera.enabled = active;
+
+        if (_audioListener != null)
+            _audioListener.enabled = active;
+
+        enabled = active;
+    }
+
+    private void CachePresentationComponents()
+    {
+        if (cameraTransform == null)
+        {
+            Camera childCamera = GetComponentInChildren<Camera>(true);
+            if (childCamera != null)
+                cameraTransform = childCamera.transform;
+        }
+
+        if (_camera == null)
+            _camera = cameraTransform != null ? cameraTransform.GetComponent<Camera>() : GetComponentInChildren<Camera>(true);
+
+        if (_audioListener == null)
+            _audioListener = cameraTransform != null ? cameraTransform.GetComponent<AudioListener>() : GetComponentInChildren<AudioListener>(true);
     }
 }

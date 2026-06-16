@@ -43,7 +43,23 @@ public class NetworkVehicleLife : NetworkBehaviour
             return;
 
         if (IsSpawned && IsServerInitialized)
-            RpcApplyRespawn();
+            ObserversRespawn(life.transform.position, life.transform.rotation);
+    }
+
+    [Server]
+    public void ServerRespawn(Vector3 position, Quaternion rotation)
+    {
+        if (_life == null)
+            return;
+
+        if (!IsServerInitialized)
+            return;
+
+        Debug.Log(
+            $"[NetworkVehicleLife] ServerRespawn object='{name}' " +
+            $"owner={(Owner != null ? Owner.ClientId.ToString() : "<null>")}");
+
+        _life.RespawnAt(position, rotation);
     }
 
     [ObserversRpc]
@@ -56,12 +72,31 @@ public class NetworkVehicleLife : NetworkBehaviour
     }
 
     [ObserversRpc]
-    private void RpcApplyRespawn()
+    private void ObserversRespawn(Vector3 position, Quaternion rotation)
     {
-        if (IsServerInitialized || _life == null)
+        if (IsServerInitialized)
             return;
 
-        _life.ApplyReplicatedRespawn();
+        Debug.Log($"[NetworkVehicleLife] ObserversRespawn object='{name}'");
+        ApplyRespawnPresentation(position, rotation);
+    }
+
+    private void ApplyRespawnPresentation(Vector3 position, Quaternion rotation)
+    {
+        if (_life != null)
+            _life.ApplyReplicatedRespawn(position, rotation);
+
+        VehicleDeathSequence deathSequence = GetComponent<VehicleDeathSequence>();
+        if (deathSequence != null)
+            deathSequence.ResetDeathPresentation();
+
+        NetworkPlayerVehicleInput input = GetComponent<NetworkPlayerVehicleInput>();
+        if (input != null)
+            input.RefreshAfterRespawn();
+
+        VehicleController vehicleController = GetComponent<VehicleController>();
+        if (vehicleController != null)
+            vehicleController.ResetPresentationState();
     }
 
     private bool CanApplyAuthoritativeGameplay()

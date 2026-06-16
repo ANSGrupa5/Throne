@@ -20,6 +20,7 @@ public class StatsManager : MonoBehaviour
     private GameObject StatisticsScreen;
     private GameObject player = null;
     private string playerName = null;
+    private string playerOwnerId = null;
 
     private int OppsElim, TimesElim, PowerUpsPickedUp, Wins, Losses;
     private float DistDriven;
@@ -50,18 +51,11 @@ public class StatsManager : MonoBehaviour
         
     }
 
-    public void GetPlayerPrefab(string playername)
+    public void SetPlayerVehicle(GameObject playerVehicle, string displayName, string ownerId)
     {
-        try
-        {
-            player = GameObject.Find("motorFINAL2_WORKING(Clone)");
-        }
-        catch (NullReferenceException)
-        {
-            player = GameObject.Find("motor22(Clone)");
-        }
-
-        playerName = playername;
+        player = playerVehicle;
+        playerName = displayName;
+        playerOwnerId = ownerId;
     }
 
     public bool CheckIfPlayerIsKiller(GameObject objectToCheck)
@@ -92,7 +86,11 @@ public class StatsManager : MonoBehaviour
 
         GameOverPayload.MatchResult winner = results[0];
 
-        if (winner.displayName == playerName)
+        bool playerWon = !string.IsNullOrWhiteSpace(playerOwnerId)
+            ? winner.ownerId == playerOwnerId
+            : winner.displayName == playerName;
+
+        if (playerWon)
             IncWins();
         else
             IncLosses();

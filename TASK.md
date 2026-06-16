@@ -1,11 +1,10 @@
-Current task: Patch 1 - asset/config model cleanup and explicit session requirement.
+Current task: Patch 4B - multiplayer match-start broadcasts.
 
 Scope:
-- Add MatchSettings, MatchDefaults, MatchRules, SceneReference, TrailColorPalette, and VehiclePrefabSet.
-- Add GameSessionRuntime creation from MatchSettings + VehiclePrefabSet.
-- Remove production fallback session creation from MatchInitializer.
-- Remove MultiplayerSessionDriver hardcoded AssetDatabase config fallbacks.
+- Move multiplayer countdown, GO, timer-start, and frozen-state replication from MultiplayerSessionDriver ObserversRpc to FishNet broadcasts.
+- Register broadcast handlers from the persistent MultiplayerRuntimeBootstrap before host/client connections start.
+- Keep MultiplayerSessionDriver session creation and lobby match start responsibility unchanged.
 
 Out of scope:
-- Scene, prefab, ScriptableObject asset, ProjectSettings, and package edits.
-- Full SingleplayerLobby migration, MultiplayerLobby introduction, MatchInitializer split, and network bot work.
+- Scene, prefab, ScriptableObject asset, ProjectSettings, package, and .meta edits.
+- Vehicle ownership, respawn, camera, spawn placement, NetworkManager replacement, and singleplayer flow behavior changes.

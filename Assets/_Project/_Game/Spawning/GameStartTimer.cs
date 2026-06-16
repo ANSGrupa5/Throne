@@ -18,6 +18,12 @@ public class GameStartTimer : MonoBehaviour
         Hide();
     }
 
+    private void OnEnable()
+    {
+        if (MultiplayerRuntimeMode.IsFishNetActive)
+            MultiplayerHudBridge.ApplyCountdownNow("GameStartTimer.OnEnable");
+    }
+
     public void ShowCount(int secondsLeft)
     {
         if (timerText == null)

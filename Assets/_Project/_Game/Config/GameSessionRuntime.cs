@@ -72,18 +72,18 @@ public class GameSessionRuntime
             playerPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.PlayerVehiclePrefab : null,
             playerDisplayName = "Player",
             playerOwnerId = "player_1",
-            playerTrailColor = settings.PlayerTrailColor,
+            playerTrailColor = TrailColorPalette.SanitizeColor(settings.PlayerTrailColor, Color.white),
             botDefaultPrefab = vehiclePrefabSet != null ? vehiclePrefabSet.BotVehiclePrefab : null
         };
 
         if (trailColorPalette != null && trailColorPalette.Colors != null)
         {
             for (int i = 0; i < trailColorPalette.Colors.Count; i++)
-                session.trailColorPalette.Add(trailColorPalette.Colors[i]);
+                session.trailColorPalette.Add(TrailColorPalette.SanitizeColor(trailColorPalette.Colors[i], Color.white));
         }
 
         if (session.trailColorPalette.Count == 0)
-            session.trailColorPalette.Add(settings.PlayerTrailColor);
+            session.trailColorPalette.Add(session.playerTrailColor);
 
         if (settings.BotCount > 0)
         {
@@ -151,17 +151,16 @@ public class GameSessionRuntime
         // Seed the local player from the selected look, or use a generic default identity.
         if (playerLook != null)
         {
-            session.playerPrefab = playerLook.playerPrefab;
             session.playerDisplayName = playerLook.displayName;
             session.playerOwnerId = string.IsNullOrWhiteSpace(playerLook.ownerId) ? "player_1" : playerLook.ownerId;
-            session.playerTrailColor = playerLook.trailColor;
         }
         else
         {
             session.playerDisplayName = "Player";
             session.playerOwnerId = "player_1";
-            session.playerTrailColor = Color.white;
         }
+
+        session.playerTrailColor = overridePlayerTrailColor ?? Color.white;
 
         if (overrideGameMode.HasValue)
             session.gameMode = overrideGameMode.Value;
@@ -302,26 +301,12 @@ public class GameSessionRuntime
         if (totalBots <= 0)
             return;
 
-        GameObject defaultBotPrefab = session != null ? session.botDefaultPrefab : ResolveDefaultBotPrefab(session, botsSettings);
-        List<Color> availableColors = new List<Color>();
-        for (int i = 0; i < session.trailColorPalette.Count; i++)
-        {
-            Color color = session.trailColorPalette[i];
-            if (color == session.playerTrailColor)
-                continue;
-
-            availableColors.Add(color);
-        }
-
         for (int i = 0; i < totalBots; i++)
         {
-            Color color = PickBotColorForLook(availableColors, session);
             PlayerLook look = ScriptableObject.CreateInstance<PlayerLook>();
             look.hideFlags = HideFlags.DontSave;
-            look.playerPrefab = defaultBotPrefab;
             look.displayName = $"BOT{i + 1}";
             look.ownerId = $"bot_{i + 1}";
-            look.trailColor = color;
             session.botLooks.Add(look);
         }
     }
@@ -348,26 +333,6 @@ public class GameSessionRuntime
         return null;
     }
 
-    // Picks a bot color while trying to avoid reusing the player's trail color.
-    private static Color PickBotColorForLook(List<Color> availableColors, GameSessionRuntime session)
-    {
-        if (availableColors != null && availableColors.Count > 0)
-        {
-            int index = Random.Range(0, availableColors.Count);
-            Color selected = availableColors[index];
-            availableColors.RemoveAt(index);
-            return selected;
-        }
-
-        if (session != null && session.trailColorPalette.Count > 0)
-        {
-            int index = Random.Range(0, session.trailColorPalette.Count);
-            return session.trailColorPalette[index];
-        }
-
-        return Color.white;
-    }
-
     // Returns an existing stats entry for this owner, or creates one if the match has not seen it yet.
     public PlayerMatchStats GetOrCreateStats(string ownerId, string displayName, Color? trailColor = null)
     {
@@ -387,8 +352,8 @@ public class GameSessionRuntime
                 if (!string.IsNullOrWhiteSpace(normalizedDisplayName))
                     stats.displayName = normalizedDisplayName;
 
-                if (trailColor.HasValue)
-                    stats.trailColor = trailColor.Value;
+                if (trailColor.HasValue && !IsValidStoredColor(stats.trailColor))
+                    stats.trailColor = TrailColorPalette.SanitizeColor(trailColor.Value, Color.white);
 
                 return stats;
             }
@@ -400,10 +365,62 @@ public class GameSessionRuntime
             displayName = normalizedDisplayName,
             kills = 0,
             deaths = 0,
-            trailColor = trailColor ?? Color.white
+            trailColor = TrailColorPalette.SanitizeColor(trailColor ?? Color.white, Color.white)
         };
 
         playerStats.Add(created);
         return created;
+    }
+
+    public Color GetBotTrailColor(int botIndex)
+    {
+        Color fallback = CreateFallbackBotColor(botIndex, playerTrailColor);
+        if (trailColorPalette == null || trailColorPalette.Count == 0)
+            return fallback;
+
+        List<Color> candidates = new List<Color>();
+        for (int i = 0; i < trailColorPalette.Count; i++)
+        {
+            Color candidate = TrailColorPalette.SanitizeColor(trailColorPalette[i], fallback);
+            if (!ApproximatelySameColor(candidate, playerTrailColor))
+                candidates.Add(candidate);
+        }
+
+        if (candidates.Count == 0)
+            return fallback;
+
+        int index = botIndex % candidates.Count;
+        if (index < 0)
+            index += candidates.Count;
+
+        return candidates[index];
+    }
+
+    private static Color CreateFallbackBotColor(int botIndex, Color playerColor)
+    {
+        for (int attempt = 0; attempt < 6; attempt++)
+        {
+            Color color = Color.HSVToRGB(((botIndex + attempt + 1) * 0.17f) % 1f, 0.85f, 1f);
+            color.a = 1f;
+            if (!ApproximatelySameColor(color, playerColor))
+                return color;
+        }
+
+        return Color.white;
+    }
+
+    private static bool ApproximatelySameColor(Color a, Color b)
+    {
+        a = TrailColorPalette.SanitizeColor(a, Color.white);
+        b = TrailColorPalette.SanitizeColor(b, Color.white);
+
+        return Mathf.Abs(a.r - b.r) <= 0.01f &&
+               Mathf.Abs(a.g - b.g) <= 0.01f &&
+               Mathf.Abs(a.b - b.b) <= 0.01f;
+    }
+
+    private static bool IsValidStoredColor(Color color)
+    {
+        return color.a > 0.01f;
     }
 }

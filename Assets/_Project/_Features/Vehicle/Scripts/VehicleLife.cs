@@ -28,6 +28,8 @@ public class VehicleLife : MonoBehaviour
     public GameObject LastKiller { get; private set; }
     public string DisplayName => string.IsNullOrWhiteSpace(_displayName) ? gameObject.name : _displayName;
     public string OwnerId => string.IsNullOrWhiteSpace(_ownerId) ? DisplayName : _ownerId;
+    public Vector3 SpawnPosition => _spawnPosition;
+    public Quaternion SpawnRotation => _spawnRotation;
     public event Action<VehicleLife, GameObject> Died;
     public event Action<VehicleLife> Respawned;
 
@@ -95,6 +97,12 @@ public class VehicleLife : MonoBehaviour
         ApplyRespawn(invokeEvent: true);
     }
 
+    public void RespawnAt(Vector3 position, Quaternion rotation)
+    {
+        ConfigureSpawn(position, rotation);
+        Respawn();
+    }
+
     public void GrantInvulnerability(float duration)
     {
         if (!CanApplyGameplay())
@@ -129,6 +137,12 @@ public class VehicleLife : MonoBehaviour
         ApplyRespawn(invokeEvent: true);
     }
 
+    public void ApplyReplicatedRespawn(Vector3 position, Quaternion rotation)
+    {
+        ConfigureSpawn(position, rotation);
+        ApplyRespawn(invokeEvent: true);
+    }
+
     private void ApplyDeath(GameObject killer, bool invokeEvent)
     {
         LastKiller = killer;
@@ -147,6 +161,8 @@ public class VehicleLife : MonoBehaviour
         transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
         SetVisibility(true);
         SetGameplayActive(true);
+        if (_vehicleController != null)
+            _vehicleController.ResetPresentationState();
 
         if (_rb != null)
         {

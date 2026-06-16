@@ -39,30 +39,58 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
             Instance = null;
 
         IsMatchRunning = false;
-        MultiplayerMatchState.SetFrozen(false);
+        MultiplayerMatchState.Reset();
+        MultiplayerHudBridge.ResetAppliedState();
     }
 
     [Server]
     public void StartMatch()
     {
-        if (IsMatchRunning)
-            return;
-
-        if (!EnsureMultiplayerSession())
-            return;
-
-        MatchInitializer initializer = FindFirstObjectByType<MatchInitializer>();
-        if (initializer == null)
-        {
-            Debug.LogWarning("Unable to start multiplayer match because no MatchInitializer was found in the active scene.");
-            return;
-        }
-
-        initializer.BeginMatchInitialization();
+        StartMatch(matchDefaults, matchRules, networkVehiclePrefabSet, trailColorPalette);
     }
 
     [Server]
-    private bool EnsureMultiplayerSession()
+    public void StartMatch(
+        MatchDefaults matchDefaultsOverride,
+        MatchRules matchRulesOverride,
+        VehiclePrefabSet networkVehiclePrefabSetOverride,
+        TrailColorPalette trailColorPaletteOverride)
+    {
+        if (IsMatchRunning)
+            return;
+
+        if (!EnsureMultiplayerSession(matchDefaultsOverride, matchRulesOverride, networkVehiclePrefabSetOverride, trailColorPaletteOverride))
+            return;
+
+        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
+        if (session == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot start match because no GameSessionRuntime exists after session creation.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(session.arenaSceneName))
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot start match because session arena scene name is empty.");
+            return;
+        }
+
+        MultiplayerRuntimeBootstrap runtime = MultiplayerRuntimeBootstrap.Instance;
+        if (runtime == null)
+        {
+            Debug.LogError("[MultiplayerSessionDriver] Cannot start multiplayer arena load because MultiplayerRuntimeBootstrap.Instance is null.");
+            return;
+        }
+
+        runtime.BeginServerArenaLoadAndInitialize(session.arenaSceneName);
+    }
+
+    [Server]
+    private bool EnsureMultiplayerSession(
+        MatchDefaults matchDefaultsOverride,
+        MatchRules matchRulesOverride,
+        VehiclePrefabSet networkVehiclePrefabSetOverride,
+        TrailColorPalette trailColorPaletteOverride)
     {
         GameSessionRuntime currentSession = GameSessionBootstrap.CurrentSession;
         if (currentSession != null && currentSession.isSingleplayer)
@@ -74,40 +102,46 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
             Debug.Log("[MultiplayerSessionDriver] Refreshing existing multiplayer session before match start.");
         }
 
-        if (matchDefaults == null)
+        MatchDefaults activeMatchDefaults = matchDefaultsOverride != null ? matchDefaultsOverride : matchDefaults;
+        MatchRules activeMatchRules = matchRulesOverride != null ? matchRulesOverride : matchRules;
+        VehiclePrefabSet activeNetworkVehiclePrefabSet = networkVehiclePrefabSetOverride != null ? networkVehiclePrefabSetOverride : networkVehiclePrefabSet;
+        TrailColorPalette activeTrailColorPalette = trailColorPaletteOverride != null ? trailColorPaletteOverride : trailColorPalette;
+
+        if (activeMatchDefaults == null)
         {
             Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchDefaults is not assigned.");
             return false;
         }
 
-        if (matchRules == null)
+        if (activeMatchRules == null)
         {
             Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because MatchRules is not assigned.");
             return false;
         }
 
-        if (networkVehiclePrefabSet == null)
+        if (activeNetworkVehiclePrefabSet == null)
         {
             Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because Network VehiclePrefabSet is not assigned.");
             return false;
         }
 
-        if (trailColorPalette == null)
+        if (activeTrailColorPalette == null)
         {
             Debug.LogError("[MultiplayerSessionDriver] Cannot create multiplayer session because TrailColorPalette is not assigned.");
             return false;
         }
 
         int connectedHumanCount = CountConnectedHumans();
-        MatchSettings settings = matchDefaults.CreateSettings();
+        MatchSettings settings = activeMatchDefaults.CreateSettings();
         settings.PlayerCount = connectedHumanCount;
         settings.BotCount = 0;
-        settings = matchRules.Validate(settings);
+        settings = activeMatchRules.Validate(settings);
+        settings.BotCount = 0;
 
         GameSessionRuntime session = GameSessionRuntime.FromSettings(
             settings,
-            networkVehiclePrefabSet,
-            trailColorPalette,
+            activeNetworkVehiclePrefabSet,
+            activeTrailColorPalette,
             isSingleplayer: false);
 
         GameSessionBootstrap.SetSession(session);
@@ -159,33 +193,50 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     public IEnumerator RunMatchStartSequence(int seconds, float goDuration, GameStartTimer startTimer, GameTimer timer, float matchDuration)
     {
         IsMatchRunning = true;
-        MultiplayerMatchState.SetFrozen(true);
-        RpcSetFrozen(true);
+        BroadcastCountdownStarted(seconds);
 
-        for (int i = seconds; i > 0; i--)
+        for (int i = seconds - 1; i > 0; i--)
         {
-            if (startTimer != null)
-                startTimer.ShowCount(i);
-
-            RpcShowCount(i);
             yield return new WaitForSecondsRealtime(1f);
+            BroadcastCountdownValue(i);
         }
 
-        if (startTimer != null)
-            startTimer.ShowGo();
-
-        RpcShowGo();
+        yield return new WaitForSecondsRealtime(1f);
+        BroadcastCountdownGo();
         yield return new WaitForSecondsRealtime(goDuration);
 
-        if (startTimer != null)
-            startTimer.Hide();
-        if (timer != null)
-            timer.Begin(matchDuration);
+        BroadcastCountdownEnded();
+        BroadcastMatchTimerStarted(matchDuration);
+    }
 
-        RpcHideCountdown();
-        RpcBeginTimer(matchDuration);
-        RpcSetFrozen(false);
-        MultiplayerMatchState.SetFrozen(false);
+    [Server]
+    public void BroadcastCountdownStarted(float duration)
+    {
+        ObserversCountdownStarted(duration);
+    }
+
+    [Server]
+    public void BroadcastCountdownValue(int value)
+    {
+        ObserversCountdownValue(value);
+    }
+
+    [Server]
+    public void BroadcastCountdownEnded()
+    {
+        ObserversCountdownEnded();
+    }
+
+    [Server]
+    private void BroadcastCountdownGo()
+    {
+        ObserversCountdownGo();
+    }
+
+    [Server]
+    private void BroadcastMatchTimerStarted(float matchDuration)
+    {
+        ObserversMatchTimerStarted(matchDuration);
     }
 
     [Server]
@@ -235,54 +286,52 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
         return results;
     }
 
-    [ObserversRpc]
-    private void RpcShowCount(int seconds)
+    [ObserversRpc(BufferLast = true, RunLocally = true)]
+    private void ObserversCountdownStarted(float duration)
     {
-        if (IsServerInitialized)
-            return;
+        int value = Mathf.CeilToInt(duration);
+        MultiplayerMatchState.SetFrozen(true);
+        MultiplayerMatchState.SetCountdownCount(value);
+        MultiplayerHudBridge.ApplyCountdownNow("RpcShowCount");
 
-        GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
-        if (startTimer != null)
-            startTimer.ShowCount(seconds);
+        Debug.Log($"[MultiplayerCountdown] RpcShowCount({value}) on peer.");
     }
 
-    [ObserversRpc]
-    private void RpcShowGo()
+    [ObserversRpc(BufferLast = true, RunLocally = true)]
+    private void ObserversCountdownValue(int value)
     {
-        if (IsServerInitialized)
-            return;
+        MultiplayerMatchState.SetCountdownCount(value);
+        MultiplayerHudBridge.ApplyCountdownNow("RpcShowCount");
 
-        GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
-        if (startTimer != null)
-            startTimer.ShowGo();
+        Debug.Log($"[MultiplayerCountdown] RpcShowCount({value}) on peer.");
     }
 
-    [ObserversRpc]
-    private void RpcHideCountdown()
+    [ObserversRpc(BufferLast = true, RunLocally = true)]
+    private void ObserversCountdownGo()
     {
-        if (IsServerInitialized)
-            return;
+        MultiplayerMatchState.SetCountdownGo();
+        MultiplayerHudBridge.ApplyCountdownNow("RpcShowGo");
 
-        GameStartTimer startTimer = FindFirstObjectByType<GameStartTimer>(FindObjectsInactive.Include);
-        if (startTimer != null)
-            startTimer.Hide();
+        Debug.Log("[MultiplayerCountdown] RpcShowGo on peer.");
     }
 
-    [ObserversRpc]
-    private void RpcBeginTimer(float matchDuration)
+    [ObserversRpc(BufferLast = true, RunLocally = true)]
+    private void ObserversCountdownEnded()
     {
-        if (IsServerInitialized)
-            return;
+        MultiplayerMatchState.HideCountdown();
+        MultiplayerMatchState.SetFrozen(false);
+        MultiplayerHudBridge.ApplyCountdownNow("RpcHideCountdown");
 
-        GameTimer timer = FindFirstObjectByType<GameTimer>(FindObjectsInactive.Include);
-        if (timer != null)
-            timer.Begin(matchDuration);
+        Debug.Log("[MultiplayerCountdown] RpcHideCountdown on peer.");
     }
 
-    [ObserversRpc(RunLocally = true)]
-    private void RpcSetFrozen(bool frozen)
+    [ObserversRpc(BufferLast = true, RunLocally = true)]
+    private void ObserversMatchTimerStarted(float matchDuration)
     {
-        MultiplayerMatchState.SetFrozen(frozen);
+        MultiplayerMatchState.BeginTimer(matchDuration);
+        MultiplayerHudBridge.ApplyTimerNow("RpcBeginTimer");
+
+        Debug.Log($"[MultiplayerCountdown] RpcBeginTimer({matchDuration}) on peer.");
     }
 
     [ObserversRpc(RunLocally = true)]
@@ -295,7 +344,7 @@ public sealed class MultiplayerSessionDriver : NetworkBehaviour
     private void RpcPrepareGameOver(string reason, MatchResultSnapshot[] results)
     {
         GameOverPayload.Clear();
-        GameOverPayload.reason = reason;
+        GameOverPayload.reason = GameOverPayload.ParseReason(reason);
 
         if (results == null)
             return;

@@ -32,6 +32,12 @@ public class GameTimer : MonoBehaviour
         SetVisible(false);
     }
 
+    private void OnEnable()
+    {
+        if (MultiplayerRuntimeMode.IsFishNetActive)
+            MultiplayerHudBridge.ApplyTimerNow("GameTimer.OnEnable");
+    }
+
     public void Begin(float durationSeconds)
     {
         StopTimer();

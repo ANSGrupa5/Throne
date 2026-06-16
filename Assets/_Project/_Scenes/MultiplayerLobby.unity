@@ -541,7 +541,7 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
@@ -553,7 +553,7 @@ PrefabInstance:
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: AddBot
@@ -910,7 +910,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -1222,7 +1222,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: DecreaseMin
         m_Mode: 1
@@ -1534,7 +1534,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: ChangePlayerModelDown
         m_Mode: 1
@@ -1888,7 +1888,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -2413,7 +2413,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: ChangeTrailLength
         m_Mode: 1
@@ -3092,6 +3092,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 598961697}
+  - component: {fileID: 598961698}
   m_Layer: 0
   m_Name: MultiplayerLobbyObject
   m_TagString: Untagged
@@ -3116,6 +3117,20 @@ Transform:
   - {fileID: 2128197808}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &598961698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598961696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a229c791a8fa7874a9c0e15cc14b72d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MultiplayerMenuButtons
+  connectionTypePanel: {fileID: 729201719}
+  hostPanel: {fileID: 1841471365}
 --- !u!1001 &674113797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3127,7 +3142,7 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
@@ -3139,7 +3154,7 @@ PrefabInstance:
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: AddBot
@@ -3614,7 +3629,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -3926,7 +3941,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: ChangePlayerModelUp
         m_Mode: 1
@@ -4269,7 +4284,7 @@ PrefabInstance:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1806308469}
+      objectReference: {fileID: 598961698}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: HostGame
@@ -4649,21 +4664,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
-        m_MethodName: LoadScene
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 2052947075}
-        m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
-        m_MethodName: tempLog
+      - m_Target: {fileID: 598961698}
+        m_TargetAssemblyTypeName: MultiplayerMenuButtons, Assembly-CSharp
+        m_MethodName: StartMatch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4854,31 +4857,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 1841471366}
     m_Modifications:
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalScale.x
-      value: 15
+      value: 6.25
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalScale.y
-      value: 15
+      value: 6.25
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalScale.z
-      value: 15
+      value: 6.25
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -400
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.05
+      value: -224.97917
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 41.93
+      value: 17.470829
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4886,15 +4889,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -4918,7 +4921,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5732138123526451052, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5190,7 +5193,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -5502,7 +5505,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: IncreaseSec
         m_Mode: 1
@@ -5814,7 +5817,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: IncreaseMin
         m_Mode: 1
@@ -6126,7 +6129,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -6187,7 +6190,7 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
@@ -6203,7 +6206,7 @@ PrefabInstance:
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: AddBot
@@ -6333,7 +6336,7 @@ PrefabInstance:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1806308469}
+      objectReference: {fileID: 598961698}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: JoinGame
@@ -6820,7 +6823,7 @@ PrefabInstance:
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1806308469}
+      objectReference: {fileID: 598961698}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: BackToMainMenu
@@ -7365,7 +7368,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: DecreaseSec
         m_Mode: 1
@@ -7617,7 +7620,7 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
@@ -7629,7 +7632,7 @@ PrefabInstance:
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: AddBot
@@ -8017,6 +8020,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RotatePreview
   speed: 15
   rotateAxis: 1
+--- !u!4 &1585333283 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4956059572674819542, guid: cf0c1f4c882fd984683bac0c63706c27, type: 3}
+  m_PrefabInstance: {fileID: 1197294996}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1611307719
 GameObject:
   m_ObjectHideFlags: 0
@@ -8302,7 +8310,7 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
@@ -8314,7 +8322,7 @@ PrefabInstance:
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2052947075}
+      objectReference: {fileID: 0}
     - target: {fileID: 4876494984994295684, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: AddBot
@@ -8671,7 +8679,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: SetTrailColor
         m_Mode: 3
@@ -8851,12 +8859,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1766635354}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -5, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -400, y: -227.08333, z: 0.8333333}
+  m_LocalScale: {x: 0.41666666, y: 0.41666666, z: 0.41666666}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1841471366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1806308464
 GameObject:
@@ -8870,7 +8878,6 @@ GameObject:
   - component: {fileID: 1806308468}
   - component: {fileID: 1806308467}
   - component: {fileID: 1806308466}
-  - component: {fileID: 1806308469}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -8964,20 +8971,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &1806308469
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1806308464}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a229c791a8fa7874a9c0e15cc14b72d5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MultiplayerMenuButtons
-  ConnectionTypePanel: {fileID: 729201719}
-  HostPanel: {fileID: 1841471365}
 --- !u!1 &1815798577
 GameObject:
   m_ObjectHideFlags: 0
@@ -9084,6 +9077,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2052947074}
+  - {fileID: 1766635358}
+  - {fileID: 1585333283}
+  - {fileID: 1964693558}
   m_Father: {fileID: 1806308465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -9135,7 +9131,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 1841471366}
     m_Modifications:
     - target: {fileID: 6984533236955021413, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_Enabled
@@ -9143,27 +9139,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1500
+      value: 625
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1500
+      value: 624.9999
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1500
+      value: 624.9999
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -400
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.69
+      value: -223.4625
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.14
+      value: 16.725006
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalRotation.w
@@ -9175,11 +9171,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -9269,6 +9265,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RotatePreview
   speed: 40
   rotateAxis: 2
+--- !u!4 &1964693558 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8116936945462082314, guid: 89e456e4920383b4f8c45574b440ea51, type: 3}
+  m_PrefabInstance: {fileID: 1876543070}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2052947073
 GameObject:
   m_ObjectHideFlags: 0
@@ -9278,7 +9279,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2052947074}
-  - component: {fileID: 2052947075}
   m_Layer: 0
   m_Name: LobbyMenu
   m_TagString: Untagged
@@ -9306,35 +9306,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2052947075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2052947073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 580aad868d223224e9621c997c707ee2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleplayerLobby
-  gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
-  botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
-  playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
-  botCountText: {fileID: 0}
-  playerTrailColor: {r: 1, g: 1, b: 1, a: 1}
-  minutes: {fileID: 1611307722}
-  seconds: {fileID: 1718153334}
-  dropdown: {fileID: 404455512992828665}
-  suddenDeathToggle: {fileID: 2074357527}
-  trailLengthText: {fileID: 80418285}
-  currentModel: 0
-  motorPreview:
-  - {fileID: 1585333280}
-  - {fileID: 1964693551}
-  motorPlayable:
-  - {fileID: 3746183853180310409, guid: edf1d361c4aedbe4ca5426ea0c415527, type: 3}
-  - {fileID: 8930347279310823856, guid: 457f897103efc8748a1be040b50551ca, type: 3}
 --- !u!1 &2074357522
 GameObject:
   m_ObjectHideFlags: 0
@@ -9600,7 +9571,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2052947075}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SingleplayerLobby, Assembly-CSharp
         m_MethodName: isSuddenDeath
         m_Mode: 1
@@ -10885,7 +10856,4 @@ SceneRoots:
   - {fileID: 75040889}
   - {fileID: 461364727}
   - {fileID: 598961697}
-  - {fileID: 1766635358}
-  - {fileID: 1197294996}
-  - {fileID: 1876543070}
   - {fileID: 1528940328}

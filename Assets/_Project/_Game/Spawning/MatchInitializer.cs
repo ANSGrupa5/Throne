@@ -1,10 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using FishNet;
-using FishNet.Connection;
-using FishNet.Object;
 using UnityEngine;
 
 public class MatchInitializer : MonoBehaviour
@@ -27,7 +22,6 @@ public class MatchInitializer : MonoBehaviour
 
     public static event Action OnMatchStart;
 
-    private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _hasInitializationStarted;
     private bool _isFreezeOwned;
 
@@ -39,7 +33,13 @@ public class MatchInitializer : MonoBehaviour
 
     private void Start()
     {
-        if (MultiplayerRuntimeBootstrap.IsActiveMultiplayerScene())
+        // Singleplayer lobby creates a local session before loading the arena.
+        // MultiplayerSessionDriver explicitly calls BeginMatchInitialization on the server after FishNet scene load.
+        // Multiplayer clients must not auto-start this initializer because they do not own GameSessionRuntime.
+        if (!GameSessionBootstrap.TryGetSession(out GameSessionRuntime session))
+            return;
+
+        if (!session.isSingleplayer)
             return;
 
         BeginMatchInitialization();
@@ -47,6 +47,12 @@ public class MatchInitializer : MonoBehaviour
 
     public void BeginMatchInitialization()
     {
+        if (MultiplayerRuntimeMode.IsClientOnly)
+        {
+            Debug.Log("[MatchInitializer] Ignoring client-only BeginMatchInitialization. Server owns multiplayer initialization.");
+            return;
+        }
+
         if (_hasInitializationStarted)
             return;
 
@@ -77,314 +83,57 @@ public class MatchInitializer : MonoBehaviour
             yield break;
         }
 
+        MatchInitializationContext context = CreateContext(session);
+        MatchSpawnPlanner spawnPlanner = new MatchSpawnPlanner(obstacleMask);
+        BotSpawnFactory botSpawnFactory = new BotSpawnFactory(context);
+        MatchSpawnService spawnService = new MatchSpawnService(spawnPlanner, botSpawnFactory, this);
+
         if (session.isSingleplayer)
         {
-            yield return StartCoroutine(InitializeSingleplayer(session));
+            if (!TryValidateSession(session, out string validationError))
+            {
+                Debug.LogError($"Match initialization aborted: {validationError}");
+                yield break;
+            }
+
+            SingleplayerMatchFlow flow = new SingleplayerMatchFlow(context, spawnService, botSpawnFactory, SetFreeze, RaiseMatchStarted);
+            yield return StartCoroutine(flow.Run());
             yield break;
         }
 
-        yield return StartCoroutine(InitializeMultiplayer(session));
-    }
+        if (!MultiplayerRuntimeMode.IsFishNetServerStarted)
+            yield break;
 
-    private IEnumerator InitializeSingleplayer(GameSessionRuntime session)
-    {
-        if (!TryValidateSession(session, out string validationError))
+        if (!TryValidateSession(session, out string multiplayerValidationError))
         {
-            Debug.LogError($"Match initialization aborted: {validationError}");
+            Debug.LogError($"Match initialization aborted: {multiplayerValidationError}");
             yield break;
         }
 
-        EnsureBotLooks(session);
-        int totalHumanPlayers = 1;
-        int totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
-        int totalToSpawn = totalHumanPlayers + totalBots;
-
-        if (!TrySelectSpawnSpots(totalToSpawn, out List<SpawnSpot> chosen))
-            yield break;
-
-        int index = 0;
-        SetFreeze(true);
-
-        SpawnLocalAt(session, session.playerPrefab, chosen[index], session.playerDisplayName, session.playerOwnerId, session.playerTrailColor, false);
-        index++;
-        StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
-        //Temporary disable: DistanceTracker uses string to find player, unsafe.
-        //DistanceTracker.Instance.GetTarget();
-        yield return new WaitForSecondsRealtime(spawnInterval);
-
-        for (int i = 0; i < totalBots; i++)
-        {
-            if (index >= chosen.Count) break;
-
-            PlayerLook botLook = i < session.botLooks.Count ? session.botLooks[i] : CreateFallbackBotLook(session, i);
-            SpawnLocalAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true);
-            index++;
-            yield return new WaitForSecondsRealtime(spawnInterval);
-        }
-
-        yield return null;
-        yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
-        if (gameTimer != null)
-            gameTimer.Begin(session.matchDuration);
-
-        SetFreeze(false);
-        OnMatchStart?.Invoke();
+        MultiplayerMatchFlow multiplayerFlow = new MultiplayerMatchFlow(context, spawnService, botSpawnFactory, SetFreeze, RaiseMatchStarted);
+        yield return StartCoroutine(multiplayerFlow.Run());
     }
 
-    private IEnumerator InitializeMultiplayer(GameSessionRuntime session)
+    private MatchInitializationContext CreateContext(GameSessionRuntime session)
     {
-        if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-            yield break;
+        MatchSceneReferences sceneReferences = new MatchSceneReferences(
+            gameStartTimer,
+            gameTimer,
+            endGameController,
+            botMapCenter);
 
-        if (!TryValidateSession(session, out string validationError))
-        {
-            Debug.LogError($"Match initialization aborted: {validationError}");
-            yield break;
-        }
-
-        List<NetworkConnection> players = GetConnectedPlayers();
-        int totalHumanPlayers = Mathf.Max(1, players.Count);
-        EnsureBotLooks(session);
-        int totalBots = Mathf.Max(0, session.maxPlayers - totalHumanPlayers);
-        int totalToSpawn = totalHumanPlayers + totalBots;
-
-        if (!TrySelectSpawnSpots(totalToSpawn, out List<SpawnSpot> chosen))
-            yield break;
-
-        int index = 0;
-        SetFreeze(true);
-
-        for (int playerIndex = 0; playerIndex < totalHumanPlayers; playerIndex++)
-        {
-            NetworkConnection ownerConnection = playerIndex < players.Count ? players[playerIndex] : null;
-            string ownerId = ownerConnection != null ? $"player_{ownerConnection.ClientId}" : session.playerOwnerId;
-            string displayName = playerIndex == 0 ? session.playerDisplayName : $"Player {playerIndex + 1}";
-            Color trailColor = ResolvePlayerColor(session, playerIndex);
-            SpawnNetworkAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
-            index++;
-            StatsManager.Instance.GetPlayerPrefab(session.playerDisplayName);
-            //Temporary disable: DistanceTracker uses string to find player, unsafe.
-            //DistanceTracker.Instance.GetTarget();
-            yield return new WaitForSecondsRealtime(spawnInterval);
-        }
-
-        for (int i = 0; i < totalBots; i++)
-        {
-            if (index >= chosen.Count) break;
-
-            PlayerLook botLook = i < session.botLooks.Count ? session.botLooks[i] : CreateFallbackBotLook(session, i);
-            SpawnNetworkAt(session, botLook.playerPrefab, chosen[index], botLook.displayName, botLook.ownerId, botLook.trailColor, true, null);
-            index++;
-            yield return new WaitForSecondsRealtime(spawnInterval);
-        }
-
-        yield return null;
-
-        if (MultiplayerSessionDriver.Instance != null && InstanceFinder.IsServerStarted)
-        {
-            yield return StartCoroutine(MultiplayerSessionDriver.Instance.RunMatchStartSequence(
-                preMatchCountdownSeconds,
-                goDisplayDuration,
-                gameStartTimer,
-                gameTimer,
-                session.matchDuration));
-        }
-        else
-        {
-            yield return StartCoroutine(CountdownAndStart(preMatchCountdownSeconds));
-            if (gameTimer != null)
-                gameTimer.Begin(session.matchDuration);
-        }
-
-        SetFreeze(false);
-        OnMatchStart?.Invoke();
-    }
-
-    private GameObject SpawnLocalAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot)
-    {
-        if (prefab == null || spot == null) return null;
-
-        Vector3 pos = spot.Position;
-        Quaternion rot = spot.Rotation;
-        GameObject go = Instantiate(prefab, pos, rot);
-        _spawned.Add(go);
-
-        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
-            return null;
-
-        return go;
-    }
-
-    private GameObject SpawnNetworkAt(GameSessionRuntime session, GameObject prefab, SpawnSpot spot, string displayName, string ownerId, Color trailColor, bool isBot, NetworkConnection ownerConnection)
-    {
-        if (prefab == null || spot == null) return null;
-
-        Vector3 pos = spot.Position;
-        Quaternion rot = spot.Rotation;
-        GameObject go = Instantiate(prefab, pos, rot);
-        _spawned.Add(go);
-
-        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
-            return null;
-
-        NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        if (networkObject != null && InstanceFinder.IsServerStarted)
-            InstanceFinder.ServerManager.Spawn(networkObject, ownerConnection);
-
-        return go;
-    }
-
-    private bool ConfigureSpawnedVehicle(GameSessionRuntime session, GameObject go, GameObject prefab, Vector3 pos, Quaternion rot, string displayName, string ownerId, Color trailColor, bool isBot)
-    {
-        VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
-        colorApplier.SetColor(trailColor);
-
-        VehicleLife life = go.GetComponent<VehicleLife>();
-        if (life == null)
-        {
-            Debug.LogError($"Match initialization aborted: spawned prefab '{prefab.name}' has no VehicleLife component.");
-            Destroy(go);
-            _spawned.Remove(go);
-            return false;
-        }
-
-        life.ConfigureSpawn(pos, rot);
-        life.ConfigureIdentity(displayName, ownerId);
-        session.GetOrCreateStats(ownerId, displayName, trailColor);
-
-        TrailEmitter trailEmitter = go.GetComponent<TrailEmitter>();
-        trailEmitter.Configure(life, trailColor, session != null ? session.trailLength : 1);
-
-        if (isBot)
-        {
-            BotVehicleInput botInput = go.GetComponent<BotVehicleInput>();
-            if (botInput != null)
-                botInput.ConfigureRuntime(botMapBoundaryMask, botSuddenDeathMask, botTrailMask, botPowerupMask, botMapCenter);
-        }
-
-        return true;
-    }
-
-    private bool TrySelectSpawnSpots(int totalToSpawn, out List<SpawnSpot> chosen)
-    {
-        chosen = null;
-
-        var spots = SpawnSpot.Active.ToList();
-        if (spots.Count == 0)
-        {
-            Debug.LogWarning("No SpawnSpots found in scene.");
-            return false;
-        }
-
-        if (totalToSpawn > spots.Count)
-        {
-            Debug.LogError($"Match initialization aborted: requested {totalToSpawn} entities but only {spots.Count} SpawnSpots are available.");
-            return false;
-        }
-
-        chosen = SelectSpawnSpots(spots, totalToSpawn);
-        if (chosen.Count < totalToSpawn)
-        {
-            Debug.LogError($"Match initialization aborted: could not reserve enough SpawnSpots ({chosen.Count}/{totalToSpawn}).");
-            return false;
-        }
-
-        return true;
-    }
-
-    private List<NetworkConnection> GetConnectedPlayers()
-    {
-        if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
-            return new List<NetworkConnection>();
-
-        return InstanceFinder.ServerManager.Clients.Values
-            .Where(connection => connection != null && connection.IsAuthenticated)
-            .OrderBy(connection => connection.ClientId)
-            .ToList();
-    }
-
-    private Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex)
-    {
-        if (session == null || session.trailColorPalette == null || session.trailColorPalette.Count == 0)
-            return Color.white;
-
-        if (playerIndex == 0)
-            return session.playerTrailColor;
-
-        return session.trailColorPalette[playerIndex % session.trailColorPalette.Count];
-    }
-
-    private PlayerLook CreateFallbackBotLook(GameSessionRuntime session, int botIndex)
-    {
-        PlayerLook look = ScriptableObject.CreateInstance<PlayerLook>();
-        look.hideFlags = HideFlags.DontSave;
-        look.playerPrefab = session.botDefaultPrefab != null ? session.botDefaultPrefab : session.playerPrefab;
-        look.displayName = $"BOT{botIndex + 1}";
-        look.ownerId = $"bot_{botIndex + 1}";
-        look.trailColor = ResolvePlayerColor(session, botIndex + 1);
-        return look;
-    }
-
-    private void EnsureBotLooks(GameSessionRuntime session)
-    {
-        if (session == null)
-            return;
-
-        if (session.botLooks.Count > 0)
-            return;
-
-        List<GameObject> prefabs = new List<GameObject>();
-        for (int i = 0; i < session.bots.Count; i++)
-        {
-            GameSessionRuntime.BotSpawnEntry entry = session.bots[i];
-            if (entry == null || entry.prefab == null || entry.count <= 0)
-                continue;
-
-            for (int repeat = 0; repeat < entry.count; repeat++)
-                prefabs.Add(entry.prefab);
-        }
-
-        if (prefabs.Count == 0)
-            return;
-
-        GameObject defaultBotPrefab = session.botDefaultPrefab;
-        if (defaultBotPrefab == null)
-            defaultBotPrefab = prefabs[0];
-
-        List<Color> availableColors = new List<Color>();
-        for (int i = 0; i < session.trailColorPalette.Count; i++)
-        {
-            Color color = session.trailColorPalette[i];
-            if (color == session.playerTrailColor)
-                continue;
-
-            availableColors.Add(color);
-        }
-
-        for (int i = 0; i < prefabs.Count; i++)
-        {
-            Color color = availableColors.Count > 0
-                ? PickAndRemoveColor(availableColors)
-                : (session.trailColorPalette.Count > 0
-                    ? session.trailColorPalette[UnityEngine.Random.Range(0, session.trailColorPalette.Count)]
-                    : Color.white);
-
-            PlayerLook look = ScriptableObject.CreateInstance<PlayerLook>();
-            look.hideFlags = HideFlags.DontSave;
-            look.playerPrefab = defaultBotPrefab;
-            look.displayName = $"BOT{i + 1}";
-            look.ownerId = $"bot_{i + 1}";
-            look.trailColor = color;
-            session.botLooks.Add(look);
-        }
-    }
-
-    private Color PickAndRemoveColor(List<Color> availableColors)
-    {
-        int index = UnityEngine.Random.Range(0, availableColors.Count);
-        Color selected = availableColors[index];
-        availableColors.RemoveAt(index);
-        return selected;
+        return new MatchInitializationContext(
+            this,
+            session,
+            sceneReferences,
+            obstacleMask,
+            spawnInterval,
+            preMatchCountdownSeconds,
+            goDisplayDuration,
+            botMapBoundaryMask,
+            botSuddenDeathMask,
+            botTrailMask,
+            botPowerupMask);
     }
 
     private GameSessionRuntime ResolveSession()
@@ -394,79 +143,6 @@ public class MatchInitializer : MonoBehaviour
 
         Debug.LogError("MatchInitializer could not start because no GameSessionRuntime was provided. Start the game through SingleplayerLobby or MultiplayerLobby. For direct scene testing, add an explicit DevMatchBootstrap later.");
         return null;
-    }
-
-    private List<SpawnSpot> SelectSpawnSpots(List<SpawnSpot> available, int count)
-    {
-        List<SpawnSpot> candidates = new List<SpawnSpot>(available.Where(s => s.IsAvailable));
-        List<SpawnSpot> result = new List<SpawnSpot>();
-
-        if (count <= 0 || candidates.Count == 0) return result;
-
-        // Filter by clear spots first
-        candidates = candidates.Where(s => s.IsClear(obstacleMask)).ToList();
-
-        if (candidates.Count == 0)
-        {
-            // fallback to any available
-            candidates = new List<SpawnSpot>(available.Where(s => s.IsAvailable));
-        }
-
-        if (count >= candidates.Count)
-        {
-            result.AddRange(candidates);
-            return result;
-        }
-
-        // Anti-clump selection: pick first random, then pick spots that maximize distance to existing selection
-        System.Random rng = new System.Random();
-        int firstIndex = rng.Next(0, candidates.Count);
-        result.Add(candidates[firstIndex]);
-        candidates.RemoveAt(firstIndex);
-
-        while (result.Count < count && candidates.Count > 0)
-        {
-            SpawnSpot best = null;
-            float bestMinDist = -1f;
-            foreach (var c in candidates)
-            {
-                float minDist = float.MaxValue;
-                foreach (var chosen in result)
-                {
-                    float d = Vector3.SqrMagnitude(c.Position - chosen.Position);
-                    if (d < minDist) minDist = d;
-                }
-                if (minDist > bestMinDist)
-                {
-                    bestMinDist = minDist;
-                    best = c;
-                }
-            }
-            if (best == null) break;
-            result.Add(best);
-            candidates.Remove(best);
-        }
-
-        return result;
-    }
-
-    private IEnumerator CountdownAndStart(int seconds)
-    {
-        for (int i = seconds; i > 0; i--)
-        {
-            Debug.Log(i);
-            if (gameStartTimer != null)
-                gameStartTimer.ShowCount(i);
-            yield return new WaitForSecondsRealtime(1f);
-        }
-
-        Debug.Log("GO");
-        if (gameStartTimer != null)
-            gameStartTimer.ShowGo();
-        yield return new WaitForSecondsRealtime(goDisplayDuration);
-        if (gameStartTimer != null)
-            gameStartTimer.Hide();
-        yield break;
     }
 
     private bool TryValidateSession(GameSessionRuntime session, out string error)
@@ -526,6 +202,9 @@ public class MatchInitializer : MonoBehaviour
     {
         MultiplayerMatchState.SetFrozen(freeze);
 
+        if (MultiplayerRuntimeMode.IsFishNetActive)
+            return;
+
         if (freeze)
         {
             if (_isFreezeOwned)
@@ -541,6 +220,11 @@ public class MatchInitializer : MonoBehaviour
 
         Time.timeScale = 1f;
         _isFreezeOwned = false;
+    }
+
+    private void RaiseMatchStarted()
+    {
+        OnMatchStart?.Invoke();
     }
 
     private void OnDisable()

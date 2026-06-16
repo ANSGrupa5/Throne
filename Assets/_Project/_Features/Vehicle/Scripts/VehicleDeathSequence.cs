@@ -1,5 +1,5 @@
 using System.Collections;
-using FishNet;
+using FishNet.Object;
 using UnityEngine;
 
 public class VehicleDeathSequence : MonoBehaviour
@@ -11,6 +11,7 @@ public class VehicleDeathSequence : MonoBehaviour
     [SerializeField] private string spectatorCameraName = "SpectatorCamera";
 
     private bool _isHandlingDeath;
+    private Coroutine _deathCoroutine;
 
     private void Awake()
     {
@@ -35,13 +36,32 @@ public class VehicleDeathSequence : MonoBehaviour
         if (victim == null || victim != life || _isHandlingDeath)
             return;
 
-        if (StatsManager.Instance.CheckIfPlayerIsKiller(killer))
-            StatsManager.Instance.IncOppsElim();
+        if (ShouldRunLocalDeathPresentation())
+        {
+            if (StatsManager.Instance.CheckIfPlayerIsKiller(killer))
+                StatsManager.Instance.IncOppsElim();
 
-        if (StatsManager.Instance.CheckIfPlayerIsEliminated(victim))
-            StatsManager.Instance.IncTimesElim();
+            if (StatsManager.Instance.CheckIfPlayerIsEliminated(victim))
+                StatsManager.Instance.IncTimesElim();
 
-        StartCoroutine(DeathRoutine());
+            _deathCoroutine = StartCoroutine(DeathRoutine());
+            return;
+        }
+
+        if (ShouldScheduleServerNetworkRespawn())
+            _deathCoroutine = StartCoroutine(ServerNetworkRespawnRoutine());
+    }
+
+    private bool ShouldRunLocalDeathPresentation()
+    {
+        if (!MultiplayerRuntimeMode.IsFishNetActive)
+            return true;
+
+        NetworkObject networkObject = life != null ? life.GetComponent<NetworkObject>() : null;
+        if (networkObject == null)
+            return MultiplayerRuntimeMode.IsServerOrSingleplayerAuthority;
+
+        return networkObject.Owner != null && networkObject.Owner.IsLocalClient;
     }
 
     private IEnumerator DeathRoutine()
@@ -68,7 +88,13 @@ public class VehicleDeathSequence : MonoBehaviour
         else
         {
             if (life != null && CanRespawnRuntimeLife())
-                life.Respawn();
+            {
+                NetworkVehicleLife networkLife = life.GetComponent<NetworkVehicleLife>();
+                if (MultiplayerRuntimeMode.IsFishNetActive && networkLife != null)
+                    networkLife.ServerRespawn(life.SpawnPosition, life.SpawnRotation);
+                else
+                    life.Respawn();
+            }
 
             if (cameraController != null)
             {
@@ -78,19 +104,68 @@ public class VehicleDeathSequence : MonoBehaviour
         }
 
         _isHandlingDeath = false;
+        _deathCoroutine = null;
+    }
+
+    private IEnumerator ServerNetworkRespawnRoutine()
+    {
+        _isHandlingDeath = true;
+
+        yield return new WaitForSecondsRealtime(deathAnimationTime);
+
+        if (life != null && CanRespawnRuntimeLife())
+        {
+            NetworkVehicleLife networkLife = life.GetComponent<NetworkVehicleLife>();
+            if (networkLife != null)
+                networkLife.ServerRespawn(life.SpawnPosition, life.SpawnRotation);
+        }
+
+        _isHandlingDeath = false;
+        _deathCoroutine = null;
+    }
+
+    public void ResetDeathPresentation()
+    {
+        if (_deathCoroutine != null)
+        {
+            StopCoroutine(_deathCoroutine);
+            _deathCoroutine = null;
+        }
+
+        _isHandlingDeath = false;
+
+        if (cameraController != null)
+        {
+            cameraController.ClearSpectatorTarget();
+            cameraController.SetPresetByLabel("Follow");
+        }
+
+        Debug.Log($"[VehicleDeathSequence] ResetDeathPresentation object='{name}'");
+    }
+
+    private bool ShouldScheduleServerNetworkRespawn()
+    {
+        if (!MultiplayerRuntimeMode.IsFishNetActive || !MultiplayerRuntimeMode.IsFishNetServerStarted)
+            return false;
+
+        if (GetCurrentGameMode() == 0)
+            return false;
+
+        NetworkVehicleLife networkLife = life != null ? life.GetComponent<NetworkVehicleLife>() : null;
+        return networkLife != null && networkLife.IsServerInitialized;
     }
 
     private bool CanRespawnRuntimeLife()
     {
-        if (!IsMultiplayerSession())
+        if (!MultiplayerRuntimeMode.IsFishNetActive)
             return true;
 
         NetworkVehicleLife networkLife = life != null ? life.GetComponent<NetworkVehicleLife>() : null;
         if (networkLife == null)
-            return true;
+            return MultiplayerRuntimeMode.IsServerOrSingleplayerAuthority;
 
-        if (!InstanceFinder.IsServerStarted)
-            return true;
+        if (!MultiplayerRuntimeMode.IsFishNetServerStarted)
+            return false;
 
         return networkLife.IsServerInitialized;
     }
@@ -107,9 +182,9 @@ public class VehicleDeathSequence : MonoBehaviour
         return null;
     }
 
-    private static bool IsMultiplayerSession()
+    private static int GetCurrentGameMode()
     {
         GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        return session != null && !session.isSingleplayer;
+        return session != null ? session.gameMode : 0;
     }
 }

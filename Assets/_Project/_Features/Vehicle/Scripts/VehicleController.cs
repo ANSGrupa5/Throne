@@ -24,6 +24,8 @@ public class VehicleController : MonoBehaviour
     private bool _boostActive;
     private IVehicleCommandSource _commandSource;
     private float _currentLeanAngle;
+    private float _presentationTurn;
+    private bool _hasPresentationTurnOverride;
     private Vector3 _visualBaseLocalPosition;
     private NetworkObject _networkObject;
 
@@ -80,8 +82,35 @@ public class VehicleController : MonoBehaviour
         VehicleCommand command = _commandSource != null ? _commandSource.GetCommand() : VehicleCommand.Neutral;
         _inputTurn = command.turn;
         _boostActive = command.boost;
+        if (!_hasPresentationTurnOverride)
+            _presentationTurn = _inputTurn;
 
         ApplyVisualLean();
+    }
+
+    public void SetPresentationSteer(float steer)
+    {
+        _presentationTurn = Mathf.Clamp(steer, -1f, 1f);
+        _hasPresentationTurnOverride = true;
+    }
+
+    public void ClearPresentationSteerOverride()
+    {
+        _hasPresentationTurnOverride = false;
+        _presentationTurn = _inputTurn;
+    }
+
+    public void ResetPresentationState()
+    {
+        _currentLeanAngle = 0f;
+        _presentationTurn = 0f;
+        _hasPresentationTurnOverride = false;
+
+        if (visualModel == null)
+            return;
+
+        visualModel.localPosition = _visualBaseLocalPosition;
+        visualModel.localRotation = Quaternion.identity;
     }
 
     // Applies movement physics on a fixed timestep.
@@ -297,7 +326,11 @@ public class VehicleController : MonoBehaviour
         float currentSpeed = _rb.linearVelocity.magnitude;
         float denom = Mathf.Max(0.1f, movementData.maxSpeed * 0.25f);
         float speedFactor = Mathf.Clamp01(currentSpeed / denom);
-        float targetLean = -_inputTurn * maxLeanAngle * speedFactor;
+        float presentationTurn = _hasPresentationTurnOverride ? _presentationTurn : _inputTurn;
+        if (_hasPresentationTurnOverride && Mathf.Abs(presentationTurn) > 0.01f)
+            speedFactor = Mathf.Max(speedFactor, 1f);
+
+        float targetLean = -presentationTurn * maxLeanAngle * speedFactor;
 
         _currentLeanAngle = Mathf.Lerp(_currentLeanAngle, targetLean, leanSmooth * Time.deltaTime);
 

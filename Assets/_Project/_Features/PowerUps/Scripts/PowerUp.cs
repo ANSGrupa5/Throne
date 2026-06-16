@@ -1,4 +1,3 @@
-using FishNet;
 using UnityEngine;
 
 public enum PowerUpType
@@ -25,11 +24,8 @@ public class PowerUp : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (IsMultiplayerSession())
-        {
-            if (InstanceFinder.IsClientStarted && !InstanceFinder.IsServerStarted)
-                return;
-        }
+        if (MultiplayerRuntimeMode.IsClientOnly)
+            return;
 
         // Sprawdzamy czy pobrany został VehicleLife z collidera lub Rigidbody
         VehicleLife vehicleLife = ResolveVehicleLife(other);
@@ -94,11 +90,5 @@ public class PowerUp : MonoBehaviour
             return other.attachedRigidbody.GetComponent<VehicleLife>();
 
         return null;
-    }
-
-    private static bool IsMultiplayerSession()
-    {
-        GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        return session != null && !session.isSingleplayer;
     }
 }
