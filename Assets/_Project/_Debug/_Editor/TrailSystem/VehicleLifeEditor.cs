@@ -1,5 +1,5 @@
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(VehicleLife))]
 public class VehicleLifeEditor : Editor
@@ -17,3 +17,5 @@ public class VehicleLifeEditor : Editor
         }
     }
 }
+
+#endif

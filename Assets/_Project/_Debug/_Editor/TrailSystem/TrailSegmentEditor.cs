@@ -1,5 +1,5 @@
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(TrailSegment))]
 public class TrailSegmentEditor : Editor
@@ -17,3 +17,5 @@ public class TrailSegmentEditor : Editor
         }
     }
 }
+
+#endif

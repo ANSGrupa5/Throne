@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
 
 public static class DumpSelectedGameObjectFull
 {
@@ -233,3 +235,5 @@ public static class DumpSelectedGameObjectFull
         }
     }
 }
+
+#endif
