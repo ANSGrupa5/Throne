@@ -106,9 +106,15 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         StopClientConnectTimeout();
         StopNetworkingIfNeeded();
 
+        LoadMainMenuScene();
+    }
+
+    private void LoadMainMenuScene()
+    {
         if (mainMenuScene == null || string.IsNullOrWhiteSpace(mainMenuScene.SceneName))
         {
-            Debug.LogError("[MultiplayerRuntimeBootstrap] Cannot return to main menu because Main Menu scene is not assigned.");
+            Debug.LogWarning("[MultiplayerRuntimeBootstrap] Main Menu scene is not assigned. Loading build scene index 0 as fallback.");
+            UnitySceneManager.LoadScene(0);
             return;
         }
 
