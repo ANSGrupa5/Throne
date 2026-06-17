@@ -401,10 +401,13 @@ MonoBehaviour:
   presets:
   - label: Follow
     localPosition: {x: 0, y: 5.5, z: 0.5}
-    localEulerAngles: {x: 20, y: 0, z: 0}
+    localEulerAngles: {x: 15, y: 0, z: 0}
   - label: TopDown
-    localPosition: {x: 0, y: 20, z: -3}
+    localPosition: {x: 0, y: 14, z: -3}
     localEulerAngles: {x: 65, y: 0, z: 0}
+  - label: Chase
+    localPosition: {x: 0, y: 10, z: -12}
+    localEulerAngles: {x: 25, y: 0, z: 0}
 --- !u!65 &772959941781675302
 BoxCollider:
   m_ObjectHideFlags: 0

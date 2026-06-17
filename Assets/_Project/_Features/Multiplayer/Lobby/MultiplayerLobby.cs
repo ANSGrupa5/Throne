@@ -31,9 +31,11 @@ public sealed class MultiplayerLobby : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject connectionTypePanel;
     [SerializeField] private GameObject hostSettingsPanel;
+    [SerializeField] private GameObject ipInputPanel;
 
     [Header("Client")]
     [SerializeField] private string defaultClientAddress = "localhost";
+    [SerializeField] private string clientAddress;
 
     [Header("Optional Buttons")]
     [SerializeField] private Button startMatchButton;
@@ -97,6 +99,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
             timeInSecs = NormalizeMatchDurationSeconds(defaultSettings.MatchDurationSeconds);
         }
 
+        clientAddress = defaultClientAddress;
         trailColor = 0;
         hasSelectedTrailColor = false;
         playerTrailColor = GetLobbySelectedColorOrFallback();
@@ -166,6 +169,17 @@ public sealed class MultiplayerLobby : MonoBehaviour
         _hostReadyRoutine = StartCoroutine(WaitForHostReadyRoutine(runtime));
     }
 
+    public void ShowIPInput()
+    {
+        connectionTypePanel.SetActive(false);
+        ipInputPanel.SetActive(true);
+    }
+
+    public void UpdateIpInput(string value)
+    {
+        clientAddress = value;
+    }
+
     public void JoinGame()
     {
         if (_joinRequested)
@@ -189,7 +203,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         SetStartMatchAvailable(false);
         RefreshOpponentSlots();
 
-        runtime.JoinGame(defaultClientAddress);
+        runtime.JoinGame(clientAddress);
     }
 
     public void StartMatch()
