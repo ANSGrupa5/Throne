@@ -302,10 +302,8 @@ GameObject:
   - component: {fileID: 8459290600318073669}
   - component: {fileID: 2542742008586709182}
   - component: {fileID: 6846199149765510444}
-  - component: {fileID: 8173538643334265692}
   - component: {fileID: 772959941781675302}
   - component: {fileID: 4338244714985342965}
-  - component: {fileID: 3963277036762231132}
   - component: {fileID: 900000000000000002}
   - component: {fileID: 900000000000000003}
   - component: {fileID: -8907305594828615061}
@@ -407,23 +405,6 @@ MonoBehaviour:
   - label: TopDown
     localPosition: {x: 0, y: 20, z: -3}
     localEulerAngles: {x: 65, y: 0, z: 0}
---- !u!114 &8173538643334265692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 357e9c4444b680c45bb8cd7feda827a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleGroundHitDebug
-  wheelFront: {fileID: 4262779213005125466}
-  wheelBack: {fileID: 1853967654864436823}
-  logGroundHit: 1
-  logInterval: 0.5
-  logOnlyOnStateChange: 1
 --- !u!65 &772959941781675302
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -460,28 +441,6 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 900000000000000001}
   _networkObjectCache: {fileID: 900000000000000001}
---- !u!114 &3963277036762231132
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3746183853180310409}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e20241ae4bd47b241b6faeefd559f95e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VehicleTelemetryDebug
-  rb: {fileID: 8459290600318073669}
-  wheelFront: {fileID: 4262779213005125466}
-  wheelBack: {fileID: 1853967654864436823}
-  visualRoot: {fileID: 5391968229695578253}
-  logContinuously: 1
-  logInterval: 0.25
-  snapshotKey: 289
-  writeToFile: 0
-  writeToProjectLogs: 1
-  fileName: vehicle_debug.log
 --- !u!114 &900000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -617,7 +576,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
-  _initializedTimestamp: -8584199725483463583
+  _initializedTimestamp: -8584199508284280870
 --- !u!114 &900000000000000006
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1097,15 +1097,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 650469498}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: LoadScene
+      value: ReturnToMainMenu
       objectReference: {fileID: 0}
     - target: {fileID: 1597283681149243046, guid: 14f0a91157f05b64285a0781aad9d9a0, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
