@@ -71,7 +71,7 @@ public class GameOverResultRow : MonoBehaviour
         if (statsText != null)
         {
             statsText.enabled = true;
-            float kdratio = result.kills / (float)Mathf.Max(1, result.deaths);
+            float kdratio = (float)Mathf.Max(1, result.kills) / (float)Mathf.Max(1, result.deaths);
             statsText.text = $"{result.kills}\t{result.deaths}\t\t{kdratio:0.00}";
             statsText.color = textColor;
         }

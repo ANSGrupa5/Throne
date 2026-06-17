@@ -185,7 +185,7 @@ public class GameOverController : MonoBehaviour
     private void PositionRow(RectTransform rect, int index)
     {
         if (rect == null) return;
-        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -30f - (50f * index));
+        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -30f - (30f * index));
     }
 
     private void CleanupPayload()
