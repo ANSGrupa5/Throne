@@ -26,6 +26,7 @@ public class TrailEmitter : MonoBehaviour
     [SerializeField, Range(0, 3)] private int trailPreset = 1;
     [SerializeField, Min(0.01f)] private float spawnOffset = 0.15f;
     [SerializeField] private string trailLayerName = "Trail";
+    [SerializeField] private Material segmentMaterial;
 
     private Rigidbody _rb;
     private Vector3 _lastSpawnPosition;
@@ -116,6 +117,10 @@ public class TrailEmitter : MonoBehaviour
         segment.transform.SetPositionAndRotation(spawnPosition, Quaternion.identity);
         segment.transform.localScale = new Vector3(profile.width, profile.height, profile.length);
         segment.layer = _trailLayer;
+
+        Renderer renderer = segment.GetComponent<Renderer>();
+        if (renderer != null && segmentMaterial != null)
+            renderer.sharedMaterial = segmentMaterial;
 
         Collider collider = segment.GetComponent<Collider>();
         if (collider != null)

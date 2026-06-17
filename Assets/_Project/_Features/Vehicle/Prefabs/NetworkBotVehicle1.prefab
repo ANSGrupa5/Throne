@@ -463,6 +463,7 @@ MonoBehaviour:
   trailPreset: 1
   spawnOffset: 0.15
   trailLayerName: Trail
+  segmentMaterial: {fileID: 2100000, guid: f587535cdc399e04e82dc58aa04371ee, type: 2}
 --- !u!114 &900000000000000105
 MonoBehaviour:
   m_ObjectHideFlags: 0
