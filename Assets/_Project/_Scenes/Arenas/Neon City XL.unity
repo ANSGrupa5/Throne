@@ -8094,26 +8094,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1947322466715856707
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6794064634422162880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0feed8988cb99344697c295f9ddcdfcc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndGameController
-  gameTimer: {fileID: 4101060509138089424}
-  areaBoundary: {fileID: 0}
-  gameOverScene:
-    sceneAsset: {fileID: 0}
-    sceneName: 
-  slowDownDuration: 1.5
-  postFreezeDelay: 1
-  finalTimescale: 0
 --- !u!23 &2015400344035211546
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8868,18 +8848,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 19832153948129209}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &6119532480543847394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6794064634422162880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61bb9a15c5deaf74db1b966f2a48a361, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndGameCheat
 --- !u!222 &6244369300148431982
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8941,8 +8909,6 @@ GameObject:
   - component: {fileID: 5683945275181729536}
   - component: {fileID: 949385214433765062}
   - component: {fileID: 4101060509138089424}
-  - component: {fileID: 1947322466715856707}
-  - component: {fileID: 6119532480543847394}
   m_Layer: 5
   m_Name: GameTimers
   m_TagString: Untagged

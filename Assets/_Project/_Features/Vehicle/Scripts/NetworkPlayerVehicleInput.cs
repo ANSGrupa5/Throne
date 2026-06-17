@@ -14,7 +14,6 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
     private VehicleController _vehicleController;
     private PlayerVehicleInput _singleplayerInput;
     private bool _hasLocalInputAuthority;
-    private bool _loggedFirstSteer;
     private bool _hasSentObserverPresentationSteer;
     private float _lastObserverPresentationSteer;
 
@@ -31,7 +30,7 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
         RefreshLocalInputState();
         RefreshLocalPresentation();
         SubmitCurrentCommand();
-        LogOwnershipState(nameof(OnStartClient));
+        WarnIfSpawnedWithoutValidOwner();
     }
 
     public override void OnOwnershipClient(NetworkConnection prevOwner)
@@ -40,7 +39,7 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
         RefreshLocalInputState();
         RefreshLocalPresentation();
         SubmitCurrentCommand();
-        LogOwnershipState(nameof(OnOwnershipClient));
+        WarnIfSpawnedWithoutValidOwner();
     }
 
     private void Update()
@@ -156,12 +155,6 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
             return;
 
         _vehicleController.SetPresentationSteer(steer);
-
-        if (!_loggedFirstSteer && Mathf.Abs(steer) > 0.01f)
-        {
-            _loggedFirstSteer = true;
-            Debug.Log($"{NetworkInputLogPrefix} First local steer for '{name}' steer={steer}");
-        }
     }
 
     [ObserversRpc(BufferLast = true)]
@@ -193,17 +186,8 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
         }
     }
 
-    private void LogOwnershipState(string source)
+    private void WarnIfSpawnedWithoutValidOwner()
     {
-        Debug.Log(
-            $"{NetworkInputLogPrefix} {source} '{name}' " +
-            $"IsSpawned={IsSpawned} " +
-            $"IsClientStarted={IsClientStarted} " +
-            $"IsServerStarted={IsServerStarted} " +
-            $"Owner={(Owner != null ? Owner.ClientId.ToString() : "<null>")} " +
-            $"Owner.IsLocalClient={(Owner != null && Owner.IsLocalClient)} " +
-            $"HasLocalInputAuthority={HasLocalInputAuthority()}");
-
         if (IsSpawned && (Owner == null || Owner.ClientId < 0))
         {
             Debug.LogWarning(

@@ -26,11 +26,6 @@ public class DistanceTracker : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
-    {
-        
-    }
-
     private void Update()
     {
         if (target != null)

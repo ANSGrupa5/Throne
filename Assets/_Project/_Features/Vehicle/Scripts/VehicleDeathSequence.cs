@@ -77,9 +77,9 @@ public class VehicleDeathSequence : MonoBehaviour
             life.HideDeadBody();
 
         GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        int gameMode = session != null ? session.gameMode : 0;
+        int gameMode = session != null ? session.gameMode : GameSessionRuntime.KingOfTheHillMode;
 
-        if (gameMode == 0)
+        if (gameMode == GameSessionRuntime.KingOfTheHillMode)
         {
             Transform spectatorTarget = ResolveSpectatorTarget();
             if (cameraController != null && spectatorTarget != null)
@@ -139,8 +139,6 @@ public class VehicleDeathSequence : MonoBehaviour
             cameraController.ClearSpectatorTarget();
             cameraController.SetPresetByLabel("Follow");
         }
-
-        Debug.Log($"[VehicleDeathSequence] ResetDeathPresentation object='{name}'");
     }
 
     private bool ShouldScheduleServerNetworkRespawn()
@@ -148,7 +146,7 @@ public class VehicleDeathSequence : MonoBehaviour
         if (!MultiplayerRuntimeMode.IsFishNetActive || !MultiplayerRuntimeMode.IsFishNetServerStarted)
             return false;
 
-        if (GetCurrentGameMode() == 0)
+        if (GetCurrentGameMode() == GameSessionRuntime.KingOfTheHillMode)
             return false;
 
         NetworkVehicleLife networkLife = life != null ? life.GetComponent<NetworkVehicleLife>() : null;
@@ -185,6 +183,6 @@ public class VehicleDeathSequence : MonoBehaviour
     private static int GetCurrentGameMode()
     {
         GameSessionRuntime session = GameSessionBootstrap.CurrentSession;
-        return session != null ? session.gameMode : 0;
+        return session != null ? session.gameMode : GameSessionRuntime.KingOfTheHillMode;
     }
 }

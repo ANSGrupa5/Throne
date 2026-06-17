@@ -344,10 +344,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     public void tempLog()
     {
-        Debug.Log("Tryb Sudden death: " + suddenDeath);
-        Debug.Log("Czas trwania meczu w sekundach: " + timeInSecs);
-        Debug.Log("Trail length: " + trailLength);
-        Debug.Log("Trail color: " + trailColor);
     }
 
     private void ShowHostSettingsPanel()

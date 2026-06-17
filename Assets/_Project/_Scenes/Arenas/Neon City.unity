@@ -429,10 +429,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837764517}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 411ff8f1fdb74ef45b8575c30c045192, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.99867266
@@ -501,6 +497,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 411ff8f1fdb74ef45b8575c30c045192, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4130,10 +4130,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: fa154e21f8ea8ff48a506e946aa7529e, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 16024
@@ -4198,6 +4194,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fa154e21f8ea8ff48a506e946aa7529e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -4342,10 +4342,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837764517}
     m_Modifications:
-    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 0dc2615605fa039449fe2fdaec643f83, type: 2}
     - target: {fileID: -8679921383154817045, guid: e69e5536c64da8a4792cb149b404b098, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.99867266
@@ -4414,6 +4410,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a90d95ddf58cae7419ec2ad92956bc79, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0dc2615605fa039449fe2fdaec643f83, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7478,7 +7478,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndGameController
   gameTimer: {fileID: 4101060509138089424}
-  gameOverSceneName: GameOver
+  areaBoundary: {fileID: 0}
+  gameOverScene:
+    sceneAsset: {fileID: 0}
+    sceneName: 
   slowDownDuration: 1.5
   postFreezeDelay: 1
   finalTimescale: 0
@@ -8236,18 +8239,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 19832153948129209}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &6119532480543847394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6794064634422162880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61bb9a15c5deaf74db1b966f2a48a361, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndGameCheat
 --- !u!222 &6244369300148431982
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8310,7 +8301,6 @@ GameObject:
   - component: {fileID: 949385214433765062}
   - component: {fileID: 4101060509138089424}
   - component: {fileID: 1947322466715856707}
-  - component: {fileID: 6119532480543847394}
   m_Layer: 5
   m_Name: GameTimers
   m_TagString: Untagged
@@ -8448,9 +8438,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0f5f59dc10e40d4f8484fdabf76f3f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchInitializer
-  botsSettings: {fileID: 11400000, guid: 7b752c926063d244b8d84b649b65a516, type: 2}
-  gameSettings: {fileID: 11400000, guid: 148d983773a7b2345afea5b0b601dfd5, type: 2}
-  playerLook: {fileID: 11400000, guid: 52b81bcc07bfa624ba9b3d5848a7761a, type: 2}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 0

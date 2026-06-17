@@ -55,10 +55,6 @@ public class NetworkVehicleLife : NetworkBehaviour
         if (!IsServerInitialized)
             return;
 
-        Debug.Log(
-            $"[NetworkVehicleLife] ServerRespawn object='{name}' " +
-            $"owner={(Owner != null ? Owner.ClientId.ToString() : "<null>")}");
-
         _life.RespawnAt(position, rotation);
     }
 
@@ -77,7 +73,6 @@ public class NetworkVehicleLife : NetworkBehaviour
         if (IsServerInitialized)
             return;
 
-        Debug.Log($"[NetworkVehicleLife] ObserversRespawn object='{name}'");
         ApplyRespawnPresentation(position, rotation);
     }
 
