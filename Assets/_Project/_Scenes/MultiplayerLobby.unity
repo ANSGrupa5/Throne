@@ -9301,7 +9301,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3581751376671345294, guid: a53fde61ecd146744a21fd4816e02484, type: 3}
       propertyPath: SceneId
-      value: 3434570108
+      value: 2904945150
       objectReference: {fileID: 0}
     - target: {fileID: 3581751376671345294, guid: a53fde61ecd146744a21fd4816e02484, type: 3}
       propertyPath: WasActiveDuringEdit
