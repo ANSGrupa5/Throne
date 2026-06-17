@@ -42,8 +42,10 @@ public sealed class SingleplayerMatchFlow
         GameObject playerVehicle = _spawnService.SpawnLocalAt(session, session.playerPrefab, chosen[index], session.playerDisplayName, session.playerOwnerId, session.playerTrailColor, false);
         index++;
         StatsManager.Instance.SetPlayerVehicle(playerVehicle, session.playerDisplayName, session.playerOwnerId);
-        //Temporary disable: DistanceTracker uses string to find player, unsafe.
-        //DistanceTracker.Instance.GetTarget();
+
+        if (DistanceTracker.Instance != null && playerVehicle != null)
+            DistanceTracker.Instance.SetTarget(playerVehicle.transform);
+
         yield return new WaitForSecondsRealtime(_context.SpawnInterval);
 
         for (int i = 0; i < totalBots; i++)

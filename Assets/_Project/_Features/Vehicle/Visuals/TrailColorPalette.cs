@@ -42,7 +42,7 @@ public sealed class TrailColorPalette : ScriptableObject
 
     public static Color SanitizeColor(Color color, Color fallback)
     {
-        if (color.a <= 0.01f)
+        if (float.IsNaN(color.r) || float.IsNaN(color.g) || float.IsNaN(color.b))
             color = fallback;
 
         color.a = 1f;

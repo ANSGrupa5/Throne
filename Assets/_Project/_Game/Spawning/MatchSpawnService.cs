@@ -32,7 +32,7 @@ public sealed class MatchSpawnService
         GameObject go = Object.Instantiate(prefab, pos, rot);
         _spawned.Add(go);
 
-        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
+        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot, out _))
             return null;
 
         return go;
@@ -65,7 +65,7 @@ public sealed class MatchSpawnService
         GameObject go = Object.Instantiate(prefab, pos, rot);
         _spawned.Add(go);
 
-        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot))
+        if (!ConfigureSpawnedVehicle(session, go, prefab, pos, rot, displayName, ownerId, trailColor, isBot, out Color spawnedVehicleColor))
             return null;
 
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
@@ -80,20 +80,25 @@ public sealed class MatchSpawnService
         if (InstanceFinder.IsServerStarted)
         {
             InstanceFinder.ServerManager.Spawn(go, ownerConnection);
+
+            NetworkVehicleLife networkVehicleLife = go.GetComponent<NetworkVehicleLife>();
+            if (networkVehicleLife != null)
+                networkVehicleLife.ServerApplyVisualState(spawnedVehicleColor, session != null ? session.trailLength : 1);
         }
 
         return go;
     }
 
-    private bool ConfigureSpawnedVehicle(GameSessionRuntime session, GameObject go, GameObject prefab, Vector3 pos, Quaternion rot, string displayName, string ownerId, Color trailColor, bool isBot)
+    private bool ConfigureSpawnedVehicle(GameSessionRuntime session, GameObject go, GameObject prefab, Vector3 pos, Quaternion rot, string displayName, string ownerId, Color trailColor, bool isBot, out Color spawnedVehicleColor)
     {
         trailColor = TrailColorPalette.SanitizeColor(trailColor, Color.white);
+        spawnedVehicleColor = trailColor;
 
         VehicleColorApplier colorApplier = go.GetComponent<VehicleColorApplier>();
         if (colorApplier != null)
             colorApplier.SetColor(trailColor);
 
-        Color spawnedVehicleColor = colorApplier != null
+        spawnedVehicleColor = colorApplier != null
             ? TrailColorPalette.SanitizeColor(colorApplier.GetColor(), trailColor)
             : trailColor;
 

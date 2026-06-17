@@ -58,6 +58,13 @@ public class NetworkVehicleLife : NetworkBehaviour
         _life.RespawnAt(position, rotation);
     }
 
+    [Server]
+    public void ServerApplyVisualState(Color trailColor, int trailPreset)
+    {
+        ApplyVisualState(trailColor, trailPreset);
+        ObserversApplyVisualState(trailColor, trailPreset);
+    }
+
     [ObserversRpc]
     private void RpcApplyDeath()
     {
@@ -74,6 +81,25 @@ public class NetworkVehicleLife : NetworkBehaviour
             return;
 
         ApplyRespawnPresentation(position, rotation);
+    }
+
+    [ObserversRpc(BufferLast = true)]
+    private void ObserversApplyVisualState(Color trailColor, int trailPreset)
+    {
+        ApplyVisualState(trailColor, trailPreset);
+    }
+
+    private void ApplyVisualState(Color trailColor, int trailPreset)
+    {
+        trailColor = TrailColorPalette.SanitizeColor(trailColor, Color.white);
+
+        VehicleColorApplier colorApplier = GetComponent<VehicleColorApplier>();
+        if (colorApplier != null)
+            colorApplier.SetColor(trailColor);
+
+        TrailEmitter trailEmitter = GetComponent<TrailEmitter>();
+        if (trailEmitter != null)
+            trailEmitter.Configure(_life, trailColor, trailPreset);
     }
 
     private void ApplyRespawnPresentation(Vector3 position, Quaternion rotation)

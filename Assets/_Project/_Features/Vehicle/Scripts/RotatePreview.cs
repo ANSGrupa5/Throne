@@ -2,47 +2,31 @@ using UnityEngine;
 
 enum Axis
 {
-    X, //0
-    Y, //1
-    Z  //2
+    X,
+    Y,
+    Z
 }
 
 public class RotatePreview : MonoBehaviour
 {
-    [SerializeField] private float speed = 25f;
-
+    [SerializeField] private float speed = 20f;
     [SerializeField] private int rotateAxis = (int)Axis.Y;
 
-    private float X;
-    private float Y;
-    private float Z;
-
-    void Start()
+    private void Update()
     {
-        switch(rotateAxis)
+        float delta = speed * Time.deltaTime;
+
+        switch (rotateAxis)
         {
             case (int)Axis.X:
-                X = speed * Time.deltaTime;
-                Y = 0f;
-                Z = 0f;
+                transform.Rotate(delta, 0f, 0f);
                 break;
-
-            case (int)Axis.Y:
-                X = 0f;
-                Y = speed * Time.deltaTime;
-                Z = 0f;
-                break;
-
             case (int)Axis.Z:
-                X = 0f;
-                Y = 0f;
-                Z = speed * Time.deltaTime;
+                transform.Rotate(0f, 0f, delta);
+                break;
+            default:
+                transform.Rotate(0f, delta, 0f);
                 break;
         }
-    }
-
-    void Update()
-    {
-        transform.Rotate(X, Y, Z);
     }
 }

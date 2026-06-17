@@ -1,5 +1,3 @@
-using System;
-using TMPro;
 using UnityEngine;
 
 public class DistanceTracker : MonoBehaviour
@@ -7,7 +5,7 @@ public class DistanceTracker : MonoBehaviour
     public static DistanceTracker Instance;
 
     [Header("Target")]
-    public Transform target;
+    [SerializeField] private Transform target;
 
     [Header("Stats")]
     public float totalDistance;
@@ -32,27 +30,33 @@ public class DistanceTracker : MonoBehaviour
             CalculateDistance();
     }
 
-    public void GetTarget()
+    public void SetTarget(Transform newTarget)
     {
-        try
-        {
-            target = GameObject.Find("motorFINAL2_WORKING(Clone)").GetComponent<Transform>();
-        }
-        catch(NullReferenceException)
-        {
-            target = GameObject.Find("motor22(Clone)").GetComponent<Transform>();
-        }
+        target = newTarget;
         totalDistance = 0f;
-        lastPosition = target.position;
+
+        if (target != null)
+            lastPosition = target.position;
     }
 
-    void CalculateDistance()
+    public void ClearTarget(Transform oldTarget)
+    {
+        if (target == oldTarget)
+            target = null;
+    }
+
+    public void GetTarget()
+    {
+        SetTarget(target);
+    }
+
+    private void CalculateDistance()
     {
         float distance = Vector3.Distance(target.position, lastPosition);
-        if( distance < 25f) //don't count the distance between death position and respawn position
+        if (distance < 25f)
             totalDistance += distance;
+
         lastPosition = target.position;
-        //Debug.Log("Updated distance... total distance: " + totalDistance);
     }
 
     public float GetTotalDistance()

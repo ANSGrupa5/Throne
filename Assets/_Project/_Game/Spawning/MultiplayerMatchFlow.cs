@@ -49,6 +49,7 @@ public sealed class MultiplayerMatchFlow
 
         int index = 0;
         int spawnedHumanCount = 0;
+        List<Color> usedPlayerColors = new List<Color>();
         _setFreeze(true);
 
         for (int playerIndex = 0; playerIndex < totalHumanPlayers; playerIndex++)
@@ -62,7 +63,8 @@ public sealed class MultiplayerMatchFlow
 
             string ownerId = $"player_{ownerConnection.ClientId}";
             string displayName = ownerConnection.IsLocalClient ? session.playerDisplayName : $"Player {ownerConnection.ClientId}";
-            Color trailColor = ResolvePlayerColor(session, playerIndex);
+            Color trailColor = ResolvePlayerColor(session, playerIndex, usedPlayerColors);
+            usedPlayerColors.Add(trailColor);
             GameObject playerVehicle = _spawnService.SpawnNetworkAt(session, session.playerPrefab, chosen[index], displayName, ownerId, trailColor, false, ownerConnection);
             index++;
             if (playerVehicle != null)
@@ -118,7 +120,7 @@ public sealed class MultiplayerMatchFlow
         return result;
     }
 
-    private static Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex)
+    private static Color ResolvePlayerColor(GameSessionRuntime session, int playerIndex, List<Color> usedColors)
     {
         if (session == null || session.trailColorPalette == null || session.trailColorPalette.Count == 0)
             return Color.white;
@@ -126,6 +128,53 @@ public sealed class MultiplayerMatchFlow
         if (playerIndex == 0)
             return TrailColorPalette.SanitizeColor(session.playerTrailColor, Color.white);
 
-        return TrailColorPalette.SanitizeColor(session.trailColorPalette[playerIndex % session.trailColorPalette.Count], Color.white);
+        List<Color> available = new List<Color>();
+        for (int i = 0; i < session.trailColorPalette.Count; i++)
+        {
+            Color candidate = TrailColorPalette.SanitizeColor(session.trailColorPalette[i], Color.white);
+            if (ContainsColor(usedColors, candidate))
+                continue;
+
+            available.Add(candidate);
+        }
+
+        if (available.Count > 0)
+            return available[UnityEngine.Random.Range(0, available.Count)];
+
+        return CreateFallbackPlayerColor(playerIndex, usedColors);
+    }
+
+    private static Color CreateFallbackPlayerColor(int playerIndex, List<Color> usedColors)
+    {
+        for (int attempt = 0; attempt < 12; attempt++)
+        {
+            Color color = Color.HSVToRGB(((playerIndex + attempt + 1) * 0.17f) % 1f, 0.85f, 1f);
+            color.a = 1f;
+
+            if (!ContainsColor(usedColors, color))
+                return color;
+        }
+
+        return Color.white;
+    }
+
+    private static bool ContainsColor(List<Color> colors, Color candidate)
+    {
+        if (colors == null)
+            return false;
+
+        candidate = TrailColorPalette.SanitizeColor(candidate, Color.white);
+        for (int i = 0; i < colors.Count; i++)
+        {
+            Color color = TrailColorPalette.SanitizeColor(colors[i], Color.white);
+            if (Mathf.Abs(color.r - candidate.r) <= 0.01f &&
+                Mathf.Abs(color.g - candidate.g) <= 0.01f &&
+                Mathf.Abs(color.b - candidate.b) <= 0.01f)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

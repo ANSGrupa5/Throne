@@ -1,5 +1,5 @@
-using FishNet.Example;
-using FishNet.Managing;
+using FishNet;
+using FishNet.Connection;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -16,6 +16,8 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     private const int SecondsStep = 5;
     private const int MinutesStep = 60;
+    private const int MinLobbyTrailLength = 1;
+    private const int MaxLobbyTrailLength = 4;
 
     [Header("Runtime")]
     [SerializeField] private MultiplayerRuntimeBootstrap runtimeBootstrap;
@@ -52,10 +54,18 @@ public sealed class MultiplayerLobby : MonoBehaviour
     [SerializeField] private int currentModel;
     [SerializeField] private GameObject[] motorPreview;
 
+    [Header("Opponent Slots")]
+    [SerializeField] private GameObject[] opponentSlots;
+    [SerializeField] private TMP_Text[] opponentSlotLabels;
+    [SerializeField] private Button[] opponentRemoveButtons;
+
     private bool _isHost;
     private bool _hostRequested;
     private bool _joinRequested;
     private Coroutine _hostReadyRoutine;
+    private bool _opponentButtonsConfigured;
+    private int _lastRemoteOpponentCount = -1;
+    private readonly List<NetworkConnection> _remoteOpponentConnections = new List<NetworkConnection>();
 
     private int min;
     private int sec;
@@ -64,6 +74,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
     private int trailColor;
     private MatchMode selectedMatchMode = MatchMode.Deathmatch;
     private bool suddenDeath;
+    private bool hasSelectedTrailColor;
 
     private void Awake()
     {
@@ -87,6 +98,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         }
 
         trailColor = 0;
+        hasSelectedTrailColor = false;
         playerTrailColor = GetLobbySelectedColorOrFallback();
 
         SyncTimeFieldsFromSeconds();
@@ -99,8 +111,22 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
         currentModel = Mathf.Clamp(currentModel, 0, motorPreview != null && motorPreview.Length > 0 ? motorPreview.Length - 1 : 0);
         SetPlayerModel(currentModel);
+        ConfigureOpponentRemoveButtons();
+        RefreshOpponentSlots();
 
         ShowConnectionTypePanel();
+    }
+
+    private void Update()
+    {
+        if (!_isHost || !_hostRequested)
+            return;
+
+        int opponentCount = RefreshOpponentSlots();
+        if (opponentCount != _lastRemoteOpponentCount)
+            _lastRemoteOpponentCount = opponentCount;
+
+        SetStartMatchAvailable(runtimeBootstrap != null && runtimeBootstrap.IsHostReady);
     }
 
     public void HostGame()
@@ -124,15 +150,6 @@ public sealed class MultiplayerLobby : MonoBehaviour
             _hostRequested = false;
             _isHost = false;
             SetStartMatchAvailable(false);
-            return;
-        }
-
-        NetworkManager networkManager =
-            runtimeBootstrap.GetComponentInChildren<NetworkManager>(true);
-
-        if (networkManager == null)
-        {
-            Debug.LogError("[MultiplayerLobby] NetworkManager not found under runtimeBootstrap.", this);
             return;
         }
 
@@ -170,6 +187,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         SetActive(connectionTypePanel, false);
         SetActive(hostSettingsPanel, false);
         SetStartMatchAvailable(false);
+        RefreshOpponentSlots();
 
         runtime.JoinGame(defaultClientAddress);
     }
@@ -196,6 +214,13 @@ public sealed class MultiplayerLobby : MonoBehaviour
             return;
         }
 
+        if (GetOpponentCount() <= 0)
+        {
+            RuntimePopupDialog.Show("Add at least one opponent before starting.");
+            SetStartMatchAvailable(false);
+            return;
+        }
+
         if (!TryCreateSettings(out MatchSettings settings))
             return;
 
@@ -215,6 +240,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         SetActive(connectionTypePanel, true);
         SetActive(hostSettingsPanel, false);
         SetStartMatchAvailable(false);
+        RefreshOpponentSlots();
     }
 
     public void GetSettingsFromUI(TMP_Dropdown dropdown, Toggle suddenDeathToggle)
@@ -233,6 +259,8 @@ public sealed class MultiplayerLobby : MonoBehaviour
         playerTrailColor = TrailColorPalette.SanitizeColor(color, Color.white);
         if (playerTrailColor.a <= 0.01f)
             playerTrailColor.a = 1f;
+
+        hasSelectedTrailColor = true;
     }
 
     public void SetPlayerTrailColorFromPaletteIndex(int index)
@@ -287,8 +315,8 @@ public sealed class MultiplayerLobby : MonoBehaviour
         }
 
         trailLength++;
-        if (trailLength > matchRules.MaxTrailLength)
-            trailLength = matchRules.MinTrailLength;
+        if (trailLength > MaxLobbyTrailLength)
+            trailLength = MinLobbyTrailLength;
 
         trailLength = ClampTrailLength(trailLength);
         RefreshTrailLengthUI();
@@ -346,10 +374,29 @@ public sealed class MultiplayerLobby : MonoBehaviour
     {
     }
 
+    public void RemoveOpponentSlot(int slotIndex)
+    {
+        if (!_isHost || !InstanceFinder.IsServerStarted)
+            return;
+
+        RefreshRemoteOpponentConnections();
+
+        if (slotIndex < 0 || slotIndex >= _remoteOpponentConnections.Count)
+            return;
+
+        NetworkConnection connection = _remoteOpponentConnections[slotIndex];
+        if (connection == null || connection.IsLocalClient)
+            return;
+
+        connection.Disconnect(true);
+        RefreshOpponentSlots();
+    }
+
     private void ShowHostSettingsPanel()
     {
         SetActive(connectionTypePanel, false);
         SetActive(hostSettingsPanel, true);
+        RefreshOpponentSlots();
     }
 
     private IEnumerator WaitForHostReadyRoutine(MultiplayerRuntimeBootstrap runtime)
@@ -360,6 +407,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
         {
             if (runtime != null && runtime.IsHostReady)
             {
+                RefreshOpponentSlots();
                 SetStartMatchAvailable(true);
                 _hostReadyRoutine = null;
                 yield break;
@@ -440,7 +488,15 @@ public sealed class MultiplayerLobby : MonoBehaviour
 
     private void ApplySelectedTrailColor()
     {
-        playerTrailColor = GetLobbySelectedColorOrFallback();
+        if (!hasSelectedTrailColor)
+        {
+            playerTrailColor = GetLobbySelectedColorOrFallback();
+            return;
+        }
+
+        playerTrailColor = TrailColorPalette.SanitizeColor(playerTrailColor, Color.white);
+        if (playerTrailColor.a <= 0.01f)
+            playerTrailColor.a = 1f;
     }
 
     private Color GetLobbySelectedColorOrFallback()
@@ -551,7 +607,7 @@ public sealed class MultiplayerLobby : MonoBehaviour
             return value;
         }
 
-        return Mathf.Clamp(value, matchRules.MinTrailLength, matchRules.MaxTrailLength);
+        return Mathf.Clamp(value, MinLobbyTrailLength, MaxLobbyTrailLength);
     }
 
     private bool TryGetPaletteColor(int index, out Color color)
@@ -641,12 +697,84 @@ public sealed class MultiplayerLobby : MonoBehaviour
     private void SetStartMatchAvailable(bool available)
     {
         if (startMatchButton != null)
-            startMatchButton.interactable = available;
+            startMatchButton.interactable = available && (!_isHost || GetOpponentCount() > 0);
     }
 
     private static void SetActive(GameObject target, bool active)
     {
         if (target != null && target.activeSelf != active)
             target.SetActive(active);
+    }
+
+    private void ConfigureOpponentRemoveButtons()
+    {
+        if (_opponentButtonsConfigured || opponentRemoveButtons == null)
+            return;
+
+        for (int i = 0; i < opponentRemoveButtons.Length; i++)
+        {
+            if (opponentRemoveButtons[i] == null)
+                continue;
+
+            int slotIndex = i;
+            opponentRemoveButtons[i].onClick.AddListener(() => RemoveOpponentSlot(slotIndex));
+        }
+
+        _opponentButtonsConfigured = true;
+    }
+
+    private int GetOpponentCount()
+    {
+        return RefreshRemoteOpponentConnections();
+    }
+
+    private int RefreshOpponentSlots()
+    {
+        int opponentCount = RefreshRemoteOpponentConnections();
+        int slotCount = GetOpponentSlotCapacity();
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            bool occupied = i < opponentCount;
+
+            if (opponentSlots != null && i < opponentSlots.Length && opponentSlots[i] != null)
+                opponentSlots[i].SetActive(occupied);
+
+            if (opponentSlotLabels != null && i < opponentSlotLabels.Length && opponentSlotLabels[i] != null)
+                opponentSlotLabels[i].text = occupied ? $"Player {_remoteOpponentConnections[i].ClientId}" : string.Empty;
+
+            if (opponentRemoveButtons != null && i < opponentRemoveButtons.Length && opponentRemoveButtons[i] != null)
+                opponentRemoveButtons[i].interactable = occupied && _isHost;
+        }
+
+        return opponentCount;
+    }
+
+    private int RefreshRemoteOpponentConnections()
+    {
+        _remoteOpponentConnections.Clear();
+
+        if (!InstanceFinder.IsServerStarted || InstanceFinder.ServerManager == null)
+            return 0;
+
+        foreach (NetworkConnection connection in InstanceFinder.ServerManager.Clients.Values)
+        {
+            if (connection == null || !connection.IsAuthenticated || connection.IsLocalClient)
+                continue;
+
+            _remoteOpponentConnections.Add(connection);
+        }
+
+        _remoteOpponentConnections.Sort((a, b) => a.ClientId.CompareTo(b.ClientId));
+        return _remoteOpponentConnections.Count;
+    }
+
+    private int GetOpponentSlotCapacity()
+    {
+        int roots = opponentSlots != null ? opponentSlots.Length : 0;
+        int labels = opponentSlotLabels != null ? opponentSlotLabels.Length : 0;
+        int buttons = opponentRemoveButtons != null ? opponentRemoveButtons.Length : 0;
+
+        return Mathf.Max(Mathf.Max(roots, labels), buttons);
     }
 }

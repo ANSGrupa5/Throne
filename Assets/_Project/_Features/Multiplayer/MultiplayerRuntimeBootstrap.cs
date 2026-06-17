@@ -3,6 +3,7 @@ using FishNet;
 using FishNet.Managing;
 using FishNet.Managing.Scened;
 using FishNet.Object;
+using FishNet.Transporting;
 using UnityEngine;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -17,12 +18,21 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     [Header("Connection")]
     [SerializeField] private string defaultJoinAddress = "127.0.0.1";
+    [SerializeField] private float clientConnectTimeoutSeconds = 8f;
 
     private static MultiplayerRuntimeBootstrap _instance;
 
     private string _joinAddress;
     private bool _matchLoadInProgress;
     private string _pendingArenaSceneName;
+    private bool _clientConnectAttemptActive;
+    private bool _clientHadConnection;
+    private bool _connectionPopupOpen;
+    private bool _intentionalDisconnect;
+    private bool _isHosting;
+    private bool _joinSuccessPopupShown;
+    private Coroutine _clientConnectTimeoutRoutine;
+    private NetworkManager _registeredConnectionEventsManager;
 
     public static MultiplayerRuntimeBootstrap Instance => _instance;
 
@@ -45,6 +55,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
 
     private void OnDestroy()
     {
+        UnregisterConnectionHandlers();
+
         if (_instance == this)
             _instance = null;
     }
@@ -59,6 +71,10 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (!TryValidateNetworkSetup(out NetworkManager manager))
             return false;
 
+        _intentionalDisconnect = false;
+        _isHosting = true;
+        _clientConnectAttemptActive = false;
+        StopClientConnectTimeout();
         StartHost(manager);
         return true;
     }
@@ -73,12 +89,21 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         if (!TryValidateNetworkSetup(out NetworkManager manager))
             return;
 
+        _intentionalDisconnect = false;
+        _isHosting = false;
+        _clientHadConnection = false;
+        _clientConnectAttemptActive = true;
+        _joinSuccessPopupShown = false;
         _joinAddress = NormalizeJoinAddress(address);
+        StartClientConnectTimeout(manager);
         StartClient(manager);
     }
 
     public void BackToMainMenu()
     {
+        _intentionalDisconnect = true;
+        _clientConnectAttemptActive = false;
+        StopClientConnectTimeout();
         StopNetworkingIfNeeded();
 
         if (mainMenuScene == null || string.IsNullOrWhiteSpace(mainMenuScene.SceneName))
@@ -288,6 +313,7 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         }
 
         MultiplayerMatchBroadcasts.RegisterClientHandlers(networkManager);
+        RegisterConnectionHandlers(networkManager);
         return true;
     }
 
@@ -316,5 +342,140 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
             return defaultJoinAddress.Trim();
 
         return "127.0.0.1";
+    }
+
+    private void RegisterConnectionHandlers(NetworkManager manager)
+    {
+        if (_registeredConnectionEventsManager == manager)
+            return;
+
+        UnregisterConnectionHandlers();
+
+        if (manager == null)
+            return;
+
+        if (manager.ClientManager != null)
+            manager.ClientManager.OnClientConnectionState += OnClientConnectionState;
+
+        _registeredConnectionEventsManager = manager;
+    }
+
+    private void UnregisterConnectionHandlers()
+    {
+        if (_registeredConnectionEventsManager == null)
+            return;
+
+        if (_registeredConnectionEventsManager.ClientManager != null)
+            _registeredConnectionEventsManager.ClientManager.OnClientConnectionState -= OnClientConnectionState;
+
+        _registeredConnectionEventsManager = null;
+    }
+
+    private void OnClientConnectionState(ClientConnectionStateArgs args)
+    {
+        if (args.ConnectionState == LocalConnectionState.Started)
+        {
+            _clientHadConnection = true;
+            _clientConnectAttemptActive = false;
+            StopClientConnectTimeout();
+
+            if (!_isHosting && !_joinSuccessPopupShown)
+            {
+                _joinSuccessPopupShown = true;
+                RuntimePopupDialog.Show("Joined game successfully.", "Disconnect", () =>
+                {
+                    _intentionalDisconnect = true;
+                    BackToMainMenu();
+                });
+            }
+
+            return;
+        }
+
+        if (args.ConnectionState != LocalConnectionState.Stopped)
+            return;
+
+        StopClientConnectTimeout();
+
+        if (_intentionalDisconnect || _isHosting)
+        {
+            _clientConnectAttemptActive = false;
+            _clientHadConnection = false;
+            return;
+        }
+
+        if (_clientConnectAttemptActive && !_clientHadConnection)
+        {
+            _clientConnectAttemptActive = false;
+            ShowConnectionPopup("Could not connect to server.");
+            return;
+        }
+
+        if (_clientHadConnection)
+            ShowConnectionPopup("Host closed the game.");
+
+        _clientHadConnection = false;
+    }
+
+    private void StartClientConnectTimeout(NetworkManager manager)
+    {
+        StopClientConnectTimeout();
+
+        if (manager != null)
+            _clientConnectTimeoutRoutine = StartCoroutine(ClientConnectTimeoutRoutine(manager));
+    }
+
+    private void StopClientConnectTimeout()
+    {
+        if (_clientConnectTimeoutRoutine == null)
+            return;
+
+        StopCoroutine(_clientConnectTimeoutRoutine);
+        _clientConnectTimeoutRoutine = null;
+    }
+
+    private IEnumerator ClientConnectTimeoutRoutine(NetworkManager manager)
+    {
+        float timeoutAt = Time.realtimeSinceStartup + Mathf.Max(1f, clientConnectTimeoutSeconds);
+
+        while (Time.realtimeSinceStartup < timeoutAt)
+        {
+            if (_intentionalDisconnect || !_clientConnectAttemptActive)
+            {
+                _clientConnectTimeoutRoutine = null;
+                yield break;
+            }
+
+            if (manager != null && manager.IsClientStarted)
+            {
+                _clientConnectAttemptActive = false;
+                _clientConnectTimeoutRoutine = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        _clientConnectTimeoutRoutine = null;
+
+        if (!_intentionalDisconnect && _clientConnectAttemptActive)
+        {
+            _clientConnectAttemptActive = false;
+            ShowConnectionPopup("Could not connect to server.");
+        }
+    }
+
+    private void ShowConnectionPopup(string message)
+    {
+        if (_connectionPopupOpen)
+            return;
+
+        _connectionPopupOpen = true;
+        RuntimePopupDialog.Show(message, () =>
+        {
+            _connectionPopupOpen = false;
+            _intentionalDisconnect = true;
+            BackToMainMenu();
+        });
     }
 }

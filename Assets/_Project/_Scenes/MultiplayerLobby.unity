@@ -546,6 +546,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
       objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
       value: PlayerSlot_4
@@ -638,6 +642,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8839404583108024502, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -646,6 +654,11 @@ PrefabInstance:
 --- !u!224 &138276304 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 138276303}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &138276305 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
   m_PrefabInstance: {fileID: 138276303}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &151609136
@@ -2092,7 +2105,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &344754488
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3142,12 +3155,25 @@ MonoBehaviour:
   seconds: {fileID: 1718153334}
   dropdown: {fileID: 404455512992828665}
   suddenDeathToggle: {fileID: 2074357527}
-  trailLengthText: {fileID: 1116204002}
+  trailLengthText: {fileID: 80418285}
   playerTrailColor: {r: 1, g: 1, b: 1, a: 1}
   currentModel: 0
   motorPreview:
   - {fileID: 1585333280}
   - {fileID: 1964693551}
+  opponentSlots:
+  - {fileID: 1327168092}
+  - {fileID: 674113799}
+  - {fileID: 1749253722}
+  - {fileID: 1530098102}
+  - {fileID: 138276305}
+  opponentSlotLabels: []
+  opponentRemoveButtons:
+  - {fileID: 1327168093}
+  - {fileID: 674113800}
+  - {fileID: 1749253723}
+  - {fileID: 1530098103}
+  - {fileID: 1618553001}
 --- !u!1001 &674113797
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3163,6 +3189,10 @@ PrefabInstance:
     - target: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
@@ -3256,6 +3286,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8839404583108024502, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3266,6 +3300,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
   m_PrefabInstance: {fileID: 674113797}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &674113799 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 674113797}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &674113800 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 674113797}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &729201719
 GameObject:
   m_ObjectHideFlags: 0
@@ -6322,6 +6372,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
   m_PrefabInstance: {fileID: 1327168090}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1327168092 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1327168090}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1327168093 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1327168090}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &1393405446
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7642,6 +7708,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
       objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
       value: PlayerSlot_3
@@ -7734,6 +7804,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8839404583108024502, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7744,6 +7818,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
   m_PrefabInstance: {fileID: 1530098100}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1530098102 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1530098100}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1530098103 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1530098100}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1539375727
 GameObject:
   m_ObjectHideFlags: 0
@@ -8179,6 +8269,17 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1618553001 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 138276303}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1718153333
 GameObject:
   m_ObjectHideFlags: 0
@@ -8332,6 +8433,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: RemoveBot
       objectReference: {fileID: 0}
+    - target: {fileID: 3323732949672924586, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
       propertyPath: m_Name
       value: PlayerSlot_2
@@ -8424,6 +8529,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8839404583108024502, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8434,6 +8543,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8054340337519971890, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
   m_PrefabInstance: {fileID: 1749253720}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1749253722 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4551024992333675794, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1749253720}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1749253723 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 642019904559650212, guid: 82a5c5ce5de33e843ac3e3159238b384, type: 3}
+  m_PrefabInstance: {fileID: 1749253720}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &1753210060
 GameObject:
   m_ObjectHideFlags: 0
@@ -9005,7 +9130,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1815798578
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10470,7 +10595,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 6957774517684688714}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.2
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -10655,7 +10780,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4293721856
   m_fontColor: {r: 0, g: 1, b: 0.9254902, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -10668,7 +10793,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -10733,7 +10858,7 @@ RectTransform:
   m_Father: {fileID: 5699921737538068167}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0.2}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

@@ -14,6 +14,8 @@ public class SingleplayerLobby : MonoBehaviour
 
     private const int SecondsStep = 5;
     private const int MinutesStep = 60;
+    private const int MinLobbyTrailLength = 1;
+    private const int MaxLobbyTrailLength = 4;
 
     [Header("Default Config Assets")]
     [SerializeField] private MatchDefaults matchDefaults;
@@ -23,6 +25,9 @@ public class SingleplayerLobby : MonoBehaviour
 
     [Header("Bots")]
     [SerializeField] private TMP_Text botCountText;
+
+    [Header("Buttons")]
+    [SerializeField] private Button playButton;
 
     [Header("Player Color")]
     [SerializeField] private Color playerTrailColor = Color.white;
@@ -48,6 +53,7 @@ public class SingleplayerLobby : MonoBehaviour
     private int trailColor;
     private MatchMode selectedMatchMode = MatchMode.Deathmatch;
     private bool suddenDeath;
+    private bool hasSelectedTrailColor;
 
     private void Awake()
     {
@@ -66,11 +72,13 @@ public class SingleplayerLobby : MonoBehaviour
         }
 
         trailColor = 0;
+        hasSelectedTrailColor = false;
         playerTrailColor = GetLobbySelectedColorOrFallback();
 
         SyncTimeFieldsFromSeconds();
         RefreshTimeUI();
         RefreshBotCountUI();
+        RefreshPlayButtonState();
         InitializeModeDropdown();
         RefreshTrailLengthUI();
 
@@ -84,15 +92,33 @@ public class SingleplayerLobby : MonoBehaviour
 
     public void LoadScene(string sceneName)
     {
+        if (!string.IsNullOrWhiteSpace(sceneName))
+        {
+            SceneManager.LoadScene(sceneName);
+            return;
+        }
+
         LoadScene();
     }
 
     public void LoadScene()
     {
+        if (_botCount <= 0)
+        {
+            RuntimePopupDialog.Show("Add at least one opponent before starting.");
+            RefreshPlayButtonState();
+            return;
+        }
+
         if (!InitializeGame(out string arenaSceneName))
             return;
 
         SceneManager.LoadScene(arenaSceneName);
+    }
+
+    public void StartGame()
+    {
+        LoadScene();
     }
 
     public void GetSettingsFromUI(TMP_Dropdown dropdown, Toggle suddenDeathToggle)
@@ -121,6 +147,8 @@ public class SingleplayerLobby : MonoBehaviour
         playerTrailColor = TrailColorPalette.SanitizeColor(color, Color.white);
         if (playerTrailColor.a <= 0.01f)
             playerTrailColor.a = 1f;
+
+        hasSelectedTrailColor = true;
     }
 
     public void SetPlayerTrailColorFromPaletteIndex(int index)
@@ -230,7 +258,15 @@ public class SingleplayerLobby : MonoBehaviour
 
     private void ApplySelectedTrailColor()
     {
-        playerTrailColor = GetLobbySelectedColorOrFallback();
+        if (!hasSelectedTrailColor)
+        {
+            playerTrailColor = GetLobbySelectedColorOrFallback();
+            return;
+        }
+
+        playerTrailColor = TrailColorPalette.SanitizeColor(playerTrailColor, Color.white);
+        if (playerTrailColor.a <= 0.01f)
+            playerTrailColor.a = 1f;
     }
 
     private Color GetLobbySelectedColorOrFallback()
@@ -245,6 +281,7 @@ public class SingleplayerLobby : MonoBehaviour
     {
         _botCount = ClampBotCount(value);
         RefreshBotCountUI();
+        RefreshPlayButtonState();
     }
 
     private int ClampBotCount(int value)
@@ -262,6 +299,12 @@ public class SingleplayerLobby : MonoBehaviour
     {
         if (botCountText != null)
             botCountText.text = _botCount.ToString();
+    }
+
+    private void RefreshPlayButtonState()
+    {
+        if (playButton != null)
+            playButton.interactable = _botCount > 0;
     }
 
     public void isSuddenDeath()
@@ -376,8 +419,8 @@ public class SingleplayerLobby : MonoBehaviour
         }
 
         trailLength++;
-        if (trailLength > matchRules.MaxTrailLength)
-            trailLength = matchRules.MinTrailLength;
+        if (trailLength > MaxLobbyTrailLength)
+            trailLength = MinLobbyTrailLength;
 
         trailLength = ClampTrailLength(trailLength);
         RefreshTrailLengthUI();
@@ -516,7 +559,7 @@ public class SingleplayerLobby : MonoBehaviour
             return value;
         }
 
-        return Mathf.Clamp(value, matchRules.MinTrailLength, matchRules.MaxTrailLength);
+        return Mathf.Clamp(value, MinLobbyTrailLength, MaxLobbyTrailLength);
     }
 
     private bool TryGetPaletteColor(int index, out Color color)
