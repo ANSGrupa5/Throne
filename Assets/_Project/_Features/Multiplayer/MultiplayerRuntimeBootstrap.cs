@@ -268,11 +268,8 @@ public sealed class MultiplayerRuntimeBootstrap : MonoBehaviour
         manager = networkManager;
 
         if (manager == null)
-            manager = FindFirstObjectByType<NetworkManager>(FindObjectsInactive.Include);
-
-        if (manager == null)
         {
-            Debug.LogError("[MultiplayerRuntimeBootstrap] NetworkManager is not assigned. Add NetworkManager to MultiplayerBootstrap.prefab and assign it.");
+            Debug.LogError("[MultiplayerRuntimeBootstrap] NetworkManager is not assigned. Assign it on MultiplayerBootstrap.prefab.");
             return false;
         }
 
