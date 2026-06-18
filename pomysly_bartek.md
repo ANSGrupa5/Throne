@@ -12,7 +12,7 @@ No i może jakieś lvl'owanie wtedy czy tam "stałe" ulepszenia na czas rozgrywk
 i system jeżdzenia był zajebisty, bo można było w trakcie jazdy zmieniać sie w ludzika i napierdalać tymi talerzami z Trona w innych i system walki był dojebany i w każdym momencie można było zmienić się spowrotem na pojazd. 
 No tutaj nie mamy systemu, żeby sterować postacią, to trzeba by było nadrobić właśnie innymi rzeczami.
 
-### ?
+### ????
 Osobiście bym poszedł w wersję dynamiczną, można część elementów dać do wersji dynamicznej z strategicznej i tak.
 
 ## Areny
