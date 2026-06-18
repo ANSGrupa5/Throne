@@ -58,9 +58,7 @@ Przenosimy UI sceny do UI Toolkit - UXML + USS + C# Controllers (zamiast tradycy
 ### Luźne pomysły
 - Boty jeżdzące sobie same w menu w tle po tym planie.
 
-#----------------------------
-## Feedback chata
-# Feedback do propozycji gameplayu THRONE
+# Feedback chata do moich pomysłów
 
 ## Ogólne podsumowanie
 
