@@ -31,6 +31,7 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
         RefreshLocalPresentation();
         SubmitCurrentCommand();
         WarnIfSpawnedWithoutValidOwner();
+        RegisterLocalPlayer();
     }
 
     public override void OnOwnershipClient(NetworkConnection prevOwner)
@@ -40,6 +41,7 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
         RefreshLocalPresentation();
         SubmitCurrentCommand();
         WarnIfSpawnedWithoutValidOwner();
+        RegisterLocalPlayer();
     }
 
     private void Update()
@@ -60,6 +62,23 @@ public class NetworkPlayerVehicleInput : NetworkBehaviour, IVehicleCommandSource
 
         if (_vehicleController != null)
             _vehicleController.ResetPresentationState();
+        RegisterLocalPlayer();
+    }
+
+    private void RegisterLocalPlayer()
+    {
+        if (!IsSpawned || Owner == null || !Owner.IsLocalClient)
+            return;
+
+        VehicleLife life = GetComponent<VehicleLife>();
+        string displayName = life != null ? life.DisplayName : name;
+        string ownerId = life != null ? life.OwnerId : $"player_{Owner.ClientId}";
+
+        if (StatsManager.Instance != null)
+            StatsManager.Instance.SetPlayerVehicle(gameObject, displayName, ownerId);
+
+        if (DistanceTracker.Instance != null)
+            DistanceTracker.Instance.SetTarget(transform);
     }
 
     public VehicleCommand GetCommand()

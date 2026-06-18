@@ -69,8 +69,10 @@ public sealed class MultiplayerMatchFlow
             index++;
             if (playerVehicle != null)
                 spawnedHumanCount++;
-            if (playerIndex == 0 && playerVehicle != null)
-                StatsManager.Instance.SetPlayerVehicle(playerVehicle, displayName, ownerId);
+            // Server should not set client-local singletons like StatsManager for remote clients.
+            // Each client now registers its own vehicle in NetworkPlayerVehicleInput.OnStartClient()/OnOwnershipClient().
+            //if (playerIndex == 0 && playerVehicle != null)
+            //    StatsManager.Instance.SetPlayerVehicle(playerVehicle, displayName, ownerId);
             //Temporary disable: DistanceTracker uses string to find player, unsafe.
             //DistanceTracker.Instance.GetTarget();
             yield return new WaitForSecondsRealtime(_context.SpawnInterval);
